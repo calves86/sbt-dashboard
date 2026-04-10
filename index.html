@@ -772,21 +772,6 @@ function renderOverview(){
   };
   const normOwner=o=>ownerNorm[o]||o||'Unknown';
 
-  const owners={};
-  DATA.standings.forEach(r=>{
-    const owner=normOwner(r.owner);
-    if(!owners[owner])owners[owner]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,years:[],franchises:new Set()};
-    const o=owners[owner];
-    o.w+=r.wins;o.l+=r.losses;o.t+=r.ties||0;o.pf+=r.points_for;o.pa+=r.points_against;o.seasons++;
-    o.years.push(r.season);
-    o.franchises.add(r.team_name);
-  });
-  const allTime=Object.entries(owners).map(([name,d])=>{
-    const minY=Math.min(...d.years);const maxY=Math.max(...d.years);
-    return{team_name:name,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,
-      mgr:`${minY}-${maxY} (${d.seasons}yr)`,franchise:[...d.franchises].join(', '),seasons:d.seasons};
-  }).filter(r=>r.seasons>=1);
-
   let html=secTitle('League Stats','Database');
   html+=`<div class="stat-grid">
     <div class="stat-card"><div class="stat-val">14</div><div class="stat-label">Seasons</div><div class="stat-sub">2012-2025</div></div>
@@ -802,33 +787,27 @@ function renderOverview(){
   html+=secTitle('Never Won a Championship','Ringless');
   html+=`<div class="card-grid">${NEVERW.map(nw=>`<div class="ringless-card"><div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(248,113,113,0.2),rgba(248,113,113,0.05));border:2px solid rgba(248,113,113,0.3);display:flex;align-items:center;justify-content:center;font-size:18px">💀</div><div><div style="font-size:16px;font-weight:700">${nw.m}</div><div style="font-size:12px;color:#94a3b8">${nw.t} — ${nw.s}</div></div></div>${nw.n?`<div style="font-size:12px;color:#f87171;font-style:italic">${nw.n}</div>`:''}</div>`).join('')}</div>`;
 
-  if(allTime.length){
-    // Group by owner — same owner = same franchise; use most recent team name as the franchise label
+  {
+    // Group by normalized owner — same franchise identity; display most recent team name
     const franchiseData={};
     DATA.standings.forEach(r=>{
       const key=normOwner(r.owner);
-      if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name,mgr:r.owner};
+      if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name};
       const f=franchiseData[key];
       f.w+=r.wins;f.l+=r.losses;f.t+=r.ties||0;f.pf+=r.points_for;f.pa+=r.points_against;f.seasons++;
       if(r.season>f.latestSeason){f.latestSeason=r.season;f.latestName=r.team_name;}
     });
     const franchiseList=Object.values(franchiseData).map(d=>({
-      team_name:d.latestName,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,mgr:d.mgr,seasons:d.seasons
+      team_name:d.latestName,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,seasons:d.seasons
     }));
 
-    const mode=state.standingsMode||'franchise';
-    html+=secTitle('Career Standings',mode==='owner'?'By Owner':'By Franchise');
-    html+=`<div class="sub-tabs" style="margin-bottom:16px"><button class="sub-tab ${mode==='franchise'?'active':''}" onclick="state.standingsMode='franchise';render()">By Franchise</button><button class="sub-tab ${mode==='owner'?'active':''}" onclick="state.standingsMode='owner';render()">By Owner</button></div>`;
+    html+=secTitle('Career Standings','By Franchise');
+    const sortedList=sortStandings(franchiseList);
 
-    const listToSort=mode==='owner'?allTime:franchiseList;
-    const sortedList=sortStandings(listToSort);
-    const colLabel=mode==='owner'?'Owner':'Franchise';
-    const lastCol=mode==='owner'?'Seasons':'Manager';
-
-    html+=`<div class="data-table"><div class="standings-grid header-row"><div>#</div><div>${colLabel}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div><div style="text-align:right;padding-right:8px" class="hide-mobile">${lastCol}</div></div>`;
+    html+=`<div class="data-table"><div class="standings-grid header-row"><div>#</div><div>Franchise</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div><div style="text-align:right;padding-right:8px" class="hide-mobile">Seasons</div></div>`;
     sortedList.forEach((r,i)=>{
       const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';
-      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#475569;text-align:right;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="hide-mobile">${r.mgr||''}</div></div>`;
+      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#475569;text-align:right;padding-right:8px" class="hide-mobile">${r.seasons}</div></div>`;
     });
     html+=`</div>`;
   }
