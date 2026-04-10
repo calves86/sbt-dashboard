@@ -953,8 +953,28 @@ function renderTeams(){
         </div>`:''}
       </div>
     </div>`;
+    // Per-season awards cache for this franchise's years
+    const seasonAwards={};
+    f.rows.forEach(r=>{
+      if(!seasonAwards[r.season]){
+        const ss=getPlayoffSeeds(r.season);
+        if(ss.length){
+          const divL=new Set(ss.filter(s=>s.isDivLeader).map(s=>s.team));
+          const bestRec=ss.slice().sort((a,b)=>(b.wins-a.wins)||b.pf-a.pf)[0].team;
+          const bestPF=ss.slice().sort((a,b)=>b.pf-a.pf)[0].team;
+          seasonAwards[r.season]={divL,bestRec,bestPF};
+        }
+      }
+    });
+    function rowAwardBadges(teamName,season){
+      const aw=seasonAwards[season];if(!aw)return'';
+      return(aw.divL.has(teamName)?`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px">DIV</span>`:'')
+            +(aw.bestRec===teamName?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px">WINS</span>`:'')
+            +(aw.bestPF===teamName?`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px">PF</span>`:'');
+    }
+
     html+=`<div class="scroll-wrap"><div class="scroll-inner"><div class="data-table">
-      <div style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px 145px;column-gap:12px;align-items:center;padding:8px 16px" class="header-row">
+      <div style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px auto;column-gap:12px;align-items:center;padding:8px 16px" class="header-row">
         <div>Year</div><div>Team Name</div><div>Owners</div><div style="text-align:center">Record</div><div style="text-align:right">PF</div><div style="text-align:right">PA</div><div>Result</div>
       </div>`;
     f.rows.forEach((r,i)=>{
@@ -963,14 +983,18 @@ function renderTeams(){
       const roster=findRoster(r.season,r.team_name);
       const expanded=state.teamsRosterYear===r.season;
       const rowBg=expanded?'background:rgba(16,185,129,0.06);border-left:3px solid rgba(16,185,129,0.4)':i%2===0?'background:rgba(255,255,255,0.02)':'' ;
-      html+=`<div onclick="${roster?`state.teamsRosterYear=${expanded?'null':r.season};render()`:''}" style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px 145px;column-gap:12px;align-items:center;padding:10px 16px;${rowBg}${roster?';cursor:pointer':''}">
+      const badges=rowAwardBadges(r.team_name,r.season);
+      html+=`<div onclick="${roster?`state.teamsRosterYear=${expanded?'null':r.season};render()`:''}" style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px auto;column-gap:12px;align-items:center;padding:10px 16px;${rowBg}${roster?';cursor:pointer':''}">
         <div style="font-size:13px;font-weight:700;color:${expanded?'#10b981':'#64748b'}">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
         <div style="font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div>
         <div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div>
         <div style="font-size:13px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div>
         <div style="font-size:13px;color:#94a3b8;text-align:right">${r.points_against>0?r.points_against.toFixed(1):'—'}</div>
-        <div style="font-size:12px;color:${rc};font-weight:${res?'600':'400'};display:flex;align-items:center;justify-content:space-between;gap:4px"><span>${res||'—'}</span>${roster?`<span style="font-size:10px;color:#94a3b8;flex-shrink:0">${expanded?'▲ hide':'▼ roster'}</span>`:''}</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="font-size:12px;color:${rc};font-weight:${res?'600':'400'}">${res||'—'}</span>${roster?`<span style="font-size:10px;color:#94a3b8;flex-shrink:0">${expanded?'▲ hide':'▼ roster'}</span>`:''}</div>
+          ${badges?`<div style="display:flex;gap:3px">${badges}</div>`:''}
+        </div>
       </div>`;
       if(expanded&&roster)html+=rosterPanel(roster);
     });
@@ -1289,7 +1313,7 @@ function renderSeasons(){
     const stBestPF=stSeeds.length?stSeeds.slice().sort((a,b)=>b.pf-a.pf)[0].team:'';
     function stBadges(name){
       return(stDivLeaders.has(name)?`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px">DIV</span>`:'')
-            +(name===stBestRec?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px">REC</span>`:'')
+            +(name===stBestRec?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px">WINS</span>`:'')
             +(name===stBestPF?`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px">PF</span>`:'');
     }
 
@@ -1391,7 +1415,7 @@ function renderSeasons(){
         const seedColor=i<8?'#10b981':'#94a3b8';
         const labelEl=isConsolStart?`<div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;padding:10px 12px 2px;border-top:2px solid rgba(148,163,184,0.15)">CONSOLATION (Seeds 9–12)</div>`:'';
         const divBadge=s.isDivLeader?`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px;margin-left:5px">DIV</span>`:'';
-        const recBadge=s.team===bestRecTeam?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px;margin-left:5px">REC</span>`:'';
+        const recBadge=s.team===bestRecTeam?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px;margin-left:5px">WINS</span>`:'';
         const pfBadge=s.team===bestPFTeam?`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px;margin-left:5px">PF</span>`:'';
         html+=labelEl+`<div style="display:grid;grid-template-columns:32px 1fr 70px 75px;align-items:center;padding:8px 12px;${rowBg}">
           <div style="font-size:13px;font-weight:800;color:${seedColor};text-align:center">${i+1}</div>
