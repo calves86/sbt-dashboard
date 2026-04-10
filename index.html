@@ -377,7 +377,7 @@ function loadData(){
 // ══════════════════════════════════════════════════
 // APP STATE & RENDERING
 // ══════════════════════════════════════════════════
-let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'record',sortDir:'desc'};
+let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'desc'};
 
 function toggleSort(col){if(state.sortCol===col){state.sortDir=state.sortDir==='desc'?'asc':'desc';}else{state.sortCol=col;state.sortDir='desc';}render();}
 function sortArrow(col){if(state.sortCol!==col)return' ↕';return state.sortDir==='desc'?' ▼':' ▲';}
@@ -766,13 +766,13 @@ function renderOverview(){
   };
 
   const owners={};
-  DATA.team_yearly.forEach(r=>{
-    const owner=ownerMap[r.manager]||r.manager;
+  DATA.standings.forEach(r=>{
+    const owner=r.owner||'Unknown';
     if(!owners[owner])owners[owner]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,years:[],franchises:new Set()};
     const o=owners[owner];
     o.w+=r.wins;o.l+=r.losses;o.t+=r.ties||0;o.pf+=r.points_for;o.pa+=r.points_against;o.seasons++;
-    o.years.push(r.year);
-    o.franchises.add(r.franchise);
+    o.years.push(r.season);
+    o.franchises.add(r.team_name);
   });
   const allTime=Object.entries(owners).map(([name,d])=>{
     const minY=Math.min(...d.years);const maxY=Math.max(...d.years);
@@ -797,11 +797,11 @@ function renderOverview(){
 
   if(allTime.length){
     const franchiseData={};
-    DATA.team_yearly.forEach(r=>{
-      if(!franchiseData[r.franchise])franchiseData[r.franchise]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,mgr:r.manager};
-      const f=franchiseData[r.franchise];
+    DATA.standings.forEach(r=>{
+      if(!franchiseData[r.team_name])franchiseData[r.team_name]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,mgr:r.owner};
+      const f=franchiseData[r.team_name];
       f.w+=r.wins;f.l+=r.losses;f.t+=r.ties||0;f.pf+=r.points_for;f.pa+=r.points_against;f.seasons++;
-      f.mgr=r.manager;
+      f.mgr=r.owner;
     });
     const franchiseList=Object.entries(franchiseData).map(([name,d])=>({
       team_name:name,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,mgr:d.mgr,seasons:d.seasons
