@@ -63,7 +63,7 @@ select.dropdown option{background:#1e293b;color:#e2e8f0}
 .draft-row{display:grid;grid-template-columns:50px 50px 1fr 60px 1fr;align-items:center;gap:8px;padding:10px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03)}
 .draft-row:nth-child(even){background:rgba(255,255,255,0.015)}
 .pos-badge{font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;text-align:center}
-.pos-QB{color:#f472b6;background:rgba(244,114,182,0.12)}.pos-RB{color:#10b981;background:rgba(16,185,129,0.12)}
+.pos-QB{color:#f472b6;background:rgba(244,114,182,0.12)}.pos-RB{color:#22d3ee;background:rgba(34,211,238,0.12)}
 .pos-WR{color:#34d399;background:rgba(52,211,153,0.12)}.pos-TE{color:#fb923c;background:rgba(251,146,60,0.12)}
 .pos-K{color:#facc15;background:rgba(250,204,21,0.12)}.pos-DST{color:#a78bfa;background:rgba(167,139,250,0.12)}
 .matchup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
@@ -378,7 +378,7 @@ function initApp(){
 }
 
 function renderTabs(){
-  const tabs=['Overview','Champions','Seasons','Record Book','Draft History','Head-to-Head','Fun Facts','Rules'];
+  const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Head-to-Head','Fun Facts','Rules'];
   document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="tab ${state.tab===t?'active':''}" onclick="state.tab='${t}';render()">${t}</button>`).join('');
 }
 
@@ -399,6 +399,7 @@ function render(){
   else if(state.tab==='Draft History')el.innerHTML=renderDraft();
   else if(state.tab==='Head-to-Head')el.innerHTML=renderH2H();
   else if(state.tab==='Fun Facts')el.innerHTML=renderFunFacts();
+  else if(state.tab==='Teams')el.innerHTML=renderTeams();
   else if(state.tab==='Rules')el.innerHTML=renderRules();
 }
 
@@ -561,6 +562,144 @@ function renderRules(){
     ],'#f87171');
   }
 
+  return html;
+}
+
+function renderTeams(){
+  let html=secTitle('Teams','Franchise Histories & Records');
+  const champLookup={};
+  (DATA.champions||[]).forEach(c=>{
+    champLookup[c.season]={champion:c.team_name,runner_up:c.runner_up,third:c.third_place,booty:c.booty_bowl_champ,loser:c.biggest_loser};
+  });
+  function getResult(teamName,season){
+    const c=champLookup[season];
+    if(!c)return'';
+    if(c.champion===teamName)return'🏆 Champion';
+    if(c.runner_up===teamName)return'🥈 Runner-Up';
+    if(c.third===teamName)return'🥉 3rd Place';
+    if(c.booty===teamName)return'🏅 Booty Bowl';
+    if(c.loser===teamName)return'💩 Biggest Loser';
+    return'';
+  }
+  const FR=[
+    {id:'trump',label:'Trump Train',active:true,co:'Chris Alves / John Phillips',ok:['Chris Alves / john phillips'],joined:2012},
+    {id:'smease',label:'Smease Appeasers',active:true,co:'John Schieda / Steve DeStefano',ok:['John Schieda / Steve DeStefano'],joined:2012},
+    {id:'skoot',label:'skoot',active:true,co:'Skooter Williams',ok:['Skooter Williams'],joined:2012},
+    {id:'gotham',label:'Gotham Rogues',active:true,co:'Jake Mason',ok:['Eric Mendes / Jake Mason','Jake Mason'],joined:2012},
+    {id:'muff',label:'The MUFF Divers',active:true,co:'Adam Cohen / Matt Skepner',ok:['Matt Skepner / TJ Bevere','Adam Cohen / Matt Skepner'],joined:2012},
+    {id:'bear',label:'Bear Exposures',active:true,co:'Brian Franklin',ok:['Chris Kinnevy / diego arriola','Chris Kinnevy','Chris Kinnevy / Matt Plisak','Chris Kinnevy / jesse phillips','Brian Franklin'],joined:2012},
+    {id:'bigfat',label:'Big Fat Chubby',active:true,co:'Andrew Mitchell',ok:['Andrew Mitchell / Yazan Barqawi','Andrew Mitchell'],joined:2012},
+    {id:'comeback',label:'Comeback Kids',active:true,co:'Stephen Allen',ok:['Joe Gannon / Stephen Allen','Stephen Allen'],joined:2013},
+    {id:'c4',label:'C4 / Cooked To Perfection',active:true,co:'Ryan Zayne',ok:['Bryan Silver / Ryan Zayne','Ryan Zayne / Bryan Silver','Ryan Zayne'],joined:2012},
+    {id:'freesh',label:'Team Freesh',active:true,co:'Sean McManimon / Yazan Barqawi',ok:['Josh Katz / Yazan Barqawi','Sean McManimon / Yazan Barqawi'],joined:2013},
+    {id:'clits',label:'Clitsburgh Feelers',active:true,co:'Steve Danek / T Ruf',ok:['Steve Danek / Terry Ruf','Steve Danek / T Ruf'],joined:2013},
+    {id:'ceaser',label:'Ceaser Salad Tossers',active:true,co:'Christian Ceaser / Jeffrey Herman',ok:['Christian Ceaser / Jeffrey Herman'],joined:2021},
+    {id:'gordons',label:"Gordon's Bombay",active:false,co:'Jesse Phillips',ok:['jesse phillips'],joined:2012,left:2017},
+    {id:'plisak',label:'Crispy McChicken',active:false,co:'Matt Plisak',ok:['Matt Plisak / mike smith','Matt Plisak / ryan smith'],joined:2012,left:2020},
+    {id:'glog',label:'Shas + G',active:false,co:'Mike Glogowski / Brian Shaw',ok:['Mike Glogowski / Brian Shaw'],joined:2012,left:2012},
+    {id:'ddd',label:"Drunk Dancin' Donkeys",active:false,co:'Michael Colacicco',ok:['Michael Colacicco'],joined:2012,left:2012},
+  ];
+  FR.forEach(f=>{
+    const rows=(DATA.standings||[]).filter(r=>f.ok.includes(r.owner)).sort((a,b)=>a.season-b.season);
+    f.rows=rows;
+    f.seasons=rows.length;
+    f.wins=rows.reduce((s,r)=>s+r.wins,0);
+    f.losses=rows.reduce((s,r)=>s+r.losses,0);
+    f.pf=rows.reduce((s,r)=>s+(r.points_for||0),0);
+    f.titles=rows.filter(r=>{const c=champLookup[r.season];return c&&c.champion===r.team_name;}).map(r=>r.season);
+  });
+  const sel=state.teamsFranchise||null;
+  const showAll=state.teamsShowAll||false;
+  if(sel){
+    const f=FR.find(x=>x.id===sel);
+    if(!f){state.teamsFranchise=null;return renderTeams();}
+    html+=`<button onclick="state.teamsFranchise=null;render()" style="margin-bottom:24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px">← All Franchises</button>`;
+    const wp=f.wins+f.losses>0?(f.wins/(f.wins+f.losses)).toFixed(3):'—';
+    const lastYear=f.rows.length?f.rows[f.rows.length-1].season:'';
+    html+=`<div style="margin-bottom:28px">
+      <div style="font-size:32px;font-weight:900;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;color:#f1f5f9;margin-bottom:4px">${f.label}</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:20px">${f.co}${!f.active?` · Departed ${f.left||''}`:''} · ${f.joined}${f.active&&lastYear?'–Present':f.left?'–'+f.left:''}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:22px;font-weight:800;color:#f1f5f9">${f.seasons}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Seasons</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:22px;font-weight:800;color:#f1f5f9">${f.wins}-${f.losses}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Record</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:22px;font-weight:800;color:#f1f5f9">${wp}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Win %</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:22px;font-weight:800;color:#f1f5f9">${f.seasons>0?(f.pf/f.seasons).toFixed(1):'—'}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Avg PF/Season</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:22px;font-weight:800;color:#f59e0b">${f.titles.length||'—'}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">🏆 Title${f.titles.length!==1?'s':''}</div>
+        </div>
+        ${f.titles.length?`<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px 20px;text-align:center;min-width:85px">
+          <div style="font-size:16px;font-weight:800;color:#f59e0b">${f.titles.join(', ')}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Championship Years</div>
+        </div>`:''}
+      </div>
+    </div>`;
+    html+=`<div class="data-table">
+      <div style="display:grid;grid-template-columns:55px 1fr 170px 75px 80px 80px 150px;align-items:center;padding:8px 16px" class="header-row">
+        <div>Year</div><div>Team Name</div><div>Owners</div><div style="text-align:center">Record</div><div style="text-align:right">PF</div><div style="text-align:right">PA</div><div>Result</div>
+      </div>`;
+    f.rows.forEach((r,i)=>{
+      const res=getResult(r.team_name,r.season);
+      const rc=res.includes('Champion')?'#f59e0b':res.includes('Runner')?'#94a3b8':res.includes('3rd')?'#cd7f32':res.includes('Booty')?'#10b981':res.includes('Biggest')?'#ef4444':'#64748b';
+      html+=`<div style="display:grid;grid-template-columns:55px 1fr 170px 75px 80px 80px 150px;align-items:center;padding:10px 16px;${i%2===0?'background:rgba(255,255,255,0.02)':''}">
+        <div style="font-size:13px;font-weight:700;color:#64748b">${r.season}</div>
+        <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
+        <div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div>
+        <div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div>
+        <div style="font-size:13px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div>
+        <div style="font-size:13px;color:#64748b;text-align:right">${r.points_against>0?r.points_against.toFixed(1):'—'}</div>
+        <div style="font-size:12px;color:${rc};font-weight:${res?'600':'400'}">${res||'—'}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  } else {
+    html+=`<div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="sub-tab ${!showAll?'active':''}" onclick="state.teamsShowAll=false;render()">Active Franchises</button>
+      <button class="sub-tab ${showAll?'active':''}" onclick="state.teamsShowAll=true;render()">All Franchises</button>
+    </div>`;
+    const visible=showAll?FR:FR.filter(f=>f.active);
+    html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">`;
+    visible.forEach(f=>{
+      const wp=f.wins+f.losses>0?((f.wins/(f.wins+f.losses))*100).toFixed(1)+'%':'—';
+      const lastYear=f.rows.length?f.rows[f.rows.length-1].season:'';
+      const years=`${f.joined}${f.active&&lastYear?'–Present':f.left?'–'+f.left:''}`;
+      html+=`<div onclick="state.teamsFranchise='${f.id}';render()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden" onmouseover="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(16,185,129,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)'">
+        ${!f.active?`<div style="position:absolute;top:14px;right:14px;font-size:10px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Departed</div>`:''}
+        <div style="font-size:19px;font-weight:900;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;margin-bottom:3px;padding-right:${!f.active?'80px':'0'}">${f.label}</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:4px">${f.co}</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:16px">${years} · ${f.seasons} season${f.seasons!==1?'s':''}</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="text-align:center">
+            <div style="font-size:16px;font-weight:700;color:#e2e8f0">${f.wins}-${f.losses}</div>
+            <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Record</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(255,255,255,0.08)"></div>
+          <div style="text-align:center">
+            <div style="font-size:16px;font-weight:700;color:#e2e8f0">${wp}</div>
+            <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Win%</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(255,255,255,0.08)"></div>
+          <div style="text-align:center">
+            <div style="font-size:16px;font-weight:700;color:${f.titles.length?'#f59e0b':'#475569'}">${f.titles.length?'🏆'.repeat(Math.min(f.titles.length,3)):' — '}</div>
+            <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Title${f.titles.length!==1?'s':''}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
   return html;
 }
 
