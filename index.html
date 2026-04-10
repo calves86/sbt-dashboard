@@ -647,13 +647,13 @@ function renderTeams(){
       </div>
     </div>`;
     html+=`<div class="data-table">
-      <div style="display:grid;grid-template-columns:55px 1fr 170px 75px 80px 80px 150px;align-items:center;padding:8px 16px" class="header-row">
+      <div style="display:grid;grid-template-columns:55px 1fr 1fr 85px 85px 85px 160px;align-items:center;padding:8px 16px" class="header-row">
         <div>Year</div><div>Team Name</div><div>Owners</div><div style="text-align:center">Record</div><div style="text-align:right">PF</div><div style="text-align:right">PA</div><div>Result</div>
       </div>`;
     f.rows.forEach((r,i)=>{
       const res=getResult(r.team_name,r.season);
       const rc=res.includes('Champion')?'#f59e0b':res.includes('Runner')?'#94a3b8':res.includes('3rd')?'#cd7f32':res.includes('Booty')?'#10b981':res.includes('Biggest')?'#ef4444':'#64748b';
-      html+=`<div style="display:grid;grid-template-columns:55px 1fr 170px 75px 80px 80px 150px;align-items:center;padding:10px 16px;${i%2===0?'background:rgba(255,255,255,0.02)':''}">
+      html+=`<div style="display:grid;grid-template-columns:55px 1fr 1fr 85px 85px 85px 160px;align-items:center;padding:10px 16px;${i%2===0?'background:rgba(255,255,255,0.02)':''}">
         <div style="font-size:13px;font-weight:700;color:#64748b">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
         <div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div>
