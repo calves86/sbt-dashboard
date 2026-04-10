@@ -765,12 +765,9 @@ function renderOverview(){
     'Michael Colacicco':'Michael Colacicco',
   };
 
-  // Normalize owner strings so the same franchise isn't split by name-order changes or partial departures
-  const ownerNorm={
-    'Ryan Zayne / Bryan Silver':'Bryan Silver / Ryan Zayne',
-    'Ryan Zayne':'Bryan Silver / Ryan Zayne',
-  };
-  const normOwner=o=>ownerNorm[o]||o||'Unknown';
+  // Normalize owner strings: sort co-owner names alphabetically so "A / B" and "B / A" are the same key
+  // but "A / B" and "A" alone are different (ownership change = new franchise)
+  const normOwner=o=>o?o.split(' / ').map(s=>s.trim()).sort().join(' / '):'Unknown';
 
   let html=secTitle('League Stats','Database');
   html+=`<div class="stat-grid">
