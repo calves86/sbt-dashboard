@@ -986,8 +986,13 @@ function renderTeams(){
       const expanded=state.teamsRosterYear===r.season;
       const rowBg=expanded?'background:rgba(16,185,129,0.06);border-left:3px solid rgba(16,185,129,0.4)':i%2===0?'background:rgba(255,255,255,0.02)':'' ;
       const awardLabels=rowAwardLabels(r.team_name,r.season);
-      const allParts=[res,...awardLabels].filter(Boolean);
-      const fullResult=allParts.join(', ')||'—';
+      const resultSpans=[
+        ...(res?[`<span style="color:${rc};font-weight:600">${res}</span>`]:[]),
+        ...(awardLabels.includes('Division')?[`<span style="color:#60a5fa;font-weight:600">Division</span>`]:[]),
+        ...(awardLabels.includes('Best Record')?[`<span style="color:#facc15;font-weight:600">Best Record</span>`]:[]),
+        ...(awardLabels.includes('Most Points')?[`<span style="color:#f97316;font-weight:600">Most Points</span>`]:[]),
+      ];
+      const fullResult=resultSpans.length?resultSpans.join(`<span style="color:#475569">, </span>`):`<span style="color:#475569">—</span>`;
       html+=`<div onclick="${roster?`state.teamsRosterYear=${expanded?'null':r.season};render()`:''}" style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px auto;column-gap:12px;align-items:center;padding:10px 16px;${rowBg}${roster?';cursor:pointer':''}">
         <div style="font-size:13px;font-weight:700;color:${expanded?'#10b981':'#64748b'}">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
@@ -996,7 +1001,7 @@ function renderTeams(){
         <div style="font-size:13px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div>
         <div style="font-size:13px;color:#94a3b8;text-align:right">${r.points_against>0?r.points_against.toFixed(1):'—'}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-          <span style="font-size:12px;color:${rc};font-weight:${allParts.length?'600':'400'}">${fullResult}</span>
+          <span style="font-size:12px">${fullResult}</span>
           ${roster?`<span style="font-size:10px;color:#94a3b8;flex-shrink:0">${expanded?'▲ hide':'▼ roster'}</span>`:''}
         </div>
       </div>`;
