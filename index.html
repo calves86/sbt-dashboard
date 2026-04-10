@@ -116,6 +116,21 @@ select.dropdown option{background:#1e293b;color:#e2e8f0}
   .record-row>div:nth-child(2){font-size:12px}
   .week-summary{grid-template-columns:1fr;gap:8px}
   .dynasty-card,.ringless-card{padding:14px 16px}
+
+  /* Tabs: horizontal scroll instead of wrapping */
+  .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex-shrink:0}
+  /* Sub-tabs: also scroll */
+  .sub-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .sub-tabs::-webkit-scrollbar{display:none}
+  .sub-tab{flex-shrink:0;white-space:nowrap}
+  /* Week buttons: scroll not wrap */
+  .week-btns{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+  .week-btns::-webkit-scrollbar{display:none}
+  /* Wide grids inside data-table scroll horizontally */
+  .scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .scroll-inner{min-width:640px}
 }
 </style>
 </head>
@@ -646,14 +661,14 @@ function renderTeams(){
         </div>`:''}
       </div>
     </div>`;
-    html+=`<div class="data-table">
-      <div style="display:grid;grid-template-columns:55px 1fr 1fr 85px 85px 85px 160px;align-items:center;padding:8px 16px" class="header-row">
+    html+=`<div class="scroll-wrap"><div class="scroll-inner"><div class="data-table">
+      <div style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px 145px;align-items:center;padding:8px 16px" class="header-row">
         <div>Year</div><div>Team Name</div><div>Owners</div><div style="text-align:center">Record</div><div style="text-align:right">PF</div><div style="text-align:right">PA</div><div>Result</div>
       </div>`;
     f.rows.forEach((r,i)=>{
       const res=getResult(r.team_name,r.season);
       const rc=res.includes('Champion')?'#f59e0b':res.includes('Runner')?'#94a3b8':res.includes('3rd')?'#cd7f32':res.includes('Booty')?'#10b981':res.includes('Biggest')?'#ef4444':'#64748b';
-      html+=`<div style="display:grid;grid-template-columns:55px 1fr 1fr 85px 85px 85px 160px;align-items:center;padding:10px 16px;${i%2===0?'background:rgba(255,255,255,0.02)':''}">
+      html+=`<div style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px 145px;align-items:center;padding:10px 16px;${i%2===0?'background:rgba(255,255,255,0.02)':''}">
         <div style="font-size:13px;font-weight:700;color:#64748b">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
         <div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div>
@@ -663,7 +678,7 @@ function renderTeams(){
         <div style="font-size:12px;color:${rc};font-weight:${res?'600':'400'}">${res||'—'}</div>
       </div>`;
     });
-    html+=`</div>`;
+    html+=`</div></div></div>`;
   } else {
     html+=`<div style="display:flex;gap:8px;margin-bottom:20px">
       <button class="sub-tab ${!showAll?'active':''}" onclick="state.teamsShowAll=false;render()">Active Franchises</button>
@@ -848,9 +863,9 @@ function renderSeasons(){
     html+=`<div style="display:flex;gap:8px;margin-bottom:16px"><button class="sub-tab ${divView==='overall'?'active':''}" onclick="state.standingsView='overall';render()">Overall</button><button class="sub-tab ${divView==='divisions'?'active':''}" onclick="state.standingsView='divisions';render()">By Division</button></div>`;
     if(stYr.length){
       if(divView==='overall'){
-        html+=`<div class="data-table"><div style="display:grid;grid-template-columns:26px 1fr 180px 65px 55px 75px 75px;align-items:center;padding:8px 12px" class="header-row"><div>#</div><div>Team</div><div>Owner</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div></div>`;
-        stYr.forEach((r,i)=>{const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';html+=`<div style="display:grid;grid-template-columns:26px 1fr 180px 65px 55px 75px 75px;align-items:center;padding:8px 12px;${i%2===0?'background:rgba(255,255,255,0.02)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${p}</div><div style="font-size:12px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${r.points_against>0?r.points_against.toFixed(1):'—'}</div></div>`;});
-        html+=`</div>`;
+        html+=`<div class="scroll-wrap"><div class="scroll-inner"><div class="data-table"><div style="display:grid;grid-template-columns:26px 160px 170px 65px 55px 70px 70px;align-items:center;padding:8px 12px" class="header-row"><div>#</div><div>Team</div><div>Owner</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div></div>`;
+        stYr.forEach((r,i)=>{const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';html+=`<div style="display:grid;grid-template-columns:26px 160px 170px 65px 55px 70px 70px;align-items:center;padding:8px 12px;${i%2===0?'background:rgba(255,255,255,0.02)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${p}</div><div style="font-size:12px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${r.points_against>0?r.points_against.toFixed(1):'—'}</div></div>`;});
+        html+=`</div></div></div>`;
       } else {
         const divMeta=(DATA.divisions||[]).filter(d=>d.season===yr);
         const divDef=[{name:'Sigma',color:'#60a5fa'},{name:'Beta',color:'#34d399'},{name:'Tau',color:'#f97316'}];
@@ -861,8 +876,8 @@ function renderSeasons(){
           const sorted=[...divTeams].sort((a,b)=>(b.wins-a.wins)||((b.points_for||0)-(a.points_for||0)));
           html+=`<div>`;
           html+=`<div style="font-size:12px;font-weight:800;color:${dc};text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${dc}">${dn} Division</div>`;
-          html+=`<div class="data-table"><div style="display:grid;grid-template-columns:26px 1fr 180px 65px 55px 75px 75px;align-items:center;padding:8px 12px" class="header-row"><div>#</div><div>Team</div><div>Owner</div><div style="text-align:center">Record</div><div style="text-align:center">Win%</div><div style="text-align:right">PF</div><div style="text-align:right" class="hide-mobile">PA</div></div>`;
-          sorted.forEach((r,i)=>{const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';html+=`<div style="display:grid;grid-template-columns:26px 1fr 180px 65px 55px 75px 75px;align-items:center;padding:8px 12px;${i%2===0?'background:rgba(255,255,255,0.02)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${p}</div><div style="font-size:12px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${r.points_against>0?r.points_against.toFixed(1):'—'}</div></div>`;
+          html+=`<div class="data-table"><div style="display:grid;grid-template-columns:26px 160px 170px 65px 55px 70px 70px;align-items:center;padding:8px 12px" class="header-row"><div>#</div><div>Team</div><div>Owner</div><div style="text-align:center">Record</div><div style="text-align:center">Win%</div><div style="text-align:right">PF</div><div style="text-align:right" class="hide-mobile">PA</div></div>`;
+          sorted.forEach((r,i)=>{const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';html+=`<div style="display:grid;grid-template-columns:26px 160px 170px 65px 55px 70px 70px;align-items:center;padding:8px 12px;${i%2===0?'background:rgba(255,255,255,0.02)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.owner||''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:12px;color:#94a3b8;text-align:center">${p}</div><div style="font-size:12px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${r.points_against>0?r.points_against.toFixed(1):'—'}</div></div>`;
           });
           html+=`</div></div>`;
         });
