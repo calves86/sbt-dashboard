@@ -992,7 +992,7 @@ function renderTeams(){
         ...(awardLabels.includes('Best Record')?[`<span style="color:#facc15;font-weight:600">Best Record</span>`]:[]),
         ...(awardLabels.includes('Most Points')?[`<span style="color:#f97316;font-weight:600">Most Points</span>`]:[]),
       ];
-      const fullResult=resultSpans.length?resultSpans.join(`<span style="color:#475569">, </span>`):`<span style="color:#475569">—</span>`;
+      const fullResult=resultSpans.length?resultSpans.join(`<span style="color:#e2e8f0">, </span>`):`<span style="color:#475569">—</span>`;
       html+=`<div onclick="${roster?`state.teamsRosterYear=${expanded?'null':r.season};render()`:''}" style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px auto;column-gap:12px;align-items:center;padding:10px 16px;${rowBg}${roster?';cursor:pointer':''}">
         <div style="font-size:13px;font-weight:700;color:${expanded?'#10b981':'#64748b'}">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
