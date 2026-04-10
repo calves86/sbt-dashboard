@@ -796,15 +796,17 @@ function renderOverview(){
   html+=`<div class="card-grid">${NEVERW.map(nw=>`<div class="ringless-card"><div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(248,113,113,0.2),rgba(248,113,113,0.05));border:2px solid rgba(248,113,113,0.3);display:flex;align-items:center;justify-content:center;font-size:18px">💀</div><div><div style="font-size:16px;font-weight:700">${nw.m}</div><div style="font-size:12px;color:#94a3b8">${nw.t} — ${nw.s}</div></div></div>${nw.n?`<div style="font-size:12px;color:#f87171;font-style:italic">${nw.n}</div>`:''}</div>`).join('')}</div>`;
 
   if(allTime.length){
+    // Group by owner — same owner = same franchise; use most recent team name as the franchise label
     const franchiseData={};
     DATA.standings.forEach(r=>{
-      if(!franchiseData[r.team_name])franchiseData[r.team_name]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,mgr:r.owner};
-      const f=franchiseData[r.team_name];
+      const key=r.owner||'Unknown';
+      if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name,mgr:r.owner};
+      const f=franchiseData[key];
       f.w+=r.wins;f.l+=r.losses;f.t+=r.ties||0;f.pf+=r.points_for;f.pa+=r.points_against;f.seasons++;
-      f.mgr=r.owner;
+      if(r.season>f.latestSeason){f.latestSeason=r.season;f.latestName=r.team_name;}
     });
-    const franchiseList=Object.entries(franchiseData).map(([name,d])=>({
-      team_name:name,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,mgr:d.mgr,seasons:d.seasons
+    const franchiseList=Object.values(franchiseData).map(d=>({
+      team_name:d.latestName,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,mgr:d.mgr,seasons:d.seasons
     }));
 
     const mode=state.standingsMode||'franchise';
