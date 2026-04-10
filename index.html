@@ -765,9 +765,16 @@ function renderOverview(){
     'Michael Colacicco':'Michael Colacicco',
   };
 
+  // Normalize owner strings so the same franchise isn't split by name-order changes or partial departures
+  const ownerNorm={
+    'Ryan Zayne / Bryan Silver':'Bryan Silver / Ryan Zayne',
+    'Ryan Zayne':'Bryan Silver / Ryan Zayne',
+  };
+  const normOwner=o=>ownerNorm[o]||o||'Unknown';
+
   const owners={};
   DATA.standings.forEach(r=>{
-    const owner=r.owner||'Unknown';
+    const owner=normOwner(r.owner);
     if(!owners[owner])owners[owner]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,years:[],franchises:new Set()};
     const o=owners[owner];
     o.w+=r.wins;o.l+=r.losses;o.t+=r.ties||0;o.pf+=r.points_for;o.pa+=r.points_against;o.seasons++;
@@ -799,7 +806,7 @@ function renderOverview(){
     // Group by owner — same owner = same franchise; use most recent team name as the franchise label
     const franchiseData={};
     DATA.standings.forEach(r=>{
-      const key=r.owner||'Unknown';
+      const key=normOwner(r.owner);
       if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name,mgr:r.owner};
       const f=franchiseData[key];
       f.w+=r.wins;f.l+=r.losses;f.t+=r.ties||0;f.pf+=r.points_for;f.pa+=r.points_against;f.seasons++;
