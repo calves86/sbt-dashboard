@@ -1,0 +1,842 @@
+[
+  {
+    "season": 2012,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2012,
+    "division": "Tau",
+    "team_name": "Shas + G"
+  },
+  {
+    "season": 2012,
+    "division": "Tau",
+    "team_name": "'MMERICAA Mitch's"
+  },
+  {
+    "season": 2012,
+    "division": "Tau",
+    "team_name": "skoot"
+  },
+  {
+    "season": 2012,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2012,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2012,
+    "division": "Beta",
+    "team_name": "Skep & TJ"
+  },
+  {
+    "season": 2012,
+    "division": "Beta",
+    "team_name": "We Bleed Green"
+  },
+  {
+    "season": 2012,
+    "division": "Sigma",
+    "team_name": "Woodchucks"
+  },
+  {
+    "season": 2012,
+    "division": "Sigma",
+    "team_name": "Leshoure Thing"
+  },
+  {
+    "season": 2012,
+    "division": "Sigma",
+    "team_name": "Super Heros in Training (S.H.I.T)"
+  },
+  {
+    "season": 2012,
+    "division": "Sigma",
+    "team_name": "Drunk Dancin' Donkeys"
+  },
+  {
+    "season": 2013,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2013,
+    "division": "Sigma",
+    "team_name": "Allen/Baba"
+  },
+  {
+    "season": 2013,
+    "division": "Sigma",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2013,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2013,
+    "division": "Beta",
+    "team_name": "Greenbow Alabama Wood Chucks"
+  },
+  {
+    "season": 2013,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2013,
+    "division": "Beta",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2013,
+    "division": "Beta",
+    "team_name": "Yaz"
+  },
+  {
+    "season": 2013,
+    "division": "Tau",
+    "team_name": "feBrees"
+  },
+  {
+    "season": 2013,
+    "division": "Tau",
+    "team_name": "Bear Exposures"
+  },
+  {
+    "season": 2013,
+    "division": "Tau",
+    "team_name": "I Got Reggie Bushwacked"
+  },
+  {
+    "season": 2013,
+    "division": "Tau",
+    "team_name": "Skoot"
+  },
+  {
+    "season": 2014,
+    "division": "Tau",
+    "team_name": "Bear Exposures"
+  },
+  {
+    "season": 2014,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2014,
+    "division": "Tau",
+    "team_name": "The Comeback Kids"
+  },
+  {
+    "season": 2014,
+    "division": "Tau",
+    "team_name": "Shady Characters"
+  },
+  {
+    "season": 2014,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2014,
+    "division": "Beta",
+    "team_name": "Skoot"
+  },
+  {
+    "season": 2014,
+    "division": "Beta",
+    "team_name": "Yaz"
+  },
+  {
+    "season": 2014,
+    "division": "Beta",
+    "team_name": "Mississippi Gingers"
+  },
+  {
+    "season": 2014,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2014,
+    "division": "Sigma",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2014,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2014,
+    "division": "Sigma",
+    "team_name": "The Big Gronkowski"
+  },
+  {
+    "season": 2015,
+    "division": "Sigma",
+    "team_name": "C4"
+  },
+  {
+    "season": 2015,
+    "division": "Sigma",
+    "team_name": "Albino Gators"
+  },
+  {
+    "season": 2015,
+    "division": "Sigma",
+    "team_name": "Skittle Bombs"
+  },
+  {
+    "season": 2015,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2015,
+    "division": "Beta",
+    "team_name": "The Big Gronkowski"
+  },
+  {
+    "season": 2015,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2015,
+    "division": "Beta",
+    "team_name": "The Comeback Kids"
+  },
+  {
+    "season": 2015,
+    "division": "Beta",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2015,
+    "division": "Tau",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2015,
+    "division": "Tau",
+    "team_name": "Skoot"
+  },
+  {
+    "season": 2015,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2015,
+    "division": "Tau",
+    "team_name": "Yaz"
+  },
+  {
+    "season": 2016,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2016,
+    "division": "Sigma",
+    "team_name": "Albino Gators"
+  },
+  {
+    "season": 2016,
+    "division": "Sigma",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2016,
+    "division": "Sigma",
+    "team_name": "Yaz"
+  },
+  {
+    "season": 2016,
+    "division": "Beta",
+    "team_name": "The Big Gronkowski"
+  },
+  {
+    "season": 2016,
+    "division": "Beta",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2016,
+    "division": "Beta",
+    "team_name": "The Comeback Kids"
+  },
+  {
+    "season": 2016,
+    "division": "Beta",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2016,
+    "division": "Tau",
+    "team_name": "C4"
+  },
+  {
+    "season": 2016,
+    "division": "Tau",
+    "team_name": "It ain't easy, being Breesy"
+  },
+  {
+    "season": 2016,
+    "division": "Tau",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2016,
+    "division": "Tau",
+    "team_name": "Skoot"
+  },
+  {
+    "season": 2017,
+    "division": "Sigma",
+    "team_name": "Jack Doyle Rules"
+  },
+  {
+    "season": 2017,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2017,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2017,
+    "division": "Sigma",
+    "team_name": "Mari-Yoda"
+  },
+  {
+    "season": 2017,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2017,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2017,
+    "division": "Beta",
+    "team_name": "Kareem of the Crop"
+  },
+  {
+    "season": 2017,
+    "division": "Beta",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2017,
+    "division": "Tau",
+    "team_name": "Gordon's Bombay's"
+  },
+  {
+    "season": 2017,
+    "division": "Tau",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2017,
+    "division": "Tau",
+    "team_name": "Skoot"
+  },
+  {
+    "season": 2017,
+    "division": "Tau",
+    "team_name": "Yaz"
+  },
+  {
+    "season": 2018,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2018,
+    "division": "Sigma",
+    "team_name": "Kareem of the Crop"
+  },
+  {
+    "season": 2018,
+    "division": "Sigma",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2018,
+    "division": "Sigma",
+    "team_name": "Rabbi Goldstein's Scum Squad"
+  },
+  {
+    "season": 2018,
+    "division": "Beta",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2018,
+    "division": "Beta",
+    "team_name": "Oh, Saquon You See"
+  },
+  {
+    "season": 2018,
+    "division": "Beta",
+    "team_name": "Game of Jones"
+  },
+  {
+    "season": 2018,
+    "division": "Beta",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2018,
+    "division": "Tau",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2018,
+    "division": "Tau",
+    "team_name": "C4"
+  },
+  {
+    "season": 2018,
+    "division": "Tau",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2018,
+    "division": "Tau",
+    "team_name": "Comeback Kids"
+  },
+  {
+    "season": 2019,
+    "division": "Sigma",
+    "team_name": "Comeback Kids"
+  },
+  {
+    "season": 2019,
+    "division": "Sigma",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2019,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2019,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2019,
+    "division": "Beta",
+    "team_name": "Crispy McChicken"
+  },
+  {
+    "season": 2019,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2019,
+    "division": "Beta",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2019,
+    "division": "Beta",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2019,
+    "division": "Tau",
+    "team_name": "Show Up To The Fucking Draft"
+  },
+  {
+    "season": 2019,
+    "division": "Tau",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2019,
+    "division": "Tau",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2019,
+    "division": "Tau",
+    "team_name": "Teenage Newton Ninja Turtles"
+  },
+  {
+    "season": 2020,
+    "division": "Tau",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2020,
+    "division": "Tau",
+    "team_name": "Crispy McChicken"
+  },
+  {
+    "season": 2020,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2020,
+    "division": "Tau",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2020,
+    "division": "Beta",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2020,
+    "division": "Beta",
+    "team_name": "Comeback Kids"
+  },
+  {
+    "season": 2020,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2020,
+    "division": "Beta",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2020,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2020,
+    "division": "Sigma",
+    "team_name": "C4"
+  },
+  {
+    "season": 2020,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2020,
+    "division": "Sigma",
+    "team_name": "Show Up To The Fucking Draft"
+  },
+  {
+    "season": 2021,
+    "division": "Sigma",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2021,
+    "division": "Sigma",
+    "team_name": "C4"
+  },
+  {
+    "season": 2021,
+    "division": "Sigma",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2021,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2021,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2021,
+    "division": "Beta",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2021,
+    "division": "Beta",
+    "team_name": "Comeback Kids"
+  },
+  {
+    "season": 2021,
+    "division": "Beta",
+    "team_name": "no one goes to the draft"
+  },
+  {
+    "season": 2021,
+    "division": "Tau",
+    "team_name": "The LightSkin Legend & BearJew"
+  },
+  {
+    "season": 2021,
+    "division": "Tau",
+    "team_name": "Biden takes it in the Pelosi"
+  },
+  {
+    "season": 2021,
+    "division": "Tau",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2021,
+    "division": "Tau",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2022,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2022,
+    "division": "Beta",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2022,
+    "division": "Beta",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2022,
+    "division": "Beta",
+    "team_name": "C4"
+  },
+  {
+    "season": 2022,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2022,
+    "division": "Sigma",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2022,
+    "division": "Sigma",
+    "team_name": "Biden takes it in the Pelosi"
+  },
+  {
+    "season": 2022,
+    "division": "Sigma",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2022,
+    "division": "Tau",
+    "team_name": "The Philly Special"
+  },
+  {
+    "season": 2022,
+    "division": "Tau",
+    "team_name": "Comeback Kid"
+  },
+  {
+    "season": 2022,
+    "division": "Tau",
+    "team_name": "no one goes to the draft"
+  },
+  {
+    "season": 2022,
+    "division": "Tau",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2023,
+    "division": "Sigma",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2023,
+    "division": "Sigma",
+    "team_name": "C4"
+  },
+  {
+    "season": 2023,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2023,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2023,
+    "division": "Beta",
+    "team_name": "Comeback Kid"
+  },
+  {
+    "season": 2023,
+    "division": "Beta",
+    "team_name": "Give me Bukkake"
+  },
+  {
+    "season": 2023,
+    "division": "Beta",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2023,
+    "division": "Beta",
+    "team_name": "The Philly Special"
+  },
+  {
+    "season": 2023,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2023,
+    "division": "Tau",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2023,
+    "division": "Tau",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2023,
+    "division": "Tau",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2024,
+    "division": "Sigma",
+    "team_name": "Cooked To Perfection"
+  },
+  {
+    "season": 2024,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2024,
+    "division": "Sigma",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2024,
+    "division": "Sigma",
+    "team_name": "Bear exposures"
+  },
+  {
+    "season": 2024,
+    "division": "Beta",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2024,
+    "division": "Beta",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2024,
+    "division": "Beta",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2024,
+    "division": "Beta",
+    "team_name": "skoot"
+  },
+  {
+    "season": 2024,
+    "division": "Tau",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2024,
+    "division": "Tau",
+    "team_name": "The Philly Specialð¦"
+  },
+  {
+    "season": 2024,
+    "division": "Tau",
+    "team_name": "Comeback Kid"
+  },
+  {
+    "season": 2024,
+    "division": "Tau",
+    "team_name": "Big Fat Chubby"
+  },
+  {
+    "season": 2025,
+    "division": "Beta",
+    "team_name": "Comeback Kid"
+  },
+  {
+    "season": 2025,
+    "division": "Beta",
+    "team_name": "Cooked To Perfection"
+  },
+  {
+    "season": 2025,
+    "division": "Beta",
+    "team_name": "Trump Train"
+  },
+  {
+    "season": 2025,
+    "division": "Beta",
+    "team_name": "Ceaser Salad Tossers ð"
+  },
+  {
+    "season": 2025,
+    "division": "Sigma",
+    "team_name": "Bear Exposures"
+  },
+  {
+    "season": 2025,
+    "division": "Sigma",
+    "team_name": "Smease Appeasers"
+  },
+  {
+    "season": 2025,
+    "division": "Sigma",
+    "team_name": "skoot"
+  },
+  {
+    "season": 2025,
+    "division": "Sigma",
+    "team_name": "The MUFF Divers"
+  },
+  {
+    "season": 2025,
+    "division": "Tau",
+    "team_name": "Team Freesh"
+  },
+  {
+    "season": 2025,
+    "division": "Tau",
+    "team_name": "Clitsburgh Feelers"
+  },
+  {
+    "season": 2025,
+    "division": "Tau",
+    "team_name": "Gotham Rogues"
+  },
+  {
+    "season": 2025,
+    "division": "Tau",
+    "team_name": "Big Fat Chubby"
+  }
+]
