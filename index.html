@@ -792,13 +792,13 @@ function renderOverview(){
     const franchiseData={};
     DATA.standings.forEach(r=>{
       const key=normOwner(r.owner);
-      if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name};
+      if(!franchiseData[key])franchiseData[key]={w:0,l:0,t:0,pf:0,pa:0,seasons:0,latestSeason:0,latestName:r.team_name,latestOwner:r.owner};
       const f=franchiseData[key];
       f.w+=r.wins;f.l+=r.losses;f.t+=r.ties||0;f.pf+=r.points_for;f.pa+=r.points_against;f.seasons++;
-      if(r.season>f.latestSeason){f.latestSeason=r.season;f.latestName=r.team_name;}
+      if(r.season>f.latestSeason){f.latestSeason=r.season;f.latestName=r.team_name;f.latestOwner=r.owner;}
     });
-    const franchiseList=Object.values(franchiseData).map(d=>({
-      team_name:d.latestName,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,seasons:d.seasons
+    const franchiseList=Object.values(franchiseData).filter(d=>d.seasons>=2).map(d=>({
+      team_name:d.latestName,wins:d.w,losses:d.l,ties:d.t,points_for:d.pf,points_against:d.pa,seasons:d.seasons,mgr:d.latestOwner
     }));
 
     // By Owner: one row per unique owner name
@@ -822,12 +822,12 @@ function renderOverview(){
     const listToSort=mode==='owner'?ownerList:franchiseList;
     const sortedList=sortStandings(listToSort);
     const colLabel=mode==='owner'?'Owner':'Franchise';
-    const lastLabel=mode==='owner'?'Years Active':'Seasons';
+    const lastLabel=mode==='owner'?'Years Active':'Manager';
 
     html+=`<div class="data-table"><div class="standings-grid header-row"><div>#</div><div>${colLabel}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div><div style="text-align:right;padding-right:8px" class="hide-mobile">${lastLabel}</div></div>`;
     sortedList.forEach((r,i)=>{
       const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';
-      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#475569;text-align:right;padding-right:8px" class="hide-mobile">${r.seasons}</div></div>`;
+      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#64748b;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#64748b;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#475569;text-align:right;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="hide-mobile">${mode==='owner'?r.seasons:r.mgr||''}</div></div>`;
     });
     html+=`</div>`;
   }
