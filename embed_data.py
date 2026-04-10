@@ -9,41 +9,49 @@ import json, sys, re
 sys.stdout.reconfigure(encoding='utf-8')
 
 FILES = ['standings', 'matchups', 'draft_picks', 'champions',
-         'team_yearly', 'head_to_head', 'playoff_games', 'rosters']
+         'team_yearly', 'head_to_head', 'playoff_games', 'rosters', 'weekly_scores_2025', 'adjustments_2025', 'player_stats_2025', 'transactions']
+
+DATA_INIT = 'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[],weekly_scores_2025:[],adjustments_2025:[],player_stats_2025:{},transactions:[]};'
+
+BEGIN = '/*BEGIN_INLINE_DATA*/'
+END   = '/*END_INLINE_DATA*/'
 
 with open('index.html', encoding='utf-8') as f:
     html = f.read()
 
-# 1. Ensure rosters is in the DATA init line
-OLD_INIT = 'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[]};'
-NEW_INIT = 'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[]};'
-if OLD_INIT in html:
-    html = html.replace(OLD_INIT, NEW_INIT)
-    print('Updated DATA init to include rosters')
-elif NEW_INIT in html:
-    print('DATA init already includes rosters')
-else:
+# 1. Migrate old DATA init lines to current version (idempotent)
+for old in [
+    'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[]};',
+    'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[]};',
+    'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[],weekly_scores_2025:[]};',
+    'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[],weekly_scores_2025:[],adjustments_2025:[]};',
+    'let DATA={standings:[],matchups:[],draft_picks:[],champions:[],team_yearly:[],head_to_head:[],playoff_games:[],rosters:[],weekly_scores_2025:[],adjustments_2025:[],player_stats_2025:{}};',
+]:
+    if old in html:
+        html = html.replace(old, DATA_INIT)
+        print(f'Migrated DATA init')
+
+if DATA_INIT not in html:
     print('WARNING: DATA init line not found — check index.html')
 
-# 2. Remove any existing inline DATA assignments
-for name in FILES:
-    html = re.sub(rf'DATA\["{name}"\]=\[.*?\];', '', html, flags=re.DOTALL)
+# 2. Remove any existing inline data block (sentinel-delimited)
+html = re.sub(re.escape(BEGIN) + r'.*?' + re.escape(END), '', html, flags=re.DOTALL)
 
 # 3. Build new inline assignments
-data_lines = []
+data_lines = [BEGIN]
 for name in FILES:
     with open(f'data/{name}.json', encoding='utf-8') as f:
         data = json.load(f)
     data_json = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     data_lines.append(f'DATA["{name}"]={data_json};')
     print(f'  Embedded {name}.json ({len(data_json):,} chars)')
+data_lines.append(END)
 
 inline_block = '\n'.join(data_lines)
 
-# 4. Insert after the DATA init line
-ANCHOR = NEW_INIT if NEW_INIT in html else OLD_INIT
-if ANCHOR in html:
-    html = html.replace(ANCHOR, ANCHOR + '\n// Inline data — no server required\n' + inline_block)
+# 4. Insert immediately after the DATA init line
+if DATA_INIT in html:
+    html = html.replace(DATA_INIT, DATA_INIT + '\n' + inline_block, 1)
     print(f'Inserted {len(FILES)} data blocks')
 else:
     print('ERROR: Could not find DATA init anchor')
