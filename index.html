@@ -377,7 +377,7 @@ function loadData(){
 // ══════════════════════════════════════════════════
 // APP STATE & RENDERING
 // ══════════════════════════════════════════════════
-let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'desc'};
+let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'asc'};
 
 function toggleSort(col){if(state.sortCol===col){state.sortDir=state.sortDir==='desc'?'asc':'desc';}else{state.sortCol=col;state.sortDir='desc';}render();}
 function sortArrow(col){if(state.sortCol!==col)return' ↕';return state.sortDir==='desc'?' ▼':' ▲';}
