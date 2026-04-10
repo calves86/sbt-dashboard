@@ -966,11 +966,13 @@ function renderTeams(){
         }
       }
     });
-    function rowAwardBadges(teamName,season){
-      const aw=seasonAwards[season];if(!aw)return'';
-      return(aw.divL.has(teamName)?`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px">DIV</span>`:'')
-            +(aw.bestRec===teamName?`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px">WINS</span>`:'')
-            +(aw.bestPF===teamName?`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px">PF</span>`:'');
+    function rowAwardLabels(teamName,season){
+      const aw=seasonAwards[season];if(!aw)return[];
+      const labels=[];
+      if(aw.divL.has(teamName))labels.push('Division');
+      if(aw.bestRec===teamName)labels.push('Best Record');
+      if(aw.bestPF===teamName)labels.push('Most Points');
+      return labels;
     }
 
     html+=`<div class="scroll-wrap"><div class="scroll-inner"><div class="data-table">
@@ -983,7 +985,9 @@ function renderTeams(){
       const roster=findRoster(r.season,r.team_name);
       const expanded=state.teamsRosterYear===r.season;
       const rowBg=expanded?'background:rgba(16,185,129,0.06);border-left:3px solid rgba(16,185,129,0.4)':i%2===0?'background:rgba(255,255,255,0.02)':'' ;
-      const badges=rowAwardBadges(r.team_name,r.season);
+      const awardLabels=rowAwardLabels(r.team_name,r.season);
+      const allParts=[res,...awardLabels].filter(Boolean);
+      const fullResult=allParts.join(', ')||'—';
       html+=`<div onclick="${roster?`state.teamsRosterYear=${expanded?'null':r.season};render()`:''}" style="display:grid;grid-template-columns:55px 185px 170px 80px 80px 80px auto;column-gap:12px;align-items:center;padding:10px 16px;${rowBg}${roster?';cursor:pointer':''}">
         <div style="font-size:13px;font-weight:700;color:${expanded?'#10b981':'#64748b'}">${r.season}</div>
         <div style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div>
@@ -991,9 +995,9 @@ function renderTeams(){
         <div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div>
         <div style="font-size:13px;color:#10b981;text-align:right;font-weight:600">${r.points_for>0?r.points_for.toFixed(1):'—'}</div>
         <div style="font-size:13px;color:#94a3b8;text-align:right">${r.points_against>0?r.points_against.toFixed(1):'—'}</div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="font-size:12px;color:${rc};font-weight:${res?'600':'400'}">${res||'—'}</span>${roster?`<span style="font-size:10px;color:#94a3b8;flex-shrink:0">${expanded?'▲ hide':'▼ roster'}</span>`:''}</div>
-          ${badges?`<div style="display:flex;gap:3px">${badges}</div>`:''}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+          <span style="font-size:12px;color:${rc};font-weight:${allParts.length?'600':'400'}">${fullResult}</span>
+          ${roster?`<span style="font-size:10px;color:#94a3b8;flex-shrink:0">${expanded?'▲ hide':'▼ roster'}</span>`:''}
         </div>
       </div>`;
       if(expanded&&roster)html+=rosterPanel(roster);
