@@ -473,7 +473,7 @@ function initApp(){
 }
 
 function renderTabs(){
-  const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Head-to-Head','Player Stats','Transactions','Fun Facts','Rules'];
+  const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Head-to-Head','Player Stats','News','Transactions','Fun Facts','Rules'];
   document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="tab ${state.tab===t?'active':''}" onclick="state.tab='${t}';render()">${t}</button>`).join('');
 }
 
@@ -545,6 +545,7 @@ function render(){
   else if(state.tab==='Teams')el.innerHTML=renderTeams();
   else if(state.tab==='Rules')el.innerHTML=renderRules();
   else if(state.tab==='Transactions')el.innerHTML=renderTransactions();
+  else if(state.tab==='News')el.innerHTML=renderNews();
 }
 
 
@@ -2042,7 +2043,7 @@ function loadNFLNews(){
     const pft=results[2].status==='fulfilled'?results[2].value:null;
     if(pft&&pft.items){pft.items.forEach(it=>{articles.push({src:'PFT',headline:it.title||'',description:it.description||'',link:it.link||'#',published:it.pubDate||''});});}
     NFL_NEWS_CACHE=articles;
-    if(state.tab==='Player Stats'&&state.psPlayer)render();
+    if(state.tab==='News'||(state.tab==='Player Stats'&&state.psPlayer))render();
   }).catch(()=>{NFL_NEWS_CACHE=[];});
 }
 function loadPlayerYear(year){
@@ -2052,6 +2053,126 @@ function loadPlayerYear(year){
     .then(r=>r.json())
     .then(data=>{PLAYERS_CACHE[year]=data;if(state.tab==='Player Stats'&&state.psYear===year)render();})
     .catch(()=>{PLAYERS_CACHE[year]=[];});
+}
+
+function renderNews(){
+  loadNFLNews();
+  const teamLogos=(PLAYER_META&&PLAYER_META.team_logos)||{};
+  const srcLabel={'ESPN':'ESPN','Rotowire':'Rotowire','PFT':'ProFootballTalk'};
+  const srcColor={'ESPN':'#f97316','Rotowire':'#22d3ee','PFT':'#a78bfa'};
+  function relTime(iso){const ms=Date.now()-new Date(iso.replace(' ','T')).getTime();const d=ms/1000;if(d<3600)return Math.round(d/60)+'m ago';if(d<86400)return Math.round(d/3600)+'h ago';if(d<604800)return Math.round(d/86400)+'d ago';return new Date(iso.replace(' ','T')).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+
+  // Source filter state
+  const activeSrc=state.newsSrc||'All';
+  const srcFilters=['All','ESPN','Rotowire','PFT'];
+
+  let html='<div style="max-width:900px;margin:0 auto;padding:24px 16px">';
+  html+=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">`;
+  html+=`<h2 style="margin:0;font-size:20px;font-weight:700;color:#f1f5f9">NFL News</h2>`;
+  html+=`<div style="display:flex;gap:6px">`;
+  srcFilters.forEach(s=>{
+    const active=activeSrc===s;
+    const color=s==='All'?'#64748b':(srcColor[s]||'#64748b');
+    html+=`<button onclick="state.newsSrc='${s}';render()" style="padding:5px 12px;border-radius:20px;border:1px solid ${active?color:'rgba(255,255,255,0.1)'};background:${active?color+'22':'transparent'};color:${active?color:'#94a3b8'};font-size:12px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px">${srcLabel[s]||s}</button>`;
+  });
+  html+=`</div></div>`;
+
+  if(NFL_NEWS_CACHE===null||NFL_NEWS_CACHE===false){
+    html+=`<div style="text-align:center;padding:60px 20px;color:#64748b;font-size:14px">Loading news from ESPN, Rotowire &amp; ProFootballTalk...</div>`;
+    html+=`</div>`;
+    return html;
+  }
+
+  const articles=NFL_NEWS_CACHE.filter(a=>activeSrc==='All'||a.src===activeSrc);
+  // Sort by published date descending
+  const sorted=[...articles].sort((a,b)=>new Date(b.published.replace(' ','T'))-new Date(a.published.replace(' ','T')));
+
+  if(!sorted.length){
+    html+=`<div style="text-align:center;padding:60px 20px;color:#64748b;font-size:14px">No articles found.</div>`;
+    html+=`</div>`;
+    return html;
+  }
+
+  // Split: Rotowire player updates (left col) + general news (right col)
+  const playerItems=sorted.filter(a=>a.src==='Rotowire');
+  const generalItems=sorted.filter(a=>a.src!=='Rotowire');
+
+  if(activeSrc==='All'){
+    html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">`;
+
+    // Left: general news (ESPN + PFT)
+    html+=`<div>`;
+    html+=`<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:12px">Top Stories</div>`;
+    html+=`<div style="display:flex;flex-direction:column;gap:2px">`;
+    generalItems.forEach((a,i)=>{
+      const time=a.published?relTime(a.published):'';
+      const color=srcColor[a.src]||'#94a3b8';
+      html+=`<div style="padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;margin-bottom:4px">`;
+      html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">`;
+      html+=`<span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px">${srcLabel[a.src]||a.src}</span>`;
+      if(time) html+=`<span style="font-size:11px;color:#64748b;margin-left:auto">${time}</span>`;
+      html+=`</div>`;
+      html+=`<a href="${a.link}" target="_blank" rel="noopener" style="color:#f1f5f9;font-size:13px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:${a.description?'4px':'0'}">${a.headline}</a>`;
+      if(a.description&&a.description!==a.headline) html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-top:2px">${a.description}</div>`;
+      html+=`</div>`;
+    });
+    html+=`</div></div>`;
+
+    // Right: Rotowire player updates
+    html+=`<div>`;
+    html+=`<div style="font-size:11px;color:#22d3ee;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:12px">Player Updates <span style="color:#64748b;font-weight:400">· Rotowire</span></div>`;
+    html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden">`;
+    if(!playerItems.length){
+      html+=`<div style="padding:20px;color:#64748b;font-size:13px">No player updates available.</div>`;
+    } else {
+      playerItems.forEach((a,i)=>{
+        const time=a.published?relTime(a.published):'';
+        const colonIdx=a.headline.indexOf(': ');
+        const playerName=colonIdx>0?a.headline.substring(0,colonIdx):'';
+        const blurb=colonIdx>0?a.headline.substring(colonIdx+2):a.headline;
+        html+=`<div style="padding:12px 14px;${i>0?'border-top:1px solid rgba(255,255,255,0.05)':''}">`;
+        html+=`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:3px">`;
+        if(playerName) html+=`<a href="${a.link}" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:#22d3ee;text-decoration:none">${playerName}</a>`;
+        if(time) html+=`<span style="font-size:11px;color:#64748b;margin-left:auto;white-space:nowrap;flex-shrink:0">${time}</span>`;
+        html+=`</div>`;
+        html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.5">${a.description||blurb}</div>`;
+        html+=`</div>`;
+      });
+    }
+    html+=`</div></div>`;
+    html+=`</div>`; // end grid
+
+  } else {
+    // Single-source filtered view
+    html+=`<div style="display:flex;flex-direction:column;gap:4px">`;
+    sorted.forEach(a=>{
+      const time=a.published?relTime(a.published):'';
+      const color=srcColor[a.src]||'#94a3b8';
+      const colonIdx=a.src==='Rotowire'?a.headline.indexOf(': '):-1;
+      const playerName=colonIdx>0?a.headline.substring(0,colonIdx):'';
+      const blurb=colonIdx>0?a.headline.substring(colonIdx+2):a.headline;
+      html+=`<div style="padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px">`;
+      if(playerName){
+        html+=`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:3px">`;
+        html+=`<a href="${a.link}" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:${color};text-decoration:none">${playerName}</a>`;
+        if(time) html+=`<span style="font-size:11px;color:#64748b;margin-left:auto;flex-shrink:0">${time}</span>`;
+        html+=`</div>`;
+        html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.5">${a.description||blurb}</div>`;
+      } else {
+        html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">`;
+        html+=`<span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px">${srcLabel[a.src]||a.src}</span>`;
+        if(time) html+=`<span style="font-size:11px;color:#64748b;margin-left:auto">${time}</span>`;
+        html+=`</div>`;
+        html+=`<a href="${a.link}" target="_blank" rel="noopener" style="color:#f1f5f9;font-size:13px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:${a.description?'4px':'0'}">${a.headline}</a>`;
+        if(a.description&&a.description!==a.headline) html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-top:2px">${a.description}</div>`;
+      }
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  html+=`</div>`;
+  return html;
 }
 
 function renderPlayers(){
