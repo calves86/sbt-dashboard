@@ -2553,7 +2553,7 @@ function renderPlayerProfile(name){
     const advView=state.psAdvView||'season';
     if(advView==='weekly') loadAdvWeekly();
     if(ADV_STATS_CACHE!==false&&advData&&Object.keys(advData).length){
-      const advYears=Object.keys(advData).sort((a,b)=>b-a);
+      const advYears=Object.keys(advData).filter(y=>parseInt(y)>=2016).sort((a,b)=>b-a);
       const selAdvYr=state.psAdvYear&&advData[state.psAdvYear]?state.psAdvYear:advYears[0];
       const d=advData[selAdvYr]||{};
       function fv(v,decimals=1){return v!=null?Number(v).toFixed(decimals):'—';}
