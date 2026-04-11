@@ -447,7 +447,7 @@ const PLAYERS_CACHE={};
 let CAREER_CACHE=null;
 let WEEKLY_CACHE=null;
 let WEEKLY_DETAIL_CACHE=null;
-let ESPN_NEWS_CACHE=null;
+let NFL_NEWS_CACHE=null;
 let PLAYER_META=null;
 const NFL_DATA_BASE='https://calves86.github.io/nfl-stats-data';
 
@@ -2024,13 +2024,26 @@ function loadWeeklyDetail(){
     .then(data=>{WEEKLY_DETAIL_CACHE=data;if(state.tab==='Player Stats'&&state.psPlayer&&state.psExpandYear)render();})
     .catch(()=>{WEEKLY_DETAIL_CACHE={};});
 }
-function loadESPNNews(){
-  if(ESPN_NEWS_CACHE!==null)return;
-  ESPN_NEWS_CACHE=false;
-  fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=100')
-    .then(r=>r.json())
-    .then(data=>{ESPN_NEWS_CACHE=data.articles||[];if(state.tab==='Player Stats'&&state.psPlayer)render();})
-    .catch(()=>{ESPN_NEWS_CACHE=[];});
+function loadNFLNews(){
+  if(NFL_NEWS_CACHE!==null)return;
+  NFL_NEWS_CACHE=false;
+  const RW_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https://www.rotowire.com/rss/news.php?sport=NFL');
+  const PFT_URL='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https://profootballtalk.nbcsports.com/feed/');
+  Promise.allSettled([
+    fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50').then(r=>r.json()),
+    fetch(RW_URL).then(r=>r.json()),
+    fetch(PFT_URL).then(r=>r.json()),
+  ]).then(results=>{
+    const articles=[];
+    const espn=results[0].status==='fulfilled'?results[0].value:null;
+    if(espn&&espn.articles){espn.articles.forEach(a=>{articles.push({src:'ESPN',headline:a.headline||'',description:a.description||'',link:(a.links&&a.links.web&&a.links.web.href)||'#',published:a.published||'',cats:a.categories||[]});});}
+    const rw=results[1].status==='fulfilled'?results[1].value:null;
+    if(rw&&rw.items){rw.items.forEach(it=>{const ci=it.title.indexOf(': ');articles.push({src:'Rotowire',headline:it.title||'',description:it.description||'',link:it.link||'#',published:it.pubDate||'',rwPlayer:ci>0?it.title.substring(0,ci):''});});}
+    const pft=results[2].status==='fulfilled'?results[2].value:null;
+    if(pft&&pft.items){pft.items.forEach(it=>{articles.push({src:'PFT',headline:it.title||'',description:it.description||'',link:it.link||'#',published:it.pubDate||''});});}
+    NFL_NEWS_CACHE=articles;
+    if(state.tab==='Player Stats'&&state.psPlayer)render();
+  }).catch(()=>{NFL_NEWS_CACHE=[];});
 }
 function loadPlayerYear(year){
   if(PLAYERS_CACHE[year]!==undefined)return;
@@ -2309,36 +2322,50 @@ function renderPlayerProfile(name){
     return html;
   }
 
-  // ── Player News (ESPN) ────────────────────────────
-  loadESPNNews();
+  // ── Player News (ESPN + Rotowire + PFT) ──────────
+  loadNFLNews();
   {
     const nameLower=name.toLowerCase();
-    const playerNews=Array.isArray(ESPN_NEWS_CACHE)?
-      ESPN_NEWS_CACHE.filter(a=>(a.categories||[]).some(c=>c.type==='athlete'&&(c.description===name||((c.description||'').toLowerCase()===nameLower)))).slice(0,8):
-      null;
-    function relTime(iso){const d=(Date.now()-new Date(iso).getTime())/1000;if(d<3600)return Math.round(d/60)+'m ago';if(d<86400)return Math.round(d/3600)+'h ago';if(d<604800)return Math.round(d/86400)+'d ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+    function newsMatchesPlayer(a){
+      if(a.src==='ESPN') return (a.cats||[]).some(c=>c.type==='athlete'&&(c.description===name||(c.description||'').toLowerCase()===nameLower));
+      if(a.src==='Rotowire') return a.rwPlayer===name||a.rwPlayer.toLowerCase()===nameLower;
+      if(a.src==='PFT') return a.headline.toLowerCase().includes(nameLower)||a.description.toLowerCase().includes(nameLower);
+      return false;
+    }
+    const playerNews=Array.isArray(NFL_NEWS_CACHE)?NFL_NEWS_CACHE.filter(newsMatchesPlayer).slice(0,8):null;
+    function relTime(iso){
+      const ms=Date.now()-new Date(iso.replace(' ','T')).getTime();
+      const d=ms/1000;
+      if(d<3600)return Math.round(d/60)+'m ago';
+      if(d<86400)return Math.round(d/3600)+'h ago';
+      if(d<604800)return Math.round(d/86400)+'d ago';
+      return new Date(iso.replace(' ','T')).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    }
+    const srcLabel={'ESPN':'ESPN','Rotowire':'Rotowire','PFT':'ProFootballTalk'};
+    const srcColor={'ESPN':'#f97316','Rotowire':'#22d3ee','PFT':'#a78bfa'};
     const curLogo=teamLogos[latestTeam]||'';
-    if(ESPN_NEWS_CACHE===false){
+    if(NFL_NEWS_CACHE===false){
       html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 20px;margin-bottom:24px;color:#94a3b8;font-size:12px">Loading player news...</div>`;
     } else if(playerNews&&playerNews.length){
       html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;margin-bottom:24px">`;
-      html+=`<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px">Player News</div>`;
+      html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">`;
+      if(curLogo) html+=`<img src="${curLogo}" onerror="this.style.display='none'" style="height:20px;width:auto;max-width:24px">`;
+      html+=`<span style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Player News</span>`;
+      html+=`<span style="font-size:11px;color:#64748b;margin-left:4px">${latestTeam||''}${pos?' · '+pos:''}</span>`;
+      html+=`</div>`;
       playerNews.forEach((a,i)=>{
-        const link=(a.links&&a.links.web&&a.links.web.href)||'#';
         const time=a.published?relTime(a.published):'';
         html+=`<div style="padding:10px 0;${i>0?'border-top:1px solid rgba(255,255,255,0.05)':''}">`;
-        html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">`;
-        if(curLogo) html+=`<img src="${curLogo}" onerror="this.style.display='none'" style="height:18px;width:auto;max-width:22px">`;
-        html+=`<span style="font-size:11px;color:#94a3b8;font-weight:600">${latestTeam||''}${pos?' · '+pos:''}</span>`;
-        if(time) html+=`<span style="font-size:11px;color:#94a3b8;margin-left:auto;white-space:nowrap">${time}</span>`;
+        html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">`;
+        html+=`<span style="font-size:10px;font-weight:700;color:${srcColor[a.src]||'#94a3b8'};text-transform:uppercase;letter-spacing:0.5px">${srcLabel[a.src]||a.src}</span>`;
+        if(time) html+=`<span style="font-size:11px;color:#64748b;margin-left:auto;white-space:nowrap">${time}</span>`;
         html+=`</div>`;
-        html+=`<a href="${link}" target="_blank" rel="noopener" style="color:#22d3ee;font-size:14px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:${a.description?'3px':'0'}">${a.headline||''}</a>`;
-        if(a.description&&a.description!==a.headline) html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.4">${a.description}</div>`;
+        html+=`<a href="${a.link}" target="_blank" rel="noopener" style="color:#f1f5f9;font-size:13px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:${a.description?'4px':'0'}">${a.headline||''}</a>`;
+        if(a.description&&a.description!==a.headline) html+=`<div style="font-size:12px;color:#94a3b8;line-height:1.5">${a.description}</div>`;
         html+=`</div>`;
       });
-      html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)"><a href="https://www.espn.com/nfl/players" target="_blank" rel="noopener" style="font-size:12px;color:#94a3b8;text-decoration:none">More news on ESPN →</a></div>`;
       html+=`</div>`;
-    } else if(Array.isArray(ESPN_NEWS_CACHE)){
+    } else if(Array.isArray(NFL_NEWS_CACHE)){
       html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:10px">`;
       if(curLogo) html+=`<img src="${curLogo}" onerror="this.style.display='none'" style="height:20px;width:auto;max-width:24px">`;
       html+=`<span style="font-size:12px;color:#64748b">No recent news found for ${name}.</span></div>`;
