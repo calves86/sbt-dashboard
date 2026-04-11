@@ -575,7 +575,7 @@ function render(){
   else if(state.tab==='Champions')el.innerHTML=renderChampions();
   else if(state.tab==='Seasons')el.innerHTML=renderSeasons();
   else if(state.tab==='Record Book')el.innerHTML=renderRecords();
-  else if(state.tab==='Draft History'){loadCareerStats();el.innerHTML=renderDraft();}
+  else if(state.tab==='Draft History'){loadPlayerMeta();loadCareerStats();el.innerHTML=renderDraft();}
   else if(state.tab==='Player Stats')el.innerHTML=renderPlayers();
   else if(state.tab==='Fun Facts')el.innerHTML=renderFunFacts();
   else if(state.tab==='Teams')el.innerHTML=renderTeams();
@@ -2157,7 +2157,7 @@ function loadPlayerMeta(){
   PLAYER_META=false;
   fetch(`${NFL_DATA_BASE}/player_meta.json`)
     .then(r=>r.json())
-    .then(data=>{PLAYER_META=data;if(state.tab==='Player Stats')render();})
+    .then(data=>{PLAYER_META=data;if(state.tab==='Player Stats'||state.tab==='Draft History')render();})
     .catch(()=>{PLAYER_META={players:{},team_logos:{}};});
 }
 function loadWeeklyStats(){
