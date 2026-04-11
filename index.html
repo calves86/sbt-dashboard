@@ -2312,8 +2312,9 @@ function renderPlayerProfile(name){
   // ── Player News (ESPN) ────────────────────────────
   loadESPNNews();
   {
+    const nameLower=name.toLowerCase();
     const playerNews=Array.isArray(ESPN_NEWS_CACHE)?
-      ESPN_NEWS_CACHE.filter(a=>(a.categories||[]).some(c=>c.type==='athlete'&&c.description===name)).slice(0,8):
+      ESPN_NEWS_CACHE.filter(a=>(a.categories||[]).some(c=>c.type==='athlete'&&(c.description===name||((c.description||'').toLowerCase()===nameLower)))).slice(0,8):
       null;
     function relTime(iso){const d=(Date.now()-new Date(iso).getTime())/1000;if(d<3600)return Math.round(d/60)+'m ago';if(d<86400)return Math.round(d/3600)+'h ago';if(d<604800)return Math.round(d/86400)+'d ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
     const curLogo=teamLogos[latestTeam]||'';
@@ -2337,6 +2338,10 @@ function renderPlayerProfile(name){
       });
       html+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)"><a href="https://www.espn.com/nfl/players" target="_blank" rel="noopener" style="font-size:12px;color:#94a3b8;text-decoration:none">More news on ESPN →</a></div>`;
       html+=`</div>`;
+    } else if(Array.isArray(ESPN_NEWS_CACHE)){
+      html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:10px">`;
+      if(curLogo) html+=`<img src="${curLogo}" onerror="this.style.display='none'" style="height:20px;width:auto;max-width:24px">`;
+      html+=`<span style="font-size:12px;color:#64748b">No recent news found for ${name}.</span></div>`;
     }
   }
 
