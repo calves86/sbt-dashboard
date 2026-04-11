@@ -2645,7 +2645,7 @@ function renderPlayerProfile(name){
           html+=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">`;
           html+=`<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.08)">`;
           cols.forEach((c,i)=>{
-            const hasTT=ADV_TT[c]?`onmouseenter="showAdvTT(event,'${c}')" onmouseleave="hideAdvTT()" style="${(i===0?thStyleFirst:thStyle)+';border-bottom:1px dashed rgba(100,116,139,0.4)'}`:`style="${i===0?thStyleFirst:thStyle}"`;
+            const hasTT=ADV_TT[c]?`onmouseenter="showAdvTT(event,'${c}')" onmouseleave="hideAdvTT()" style="${(i===0?thStyleFirst:thStyle)+';border-bottom:1px dashed rgba(100,116,139,0.4)'}"`:`style="${i===0?thStyleFirst:thStyle}"`;
             html+=`<th ${hasTT}>${c}</th>`;
           });
           html+=`</tr></thead><tbody>`;
