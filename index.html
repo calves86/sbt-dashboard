@@ -1721,8 +1721,10 @@ function renderDraft(){
         html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative">`;
         // pick # top-left
         html+=`<div style="position:absolute;top:0;left:0;font-size:8px;color:#334155;font-weight:700;line-height:1">#${p.pick}</div>`;
-        // headshot
-        if(photo){
+        // headshot / DST logo
+        if(pos==='DST'&&nflLogo){
+          html+=`<div style="width:46px;height:46px;border-radius:50%;background:${pc}18;border:2px solid ${pc};display:flex;align-items:center;justify-content:center;margin-top:2px"><img src="${nflLogo}" onerror="this.style.display='none'" style="width:32px;height:32px;object-fit:contain"></div>`;
+        } else if(photo){
           html+=`<img src="${photo}" onerror="this.src='';this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid ${pc};margin-top:2px">`;
           html+=`<div style="display:none;width:46px;height:46px;border-radius:50%;background:${pc}22;border:2px solid ${pc};align-items:center;justify-content:center;font-size:16px;font-weight:900;color:${pc};margin-top:2px">${p.player_name[0]}</div>`;
         } else {
