@@ -455,6 +455,41 @@ const NFL_DATA_BASE='https://calves86.github.io/nfl-stats-data';
 
 function toggleSort(col){if(state.sortCol===col){state.sortDir=state.sortDir==='desc'?'asc':'desc';}else{state.sortCol=col;state.sortDir='desc';}render();}
 function sortArrow(col){if(state.sortCol!==col)return' ↕';return state.sortDir==='desc'?' ▼':' ▲';}
+
+// ── Advanced Stats Tooltips ───────────────────────
+const ADV_TT={
+  'CPOE':'Completion % Over Expected — how much better or worse a QB completes passes vs. a model that accounts for throw distance, defender proximity, and other factors. Positive = above average.',
+  'TTT':'Time to Throw — avg seconds from snap to ball release. Higher can indicate a slower process or deeper route concepts.',
+  'AGR':'Aggressiveness — % of passes thrown into tight windows (defender within 1 yard of the receiver at the catch point). Higher = more aggressive.',
+  'iAY':'Intended Air Yards — avg air yards on ALL attempts, including incompletions. Reflects how deep a QB is targeting.',
+  'cAY':'Completed Air Yards — avg air yards on completed passes only. Higher = moving the chains downfield.',
+  'aYAS':'Air Yards to the Sticks — avg distance from line to gain on all attempts. Negative = throwing short of the first down marker.',
+  'Pass EPA':'Passing Expected Points Added — total value generated on passing plays vs. league average. Includes sacks.',
+  'Rush EPA':'Rushing Expected Points Added — total value generated on rushing plays vs. league average.',
+  'Rec EPA':'Receiving Expected Points Added — total value generated on receiving plays vs. league average.',
+  'RYOE':'Rush Yards Over Expected per Attempt — actual yards minus what a model predicted based on defense alignment, box count, down & distance. Positive = better than expected.',
+  'Rush%OE':'Rush % Over Expected — % of carries where the runner beat the model\'s yardage prediction.',
+  'Stacked%':'% of carries where 8 or more defenders were in the box at the snap. Higher = faced heavier run defense.',
+  'T-LOS':'Time to Line of Scrimmage — avg seconds from snap until the runner crosses the LOS. Lower = quicker burst through the line.',
+  'Rush Eff':'Rushing Efficiency — composite rushing efficiency score from Next Gen Stats.',
+  'Sep':'Average Separation — yards from the nearest defender at the exact moment of the target catch point. Higher = more open.',
+  'Cush':'Cushion — yards between the receiver and nearest defender at the snap (pre-route). Higher = more room to run a route.',
+  'iAY':'Intended Air Yards per target — avg air yards on all targets including incompletions.',
+  'Air%':'Air Yards Share — % of the team\'s total intended air yards directed to this player. Key measure of target quality.',
+  'Avg YAC':'Average Yards After Catch per reception.',
+  'YAC OE':'YAC Over Expected — actual yards after catch minus the model\'s prediction. Positive = more elusive after the catch than expected.',
+  'WK':'Week number of the NFL regular season.',
+};
+function showAdvTT(e,key){
+  let el=document.getElementById('_advtt');
+  if(!el){el=document.createElement('div');el.id='_advtt';el.style.cssText='position:fixed;background:#0f172a;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;font-size:12px;color:#e2e8f0;max-width:260px;z-index:9999;pointer-events:none;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:none';document.body.appendChild(el);}
+  el.innerHTML=`<div style="color:#22d3ee;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${key}</div><div>${ADV_TT[key]||''}</div>`;
+  el.style.display='block';
+  const x=Math.min(e.clientX+16,window.innerWidth-280);
+  const y=Math.max(e.clientY-70,8);
+  el.style.left=x+'px';el.style.top=y+'px';
+}
+function hideAdvTT(){const el=document.getElementById('_advtt');if(el)el.style.display='none';}
 function sortStandings(rows){
   const dir=state.sortDir==='desc'?-1:1;
   return[...rows].sort((a,b)=>{
@@ -2524,8 +2559,9 @@ function renderPlayerProfile(name){
       function fv(v,decimals=1){return v!=null?Number(v).toFixed(decimals):'—';}
       function pct(v){return v!=null?Number(v).toFixed(1)+'%':'—';}
       const isQB=pos==='QB', isRB=pos==='RB'||pos==='FB', isWR=pos==='WR', isTE=pos==='TE';
-      function statBlock(label,value,sub='',highlight=false){
-        return `<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;text-align:center"><div style="font-size:18px;font-weight:700;color:${highlight?'#34d399':'#f1f5f9'}">${value}</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-top:2px">${label}</div>${sub?`<div style="font-size:10px;color:#64748b;margin-top:1px">${sub}</div>`:''}</div>`;
+      function statBlock(label,value,sub='',highlight=false,ttKey=''){
+        const tt=ttKey&&ADV_TT[ttKey]?`onmouseenter="showAdvTT(event,'${ttKey}')" onmouseleave="hideAdvTT()" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;text-align:center;cursor:default"`:`style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;text-align:center"`;
+        return `<div ${tt}><div style="font-size:18px;font-weight:700;color:${highlight?'#34d399':'#f1f5f9'}">${value}</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;${ttKey&&ADV_TT[ttKey]?'border-bottom:1px dashed rgba(100,116,139,0.4);display:inline-block':''}">${label}</div>${sub?`<div style="font-size:10px;color:#64748b;margin-top:1px">${sub}</div>`:''}</div>`;
       }
 
       html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;margin-bottom:24px">`;
@@ -2546,24 +2582,24 @@ function renderPlayerProfile(name){
         if(isQB){
           html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Passing Efficiency</div>`;
           html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
-          html+=statBlock('CPOE',fv(d.cpoe)+'%','Comp % Over Exp',d.cpoe>0)+statBlock('Time to Throw',fv(d.ttt)+'s','Avg TTT')+statBlock('Aggressiveness',pct(d.agr),'% Aggressive')+statBlock('iAY / Att',fv(d.iay),'Intended air yds')+statBlock('cAY / Comp',fv(d.cay),'Completed air yds')+statBlock('On-Target',pct(d.on_tgt_pct),'Throw accuracy');
+          html+=statBlock('CPOE',fv(d.cpoe)+'%','Comp % Over Exp',d.cpoe>0,'CPOE')+statBlock('Time to Throw',fv(d.ttt)+'s','Avg TTT',false,'TTT')+statBlock('Aggressiveness',pct(d.agr),'% Aggressive',false,'AGR')+statBlock('iAY / Att',fv(d.iay),'Intended air yds',false,'iAY')+statBlock('cAY / Comp',fv(d.cay),'Completed air yds',false,'cAY')+statBlock('On-Target',pct(d.on_tgt_pct),'Throw accuracy');
           html+=`</div><div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Pressure & EPA</div>`;
           html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;
-          html+=statBlock('Pocket Time',fv(d.pocket_t)+'s','Avg')+statBlock('Pressure %',pct(d.pressure_pct),'Under pressure')+statBlock('Bad Throw %',pct(d.bad_throw_pct),'')+statBlock('Scrambles',d.scrambles!=null?Math.round(d.scrambles):'—','Count')+statBlock('Pass EPA',fv(d.pass_epa,1),'Total')+statBlock('Rush EPA',fv(d.rush_epa,1),'Total');
+          html+=statBlock('Pocket Time',fv(d.pocket_t)+'s','Avg')+statBlock('Pressure %',pct(d.pressure_pct),'Under pressure')+statBlock('Bad Throw %',pct(d.bad_throw_pct),'')+statBlock('Scrambles',d.scrambles!=null?Math.round(d.scrambles):'—','Count')+statBlock('Pass EPA',fv(d.pass_epa,1),'Total',false,'Pass EPA')+statBlock('Rush EPA',fv(d.rush_epa,1),'Total',false,'Rush EPA');
           html+=`</div>`;
         } else if(isRB){
           html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Rushing Efficiency</div>`;
           html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:${d.tgt_share!=null?'16':'0'}px">`;
-          html+=statBlock('RYOE / Att',fv(d.rush_yoe),'Rush Yds Over Exp',d.rush_yoe>0)+statBlock('Rush Pct OE',pct(d.rush_poe),'% Over Expected',d.rush_poe>0)+statBlock('YBC / Att',fv(d.ybc_att),'Before contact')+statBlock('YAC / Att',fv(d.yac_att),'After contact')+statBlock('Stacked %',pct(d.stacked_pct),'vs 8+ in box')+statBlock('Rush EPA',fv(d.rush_epa,1),'Total');
+          html+=statBlock('RYOE / Att',fv(d.rush_yoe),'Rush Yds Over Exp',d.rush_yoe>0,'RYOE')+statBlock('Rush Pct OE',pct(d.rush_poe),'% Over Expected',d.rush_poe>0,'Rush%OE')+statBlock('YBC / Att',fv(d.ybc_att),'Before contact')+statBlock('YAC / Att',fv(d.yac_att),'After contact')+statBlock('Stacked %',pct(d.stacked_pct),'vs 8+ in box','Stacked%')+statBlock('Rush EPA',fv(d.rush_epa,1),'Total',false,'Rush EPA');
           html+=`</div>`;
-          if(d.tgt_share!=null){html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Receiving Role</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;html+=statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets')+statBlock('WOPR',fv(d.wopr),'Weighted opp')+statBlock('Rec EPA',fv(d.rec_epa,1),'Total');html+=`</div>`;}
+          if(d.tgt_share!=null){html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Receiving Role</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;html+=statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets')+statBlock('WOPR',fv(d.wopr),'Weighted opp')+statBlock('Rec EPA',fv(d.rec_epa,1),'Total',false,'Rec EPA');html+=`</div>`;}
         } else if(isWR||isTE){
           html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Route Running & Separation</div>`;
           html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
-          html+=statBlock('Separation',fv(d.avg_sep)+' yds','Avg at target',d.avg_sep>3)+statBlock('Cushion',fv(d.avg_cush)+' yds','Pre-snap')+statBlock('aDOT',fv(d.adot)+' yds','Avg depth')+statBlock('iAY / Tgt',fv(d.avg_iay)+' yds','Intended air yds')+statBlock('Air Yds %',pct(d.air_share_ngs!=null?d.air_share_ngs:d.air_share!=null?d.air_share*100:null),'Team share')+statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets');
+          html+=statBlock('Separation',fv(d.avg_sep)+' yds','Avg at target',d.avg_sep>3,'Sep')+statBlock('Cushion',fv(d.avg_cush)+' yds','Pre-snap',false,'Cush')+statBlock('aDOT',fv(d.adot)+' yds','Avg depth')+statBlock('iAY / Tgt',fv(d.avg_iay)+' yds','Intended air yds',false,'iAY')+statBlock('Air Yds %',pct(d.air_share_ngs!=null?d.air_share_ngs:d.air_share!=null?d.air_share*100:null),'Team share',false,'Air%')+statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets');
           html+=`</div><div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">After the Catch & Opportunity</div>`;
           html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;
-          html+=statBlock('YAC / Rec',fv(d.yac_r)+' yds','After catch')+statBlock('YAC OE',fv(d.yac_oe)+' yds','Vs expected',d.yac_oe>0)+statBlock('YBC / Rec',fv(d.ybc_r)+' yds','Before contact')+statBlock('WOPR',fv(d.wopr),'Weighted opp',d.wopr>0.5)+statBlock('RACR',fv(d.racr),'Rec air conv')+statBlock('Drop %',pct(d.drop_pct),'');
+          html+=statBlock('YAC / Rec',fv(d.yac_r)+' yds','After catch',false,'Avg YAC')+statBlock('YAC OE',fv(d.yac_oe)+' yds','Vs expected',d.yac_oe>0,'YAC OE')+statBlock('YBC / Rec',fv(d.ybc_r)+' yds','Before contact')+statBlock('WOPR',fv(d.wopr),'Weighted opp',d.wopr>0.5)+statBlock('RACR',fv(d.racr),'Rec air conv')+statBlock('Drop %',pct(d.drop_pct),'');
           html+=`</div>`;
         } else {
           const keys=Object.keys(d);
@@ -2595,11 +2631,14 @@ function renderPlayerProfile(name){
           }
           const maxWeek=parseInt(selAdvYr)>=2021?18:17;
           const colW=`40px ${colKeys.slice(1).map(()=>'1fr').join(' ')}`;
-          const thStyle='font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;padding:6px 4px;text-align:right;font-weight:700;white-space:nowrap';
-          const thStyleFirst='font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;padding:6px 4px;text-align:left;font-weight:700';
+          const thStyle='font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;padding:6px 4px;text-align:right;font-weight:700;white-space:nowrap;cursor:default';
+          const thStyleFirst='font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;padding:6px 4px;text-align:left;font-weight:700;cursor:default';
           html+=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">`;
           html+=`<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.08)">`;
-          cols.forEach((c,i)=>{ html+=`<th style="${i===0?thStyleFirst:thStyle}">${c}</th>`; });
+          cols.forEach((c,i)=>{
+            const hasTT=ADV_TT[c]?`onmouseenter="showAdvTT(event,'${c}')" onmouseleave="hideAdvTT()" style="${(i===0?thStyleFirst:thStyle)+';border-bottom:1px dashed rgba(100,116,139,0.4)'}`:`style="${i===0?thStyleFirst:thStyle}"`;
+            html+=`<th ${hasTT}>${c}</th>`;
+          });
           html+=`</tr></thead><tbody>`;
           // Compute range for highlighting (best = green, worst = red per col)
           const numericCols=colKeys.slice(1);
