@@ -442,12 +442,13 @@ function loadData(){
 // ══════════════════════════════════════════════════
 // APP STATE & RENDERING
 // ══════════════════════════════════════════════════
-let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'asc',teamsRosterYear:null,selMatchupKey:null,selPlayoffKey:null,factTeam:null,psYear:2025,psPos:'ALL',psSearch:'',psSortCol:'fpts',psSortDir:'desc',psPlayer:null,psChartYear:null,psChartView:'season',psExpandYear:null};
+let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'asc',teamsRosterYear:null,selMatchupKey:null,selPlayoffKey:null,factTeam:null,psYear:2025,psPos:'ALL',psSearch:'',psSortCol:'fpts',psSortDir:'desc',psPlayer:null,psChartYear:null,psChartView:'season',psExpandYear:null,psAdvYear:null};
 const PLAYERS_CACHE={};
 let CAREER_CACHE=null;
 let WEEKLY_CACHE=null;
 let WEEKLY_DETAIL_CACHE=null;
 let NFL_NEWS_CACHE=null;
+let ADV_STATS_CACHE=null;
 let PLAYER_META=null;
 const NFL_DATA_BASE='https://calves86.github.io/nfl-stats-data';
 
@@ -2046,6 +2047,14 @@ function loadNFLNews(){
     if(state.tab==='News'||(state.tab==='Player Stats'&&state.psPlayer))render();
   }).catch(()=>{NFL_NEWS_CACHE=[];});
 }
+function loadAdvStats(){
+  if(ADV_STATS_CACHE!==null)return;
+  ADV_STATS_CACHE=false;
+  fetch(`${NFL_DATA_BASE}/advanced_stats.json`)
+    .then(r=>r.json())
+    .then(data=>{ADV_STATS_CACHE=data;if(state.tab==='Player Stats'&&state.psPlayer)render();})
+    .catch(()=>{ADV_STATS_CACHE={};});
+}
 function loadPlayerYear(year){
   if(PLAYERS_CACHE[year]!==undefined)return;
   PLAYERS_CACHE[year]=null; // mark loading
@@ -2490,6 +2499,116 @@ function renderPlayerProfile(name){
       html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:10px">`;
       if(curLogo) html+=`<img src="${curLogo}" onerror="this.style.display='none'" style="height:20px;width:auto;max-width:24px">`;
       html+=`<span style="font-size:12px;color:#64748b">No recent news found for ${name}.</span></div>`;
+    }
+  }
+
+  // ── Advanced Stats ────────────────────────────────
+  loadAdvStats();
+  {
+    const advData=(ADV_STATS_CACHE&&ADV_STATS_CACHE[name])||null;
+    if(ADV_STATS_CACHE!==false&&advData&&Object.keys(advData).length){
+      // Pick the most recent year that has data
+      const advYears=Object.keys(advData).sort((a,b)=>b-a);
+      const selAdvYr=state.psAdvYear&&advData[state.psAdvYear]?state.psAdvYear:advYears[0];
+      const d=advData[selAdvYr]||{};
+
+      // Helper to format value
+      function fv(v,decimals=1){return v!=null?Number(v).toFixed(decimals):'—';}
+      function pct(v){return v!=null?Number(v).toFixed(1)+'%':'—';}
+
+      // Determine which stat groups to show based on position
+      const isQB=pos==='QB';
+      const isRB=pos==='RB'||pos==='FB';
+      const isWR=pos==='WR';
+      const isTE=pos==='TE';
+      const isSkill=isQB||isRB||isWR||isTE;
+
+      html+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;margin-bottom:24px">`;
+      // Header with year selector
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">`;
+      html+=`<span style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Advanced Stats</span>`;
+      html+=`<div style="display:flex;gap:4px;flex-wrap:wrap">`;
+      advYears.forEach(yr=>{
+        const active=yr===selAdvYr;
+        html+=`<button onclick="state.psAdvYear='${yr}';render()" style="padding:3px 9px;border-radius:12px;border:1px solid ${active?'#22d3ee':'rgba(255,255,255,0.1)'};background:${active?'rgba(34,211,238,0.12)':'transparent'};color:${active?'#22d3ee':'#94a3b8'};font-size:11px;cursor:pointer">${yr}</button>`;
+      });
+      html+=`</div></div>`;
+
+      function statBlock(label, value, sub='', highlight=false){
+        return `<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:${highlight?'#34d399':'#f1f5f9'}">${value}</div>
+          <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-top:2px">${label}</div>
+          ${sub?`<div style="font-size:10px;color:#64748b;margin-top:1px">${sub}</div>`:''}
+        </div>`;
+      }
+
+      if(isQB){
+        // QB: passing efficiency + pressure
+        html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Passing Efficiency</div>`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
+        html+=statBlock('CPOE',fv(d.cpoe)+'%','Comp % Over Exp',d.cpoe>0);
+        html+=statBlock('Time to Throw',fv(d.ttt)+'s','Avg TTT');
+        html+=statBlock('Aggressiveness',pct(d.agr),'% Aggressive throws');
+        html+=statBlock('iAY / Att',fv(d.iay),'Intended air yds');
+        html+=statBlock('cAY / Comp',fv(d.cay),'Completed air yds');
+        html+=statBlock('On-Target',pct(d.on_tgt_pct),'Throw accuracy');
+        html+=`</div>`;
+        html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Pressure & EPA</div>`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
+        html+=statBlock('Pocket Time',fv(d.pocket_t)+'s','Avg');
+        html+=statBlock('Pressure %',pct(d.pressure_pct),'Under pressure');
+        html+=statBlock('Bad Throw %',pct(d.bad_throw_pct),'');
+        html+=statBlock('Scrambles',d.scrambles!=null?Math.round(d.scrambles):'—','Count');
+        html+=statBlock('Pass EPA',fv(d.pass_epa,1),'Total');
+        html+=statBlock('Rush EPA',fv(d.rush_epa,1),'Total');
+        html+=`</div>`;
+      } else if(isRB){
+        html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Rushing Efficiency</div>`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
+        html+=statBlock('RYOE / Att',fv(d.rush_yoe),'Rush Yds Over Exp',d.rush_yoe>0);
+        html+=statBlock('Rush Pct OE',pct(d.rush_poe),'% Over Expected',d.rush_poe>0);
+        html+=statBlock('YBC / Att',fv(d.ybc_att),'Yds before contact');
+        html+=statBlock('YAC / Att',fv(d.yac_att),'Yds after contact');
+        html+=statBlock('Stacked %',pct(d.stacked_pct),'vs 8+ in box');
+        html+=statBlock('Rush EPA',fv(d.rush_epa,1),'Total');
+        html+=`</div>`;
+        if(d.tgt_share!=null){
+          html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Receiving Role</div>`;
+          html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;
+          html+=statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets');
+          html+=statBlock('WOPR',fv(d.wopr),'Weighted opp');
+          html+=statBlock('Rec EPA',fv(d.rec_epa,1),'Total');
+          html+=`</div>`;
+        }
+      } else if(isWR||isTE){
+        html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">Route Running & Separation</div>`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
+        html+=statBlock('Separation',fv(d.avg_sep)+' yds','Avg at target',d.avg_sep>3);
+        html+=statBlock('Cushion',fv(d.avg_cush)+' yds','Pre-snap');
+        html+=statBlock('aDOT',fv(d.adot)+' yds','Avg depth');
+        html+=statBlock('iAY / Tgt',fv(d.avg_iay)+' yds','Intended air yds');
+        html+=statBlock('Air Yds %',pct(d.air_share_ngs!=null?d.air_share_ngs:d.air_share!=null?d.air_share*100:null),'Team share');
+        html+=statBlock('Tgt Share',pct(d.tgt_share!=null?d.tgt_share*100:null),'Team targets');
+        html+=`</div>`;
+        html+=`<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600">After the Catch & Opportunity</div>`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px">`;
+        html+=statBlock('YAC / Rec',fv(d.yac_r)+' yds','After catch');
+        html+=statBlock('YAC OE',fv(d.yac_oe)+' yds','Vs expected',d.yac_oe>0);
+        html+=statBlock('YBC / Rec',fv(d.ybc_r)+' yds','Before contact');
+        html+=statBlock('WOPR',fv(d.wopr),'Weighted opp',d.wopr>0.5);
+        html+=statBlock('RACR',fv(d.racr),'Rec air conv');
+        html+=statBlock('Drop %',pct(d.drop_pct),'');
+        html+=`</div>`;
+      } else {
+        // Generic / other positions — show whatever we have
+        const keys=Object.keys(d);
+        if(keys.length){
+          html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px">`;
+          keys.forEach(k=>{ html+=statBlock(k,fv(d[k])); });
+          html+=`</div>`;
+        }
+      }
+      html+=`</div>`;
     }
   }
 
