@@ -1639,6 +1639,8 @@ function renderRecords(){
 
 function renderDraft(){
   const picks=DATA.draft_picks;
+  const teamLogos=(PLAYER_META&&PLAYER_META.team_logos)||{};
+  const playerMeta=(PLAYER_META&&PLAYER_META.players)||{};
   const years=[...new Set(picks.map(p=>p.season))].sort((a,b)=>b-a);
   if(!years.length)return secTitle('Draft History','No Data')+'<div style="padding:40px;text-align:center;color:#94a3b8">Draft data available for 2019-2025 only. CBS does not store pick-by-pick data for older seasons.</div>';
   if(!years.includes(state.draftYear))state.draftYear=years[0];
@@ -1662,7 +1664,12 @@ function renderDraft(){
   html+=`<div class="data-table"><div class="header-row" style="display:grid;grid-template-columns:50px 50px 1fr 60px 1fr"><div>Pick</div><div>Rd</div><div>Player</div><div>Pos</div><div>Team</div></div>`;
   rdPicks.forEach((p,i)=>{
     const posClass=`pos-${p.position||''}`;
-    html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div><div style="font-size:14px;font-weight:700">${p.player_name}</div><div><span class="pos-badge ${posClass}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8">${p.team_name}</div></div>`;
+    const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
+    const logoUrl=teamLogos[nflTeam]||'';
+    const logoHtml=logoUrl?`<img src="${logoUrl}" onerror="this.style.display='none'" style="height:16px;width:auto;max-width:20px;flex-shrink:0;object-fit:contain">`:'';
+    const teamLine=nflTeam?`<div style="display:flex;align-items:center;gap:4px;margin-top:2px">${logoHtml}<span style="font-size:11px;color:#64748b">${nflTeam}</span></div>`:'';
+    const playerCell=`<div><div style="font-size:14px;font-weight:700">${p.player_name}</div>${teamLine}</div>`;
+    html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div>${playerCell}<div><span class="pos-badge ${posClass}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8">${p.team_name}</div></div>`;
   });
   html+=`</div>`;
 
