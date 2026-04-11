@@ -442,7 +442,7 @@ function loadData(){
 // ══════════════════════════════════════════════════
 // APP STATE & RENDERING
 // ══════════════════════════════════════════════════
-let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,selSeason:2025,sortCol:'winpct',sortDir:'asc',teamsRosterYear:null,selMatchupKey:null,selPlayoffKey:null,factTeam:null,psYear:2025,psPos:'ALL',psSearch:'',psSortCol:'fpts',psSortDir:'desc',psPlayer:null,psChartYear:null,psChartView:'season',psExpandYear:null,psAdvYear:null,psAdvView:'season'};
+let state={tab:'Overview',subTab:'standings',selWeek:1,recIdx:0,draftYear:2025,draftRound:1,draftView:'round',selSeason:2025,sortCol:'winpct',sortDir:'asc',teamsRosterYear:null,selMatchupKey:null,selPlayoffKey:null,factTeam:null,psYear:2025,psPos:'ALL',psSearch:'',psSortCol:'fpts',psSortDir:'desc',psPlayer:null,psChartYear:null,psChartView:'season',psExpandYear:null,psAdvYear:null,psAdvView:'season'};
 const PLAYERS_CACHE={};
 let CAREER_CACHE=null;
 let WEEKLY_CACHE=null;
@@ -1649,29 +1649,65 @@ function renderDraft(){
   if(!rounds.includes(state.draftRound))state.draftRound=rounds[0]||1;
   const rdPicks=yrPicks.filter(p=>p.round===state.draftRound);
 
-  let html=secTitle('Draft History',`${picks.length} Total Picks`);
-  html+=`<div style="padding:10px 16px;margin-bottom:16px;border-radius:10px;background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15);font-size:12px;color:#94a3b8">Draft data available for <strong style="color:#fb923c">2019, 2020, 2023, 2024, 2025</strong> only. CBS Sports does not store pick-by-pick HTML for older seasons (2012-2018, 2021-2022).</div>`;
-
-  html+=`<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">`;
-  html+=`<div style="font-size:13px;color:#94a3b8;font-weight:700">YEAR:</div>`;
-  html+=`<select class="dropdown" style="width:auto;min-width:120px" onchange="state.draftYear=Number(this.value);state.draftRound=1;render()">${years.map(y=>`<option value="${y}" ${state.draftYear===y?'selected':''}>${y}</option>`).join('')}</select>`;
-  html+=`<div style="font-size:13px;color:#94a3b8;font-weight:700;margin-left:12px">ROUND:</div>`;
-  html+=`<div class="week-btns">${rounds.map(r=>`<button class="week-btn ${state.draftRound===r?'active':''}" onclick="state.draftRound=${r};render()">${r}</button>`).join('')}</div>`;
-  html+=`</div>`;
-
-  html+=`<div style="font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;margin-bottom:16px">${state.draftYear} DRAFT — ROUND ${state.draftRound}</div>`;
-
-  html+=`<div class="data-table"><div class="header-row" style="display:grid;grid-template-columns:50px 50px 1fr 60px 1fr"><div>Pick</div><div>Rd</div><div>Player</div><div>Pos</div><div>Team</div></div>`;
-  rdPicks.forEach((p,i)=>{
-    const posClass=`pos-${p.position||''}`;
+  // helper: build a player row cell
+  function draftPlayerCell(p){
     const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
     const logoUrl=teamLogos[nflTeam]||'';
     const logoHtml=logoUrl?`<img src="${logoUrl}" onerror="this.style.display='none'" style="height:16px;width:auto;max-width:20px;flex-shrink:0;object-fit:contain">`:'';
     const teamLine=nflTeam?`<div style="display:flex;align-items:center;gap:4px;margin-top:2px">${logoHtml}<span style="font-size:11px;color:#64748b">${nflTeam}</span></div>`:'';
-    const playerCell=`<div><div style="font-size:14px;font-weight:700">${p.player_name}</div>${teamLine}</div>`;
-    html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div>${playerCell}<div><span class="pos-badge ${posClass}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8">${p.team_name}</div></div>`;
-  });
+    return `<div><div style="font-size:14px;font-weight:700">${p.player_name}</div>${teamLine}</div>`;
+  }
+
+  let html=secTitle('Draft History',`${picks.length} Total Picks`);
+  html+=`<div style="padding:10px 16px;margin-bottom:16px;border-radius:10px;background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15);font-size:12px;color:#94a3b8">Draft data available for <strong style="color:#fb923c">2019, 2020, 2023, 2024, 2025</strong> only. CBS Sports does not store pick-by-pick HTML for older seasons (2012-2018, 2021-2022).</div>`;
+
+  // Year + view toggle controls
+  html+=`<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">`;
+  html+=`<div style="font-size:13px;color:#94a3b8;font-weight:700">YEAR:</div>`;
+  html+=`<select class="dropdown" style="width:auto;min-width:120px" onchange="state.draftYear=Number(this.value);state.draftRound=1;render()">${years.map(y=>`<option value="${y}" ${state.draftYear===y?'selected':''}>${y}</option>`).join('')}</select>`;
+  html+=`<div style="margin-left:16px"><div class="sub-tabs" style="display:inline-flex"><button class="sub-tab ${state.draftView!=='team'?'active':''}" onclick="state.draftView='round';render()">By Round</button><button class="sub-tab ${state.draftView==='team'?'active':''}" onclick="state.draftView='team';render()">By Team</button></div></div>`;
+  if(state.draftView!=='team'){
+    html+=`<div style="font-size:13px;color:#94a3b8;font-weight:700;margin-left:8px">ROUND:</div>`;
+    html+=`<div class="week-btns">${rounds.map(r=>`<button class="week-btn ${state.draftRound===r?'active':''}" onclick="state.draftRound=${r};render()">${r}</button>`).join('')}</div>`;
+  }
   html+=`</div>`;
+
+  if(state.draftView==='team'){
+    // Group all year picks by fantasy team name
+    html+=`<div style="font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;margin-bottom:16px">${state.draftYear} DRAFT — BY TEAM</div>`;
+    const teamMap={};
+    yrPicks.forEach(p=>{if(!teamMap[p.team_name])teamMap[p.team_name]=[];teamMap[p.team_name].push(p);});
+    const teamNames=Object.keys(teamMap).sort();
+    html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">`;
+    teamNames.forEach(tn=>{
+      const tpicks=teamMap[tn].sort((a,b)=>a.pick-b.pick);
+      html+=`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden">`;
+      html+=`<div style="padding:10px 14px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:800;color:#e2e8f0;letter-spacing:0.5px">${tn}</div>`;
+      tpicks.forEach(p=>{
+        const posClass=`pos-${p.position||''}`;
+        const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
+        const logoUrl=teamLogos[nflTeam]||'';
+        const logoHtml=logoUrl?`<img src="${logoUrl}" onerror="this.style.display='none'" style="height:14px;width:auto;max-width:18px;flex-shrink:0;object-fit:contain">`:'';
+        html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.04)">`;
+        html+=`<div style="font-size:12px;color:#64748b;font-weight:700;min-width:32px">#${p.pick}</div>`;
+        html+=`<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.player_name}</div>`;
+        if(nflTeam){html+=`<div style="display:flex;align-items:center;gap:3px;margin-top:1px">${logoHtml}<span style="font-size:10px;color:#64748b">${nflTeam}</span></div>`;}
+        html+=`</div>`;
+        html+=`<span class="pos-badge ${posClass}" style="font-size:10px;padding:2px 6px">${p.position||'—'}</span>`;
+        html+=`</div>`;
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  } else {
+    // By Round view (existing)
+    html+=`<div style="font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;margin-bottom:16px">${state.draftYear} DRAFT — ROUND ${state.draftRound}</div>`;
+    html+=`<div class="data-table"><div class="header-row" style="display:grid;grid-template-columns:50px 50px 1fr 60px 1fr"><div>Pick</div><div>Rd</div><div>Player</div><div>Pos</div><div>Team</div></div>`;
+    rdPicks.forEach((p,i)=>{
+      html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div>${draftPlayerCell(p)}<div><span class="pos-badge pos-${p.position||''}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8">${p.team_name}</div></div>`;
+    });
+    html+=`</div>`;
+  }
 
   if(yrPicks.length){
     const posCounts={};
