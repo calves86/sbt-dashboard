@@ -67,8 +67,8 @@ select.sel option{background:#1e293b}
 .pos-btn{padding:5px 13px;border-radius:20px;border:1px solid rgba(255,255,255,0.09);background:transparent;color:#64748b;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .pos-btn.on{border-color:rgba(16,185,129,0.35);background:rgba(16,185,129,0.1);color:#10b981}
 .plist{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:11px;overflow:hidden;max-height:calc(100vh - 300px);overflow-y:auto}
-.plist-hdr{display:grid;grid-template-columns:38px 38px 1fr 50px 58px 68px;gap:6px;padding:8px 12px;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.2)}
-.pitem{display:grid;grid-template-columns:38px 38px 1fr 50px 58px 68px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.025);transition:background .12s}
+.plist-hdr{display:grid;grid-template-columns:34px 40px 1fr 46px 70px 52px 68px;gap:6px;padding:8px 12px;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.2)}
+.pitem{display:grid;grid-template-columns:34px 40px 1fr 46px 70px 52px 68px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.025);transition:background .12s}
 .pitem:hover{background:rgba(255,255,255,0.025)}
 .p-rank{font-size:12px;color:#475569;font-weight:700;text-align:center}
 .p-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#1e293b;border:1px solid rgba(255,255,255,0.08);display:block}
@@ -134,10 +134,14 @@ select.sel option{background:#1e293b}
   .draft-layout{grid-template-columns:1fr}
   .plist{max-height:50vh}
 }
+.team-logo{width:16px;height:16px;object-fit:contain;flex-shrink:0;vertical-align:middle}
+.p-stat{font-size:11px;font-weight:700;color:#e2e8f0;text-align:right;line-height:1.3}
+.p-stat-sub{font-size:10px;color:#475569;text-align:right}
+.p-adp{font-size:11px;font-weight:700;color:#64748b;text-align:center}
 @media(max-width:600px){
-  .plist-hdr,.pitem{grid-template-columns:28px 1fr 44px 52px;gap:4px}
+  .plist-hdr,.pitem{grid-template-columns:26px 1fr 44px 58px;gap:4px}
   .plist-hdr>:nth-child(2),.pitem>:nth-child(2){display:none}
-  .plist-hdr>:nth-child(5),.pitem>:nth-child(5){display:none}
+  .plist-hdr>:nth-child(5),.pitem>:nth-child(5),.plist-hdr>:nth-child(6),.pitem>:nth-child(6){display:none}
 }
 </style>
 </head>
@@ -191,6 +195,7 @@ let S = {
   speed: 900,
   cpuTimer: null,
   autoPick: false,
+  teamLogos: {},
 };
 
 /* ===== DATA ===== */
@@ -199,15 +204,22 @@ async function loadData() {
     const [sr,mr] = await Promise.allSettled([fetch(LEAGUE.statsUrl),fetch(LEAGUE.metaUrl)]);
     if (mr.status==='fulfilled'&&mr.value.ok) {
       const md = await mr.value.json();
-      for (const m of Object.values(md)) { if (m.name) S.meta[m.name]=m; }
+      if (md.team_logos) S.teamLogos = md.team_logos;
+      const src = md.players && typeof md.players==='object' ? md.players : md;
+      for (const [name,m] of Object.entries(src)) {
+        if (typeof m==='object' && m && m.photo_url) S.meta[name]=m;
+      }
     }
     if (sr.status==='fulfilled'&&sr.value.ok) {
       const sd = await sr.value.json();
       const raw = [];
       for (const [id,p] of Object.entries(sd)) {
         if (!['QB','RB','WR','TE','K','DST'].includes(p.position)) continue;
-        const pts = Object.values(p.stats||{}).reduce((s,w)=>s+(w.fpts||0),0);
-        raw.push({id,name:p.name,pos:p.position,team:p.nfl_team||'',totalPts:Math.round(pts*10)/10});
+        const weeks = Object.values(p.stats||{});
+        const pts = weeks.reduce((s,w)=>s+(w.fpts||0),0);
+        const gp = weeks.filter(w=>w.fpts>0).length;
+        const ppg = gp>0 ? Math.round(pts/gp*10)/10 : 0;
+        raw.push({id,name:p.name,pos:p.position,team:p.nfl_team||'',totalPts:Math.round(pts*10)/10,gp,ppg});
       }
       S.players = computeVOR(raw);
       S.available = new Set(S.players.map(p=>p.id));
@@ -534,24 +546,29 @@ function buildPlayerList(isMyTurn) {
 
   const rows=filtered.map(p=>{
     const m=S.meta[p.name];
-    const img=m&&m.headshot_url
-      ?`<img src="${m.headshot_url}" class="p-photo" alt="" onerror="this.outerHTML='<div class=\\'p-photo-ph\\'>${p.pos}</div>'">`
+    const img=m&&m.photo_url
+      ?`<img src="${m.photo_url}" class="p-photo" alt="${p.name}" onerror="this.outerHTML='<div class=\\'p-photo-ph\\'>${p.pos}</div>'">`
       :`<div class="p-photo-ph">${p.pos}</div>`;
+    const logoUrl=S.teamLogos[p.team]||'';
+    const teamLine=p.team?`<div class="p-team" style="display:flex;align-items:center;gap:3px">${logoUrl?`<img src="${logoUrl}" class="team-logo" alt="${p.team}" onerror="this.style.display='none'">`:''} ${p.team}</div>`:'';
+    const adpRound=Math.ceil(p.rank/N);
+    const adpPick=((p.rank-1)%N)+1;
     const btn=isMyTurn
       ?`<button class="draft-btn" onclick="userDraft('${p.id}')">DRAFT</button>`
       :`<span class="cpu-badge">#${p.rank}</span>`;
     return `<div class="pitem">
       <div class="p-rank">${p.rank}</div>
       ${img}
-      <div><div class="p-name">${p.name}</div><div class="p-team">${p.team}</div></div>
+      <div><div class="p-name">${p.name}</div>${teamLine}</div>
       <div><span class="pos-badge pos-${p.pos}">${p.pos}</span></div>
-      <div class="p-pts">${p.totalPts}</div>
+      <div><div class="p-stat">${p.totalPts}</div><div class="p-stat-sub">${p.ppg}/gm · ${p.gp}gp</div></div>
+      <div class="p-adp">Rd ${adpRound}.${adpPick}</div>
       ${btn}
     </div>`;
   }).join('');
 
   return `<div class="plist">
-    <div class="plist-hdr"><div>RK</div><div>—</div><div>PLAYER</div><div>POS</div><div>PTS</div><div>${isMyTurn?'PICK':'RK'}</div></div>
+    <div class="plist-hdr"><div>RK</div><div>—</div><div>PLAYER</div><div>POS</div><div>2025 PTS</div><div>ADP</div><div>${isMyTurn?'PICK':'—'}</div></div>
     ${rows||'<div style="padding:20px;text-align:center;color:#475569;font-size:12px">No players found</div>'}
   </div>`;
 }
