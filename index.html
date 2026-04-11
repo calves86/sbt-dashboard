@@ -2307,7 +2307,7 @@ function renderPlayers(){
   (DATA.rosters||[]).filter(r=>r.year===yr).forEach(r=>{
     r.players.forEach(p=>{const nm=normN(p.name);if(!rosterMap[nm])rosterMap[nm]=r.team_name;});
   });
-  function owned(name){const t=rosterMap[name];return t?`<div style="font-size:10px;color:#10b981;font-weight:600;margin-top:1px">⚑ ${t}</div>`:''}
+  function owned(_n){return '';}
 
   // ── Column definitions by position ───────────────
   if(pos==='DST'){
@@ -2442,8 +2442,11 @@ function renderPlayerProfile(name){
   // ── Header card ───────────────────────────────────
   html+=`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:24px;display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">`;
   // Photo
+  const dstLogoUrl=pos==='DST'?(teamLogos[latestTeam]||''):'';
   if(photo){
     html+=`<img src="${photo}" onerror="this.style.display='none'" style="width:96px;height:96px;border-radius:12px;object-fit:cover;background:rgba(255,255,255,0.05);flex-shrink:0">`;
+  } else if(dstLogoUrl){
+    html+=`<div style="width:96px;height:96px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0"><img src="${dstLogoUrl}" style="width:72px;height:72px;object-fit:contain"></div>`;
   } else {
     html+=`<div style="width:96px;height:96px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0">🏈</div>`;
   }
@@ -2782,6 +2785,7 @@ function renderPlayerProfile(name){
   // ── Year-by-year stats table ──────────────────────
   function weeklyGameLog(yr){
     if(state.psExpandYear!==yr) return '';
+    if(pos==='DST') return `<div style="padding:12px 14px;background:rgba(0,0,0,0.25);border-top:1px solid rgba(255,255,255,0.06);color:#64748b;font-size:12px;font-style:italic">Week-by-week data not available for DST.</div>`;
     if(!WEEKLY_DETAIL_CACHE||WEEKLY_DETAIL_CACHE===false){
       loadWeeklyDetail();
       return `<div style="padding:12px 14px;background:rgba(0,0,0,0.25);border-top:1px solid rgba(255,255,255,0.06);color:#94a3b8;font-size:12px;font-style:italic">Loading game log...</div>`;
