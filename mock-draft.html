@@ -143,9 +143,48 @@ select.sel option{background:#1e293b}
   .plist-hdr>:nth-child(2),.pitem>:nth-child(2){display:none}
   .plist-hdr>:nth-child(5),.pitem>:nth-child(5),.plist-hdr>:nth-child(6),.pitem>:nth-child(6){display:none}
 }
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(6px)}
+.modal-card{max-width:720px;margin:0 auto;background:#0d1526;border:1px solid rgba(255,255,255,0.1);border-radius:20px;overflow:hidden}
+.modal-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02)}
+.modal-close{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+.modal-close:hover{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#ef4444}
+.modal-body{padding:20px}
+.modal-header{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap}
+.modal-photo{width:96px;height:96px;border-radius:14px;object-fit:cover;background:rgba(255,255,255,0.05);flex-shrink:0;border:2px solid rgba(255,255,255,0.08)}
+.modal-photo-ph{width:96px;height:96px;border-radius:14px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;border:2px solid rgba(255,255,255,0.06)}
+.modal-name{font-size:24px;font-weight:800;color:#f1f5f9;margin-bottom:5px}
+.modal-team-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.modal-bio{font-size:12px;color:#64748b;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.modal-bio span{display:flex;align-items:center;gap:4px}
+.modal-stat-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.modal-stat{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;text-align:center;flex:1;min-width:70px}
+.modal-stat-val{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.modal-stat-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.modal-section{margin-bottom:22px}
+.modal-sec-title{font-size:12px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.modal-table{width:100%;border-collapse:collapse;font-size:12px}
+.modal-table th{padding:6px 8px;text-align:right;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.8px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.07)}
+.modal-table th:first-child,.modal-table td:first-child{text-align:left}
+.modal-table td{padding:6px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.03);color:#94a3b8;vertical-align:middle}
+.modal-table tr:hover td{background:rgba(255,255,255,0.02)}
+.modal-table .pts-cell{font-weight:800;color:#e2e8f0}
+.modal-table .best-week td{background:rgba(16,185,129,0.06)!important}
+.pts-bar-wrap{display:flex;align-items:center;gap:6px}
+.pts-bar{height:4px;border-radius:2px;background:rgba(16,185,129,0.6);flex-shrink:0}
+.career-row-active td{color:#e2e8f0}
 </style>
 </head>
 <body>
+<div id="p-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closePlayerModal()">
+  <div class="modal-card">
+    <div class="modal-topbar">
+      <div id="p-modal-label" style="font-size:12px;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:1px"></div>
+      <button class="modal-close" onclick="closePlayerModal()">✕</button>
+    </div>
+    <div class="modal-body" id="p-modal-body"></div>
+  </div>
+</div>
 <div class="header">
   <div class="header-inner">
     <div class="header-left">
@@ -196,7 +235,10 @@ let S = {
   cpuTimer: null,
   autoPick: false,
   teamLogos: {},
+  weeklyStats: {},
 };
+let CAREER_STATS = null; // null=not loaded, false=loading, object=loaded
+let MODAL_PID = null;
 
 /* ===== DATA ===== */
 async function loadData() {
@@ -219,6 +261,7 @@ async function loadData() {
         const pts = weeks.reduce((s,w)=>s+(w.fpts||0),0);
         const gp = weeks.filter(w=>w.fpts>0).length;
         const ppg = gp>0 ? Math.round(pts/gp*10)/10 : 0;
+        S.weeklyStats[id] = p.stats || {};
         raw.push({id,name:p.name,pos:p.position,team:p.nfl_team||'',totalPts:Math.round(pts*10)/10,gp,ppg});
       }
       S.players = computeVOR(raw);
@@ -558,8 +601,8 @@ function buildPlayerList(isMyTurn) {
       :`<span class="cpu-badge">#${p.rank}</span>`;
     return `<div class="pitem">
       <div class="p-rank">${p.rank}</div>
-      ${img}
-      <div><div class="p-name">${p.name}</div>${teamLine}</div>
+      <div onclick="showPlayerModal('${p.id}')" style="cursor:pointer" title="View ${p.name} stats">${img}</div>
+      <div onclick="showPlayerModal('${p.id}')" style="cursor:pointer" title="View ${p.name} stats"><div class="p-name" style="color:#e2e8f0;transition:color .15s" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#e2e8f0'">${p.name}</div>${teamLine}</div>
       <div><span class="pos-badge pos-${p.pos}">${p.pos}</span></div>
       <div><div class="p-stat">${p.totalPts}</div><div class="p-stat-sub">${p.ppg}/gm · ${p.gp}gp</div></div>
       <div class="p-adp">Rd ${adpRound}.${adpPick}</div>
@@ -740,6 +783,164 @@ function newDraft() {
   S.currentPick=0;
   S.autoPick=false;
   render();
+}
+
+/* ===== PLAYER MODAL ===== */
+async function loadCareerStats() {
+  if (CAREER_STATS !== null) return;
+  CAREER_STATS = false;
+  try {
+    const r = await fetch('https://calves86.github.io/nfl-stats-data/career_stats.json');
+    CAREER_STATS = r.ok ? await r.json() : {};
+  } catch(e) { CAREER_STATS = {}; }
+  if (MODAL_PID) renderModalContent(MODAL_PID);
+}
+
+function showPlayerModal(id) {
+  MODAL_PID = id;
+  const modal = document.getElementById('p-modal');
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  const p = S.players.find(x => x.id === id);
+  if (p) {
+    const lbl = document.getElementById('p-modal-label');
+    if (lbl) lbl.textContent = p.pos + ' · ' + (p.team||'');
+  }
+  renderModalContent(id);
+  loadCareerStats();
+}
+
+function closePlayerModal() {
+  document.getElementById('p-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  MODAL_PID = null;
+}
+
+function renderModalContent(id) {
+  const el = document.getElementById('p-modal-body');
+  if (!el) return;
+  const player = S.players.find(p => p.id === id);
+  if (!player) return;
+  const m = S.meta[player.name] || {};
+  const weekly = S.weeklyStats[id] || {};
+  const career = (CAREER_STATS && CAREER_STATS[player.name]) || [];
+  const logoUrl = S.teamLogos[player.team] || '';
+  const posColor = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc15',DST:'#a78bfa'}[player.pos]||'#94a3b8';
+  const adpRound = Math.ceil(player.rank/N);
+  const adpPick = ((player.rank-1)%N)+1;
+
+  let html = '';
+
+  // ── Header ──
+  html += `<div class="modal-header">`;
+  const photo = m.photo_url || '';
+  if (photo) {
+    html += `<img src="${photo}" class="modal-photo" alt="${player.name}" onerror="this.className='modal-photo-ph';this.innerHTML='🏈'">`;
+  } else if (player.pos === 'DST' && logoUrl) {
+    html += `<div class="modal-photo-ph"><img src="${logoUrl}" style="width:64px;height:64px;object-fit:contain"></div>`;
+  } else {
+    html += `<div class="modal-photo-ph">🏈</div>`;
+  }
+  html += `<div style="flex:1;min-width:180px">`;
+  html += `<div class="modal-name">${player.name}</div>`;
+  html += `<div class="modal-team-row">`;
+  html += `<span class="pos-badge pos-${player.pos}" style="font-size:12px;padding:3px 10px">${player.pos}</span>`;
+  if (logoUrl) html += `<img src="${logoUrl}" style="height:22px;width:auto;object-fit:contain" onerror="this.style.display='none'">`;
+  if (player.team) html += `<span style="font-size:14px;color:#94a3b8;font-weight:700">${player.team}</span>`;
+  html += `</div>`;
+  // Bio
+  const bio = [];
+  if (m.height) { const h=parseInt(m.height); if(!isNaN(h)) bio.push(`${Math.floor(h/12)}'${h%12}"`); }
+  if (m.weight) bio.push(`${m.weight} lbs`);
+  if (m.age) bio.push(`Age ${m.age}`);
+  if (m.college) bio.push(m.college);
+  if (m.jersey_number) bio.push(`#${m.jersey_number}`);
+  if (bio.length) html += `<div class="modal-bio">${bio.map(b=>`<span>${b}</span>`).join('<span style="color:#2d3f5a">·</span>')}</div>`;
+  if (m.years_exp != null) {
+    const exp = parseInt(m.years_exp);
+    html += `<div style="font-size:11px;color:#475569">${exp === 0 ? 'Rookie' : exp + ' yr' + (exp===1?'':'s') + ' exp'}</div>`;
+  }
+  html += `</div></div>`;
+
+  // ── Stat bar ──
+  const careerTotal = career.reduce((s,r)=>s+(r.fpts||0),0);
+  html += `<div class="modal-stat-bar">`;
+  html += `<div class="modal-stat"><div class="modal-stat-val" style="color:${posColor}">${player.totalPts}</div><div class="modal-stat-lbl">2025 Pts</div></div>`;
+  html += `<div class="modal-stat"><div class="modal-stat-val" style="color:#e2e8f0">${player.ppg}</div><div class="modal-stat-lbl">Pts/Game</div></div>`;
+  html += `<div class="modal-stat"><div class="modal-stat-val" style="color:#94a3b8">${player.gp}</div><div class="modal-stat-lbl">GP</div></div>`;
+  html += `<div class="modal-stat"><div class="modal-stat-val" style="color:#facc15">#${player.rank}</div><div class="modal-stat-lbl">VOR Rank</div></div>`;
+  html += `<div class="modal-stat"><div class="modal-stat-val" style="color:#a78bfa">Rd ${adpRound}.${adpPick}</div><div class="modal-stat-lbl">ADP</div></div>`;
+  if (careerTotal > 0) html += `<div class="modal-stat"><div class="modal-stat-val" style="color:#34d399">${Math.round(careerTotal)}</div><div class="modal-stat-lbl">Career Pts</div></div>`;
+  html += `</div>`;
+
+  // ── 2025 Weekly ──
+  html += `<div class="modal-section">`;
+  html += `<div class="modal-sec-title">2025 Season — Week by Week</div>`;
+  const wkEntries = Object.entries(weekly).map(([wk,w])=>({wk:+wk,...w})).sort((a,b)=>a.wk-b.wk).filter(w=>w.opp);
+  if (wkEntries.length) {
+    const maxPts = Math.max(...wkEntries.map(w=>w.fpts||0));
+    const bestWk = wkEntries.reduce((b,w)=>(w.fpts||0)>(b.fpts||0)?w:b, wkEntries[0]);
+    html += `<table class="modal-table"><thead><tr>`;
+    html += `<th>WK</th><th style="text-align:left">OPP</th><th style="text-align:left">STAT LINE</th><th>FPTS</th>`;
+    html += `</tr></thead><tbody>`;
+    wkEntries.forEach(w => {
+      const fpts = w.fpts || 0;
+      const barW = maxPts > 0 ? Math.round((fpts/maxPts)*60) : 0;
+      const isBest = w.wk === bestWk.wk;
+      const bye = !w.stat_line && fpts === 0 && w.opp === '-';
+      html += `<tr class="${isBest?'best-week':''}">`;
+      html += `<td style="color:#64748b;font-size:11px;font-weight:700">${w.wk}</td>`;
+      html += `<td style="color:${bye?'#2d3f5a':'#94a3b8'};font-size:11px">${bye?'BYE':w.opp}</td>`;
+      html += `<td style="font-size:11px;color:#64748b;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.stat_line||'—'}</td>`;
+      html += `<td><div class="pts-bar-wrap" style="justify-content:flex-end">`;
+      if (fpts > 0) html += `<div class="pts-bar" style="width:${barW}px;background:${isBest?'#10b981':'rgba(148,163,184,0.4)'}"></div>`;
+      html += `<span class="pts-cell" style="color:${fpts===0?'#2d3f5a':isBest?'#10b981':'#e2e8f0'};min-width:38px;text-align:right">${fpts > 0 ? fpts.toFixed(1) : (bye?'—':'DNS')}</span>`;
+      html += `</div></td>`;
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    html += `<div style="font-size:11px;color:#475569;margin-top:8px;text-align:right">Best week: Wk ${bestWk.wk} vs ${bestWk.opp} — ${(bestWk.fpts||0).toFixed(1)} pts</div>`;
+  } else {
+    html += `<div style="padding:16px;text-align:center;color:#475569;font-size:12px">No 2025 stats available</div>`;
+  }
+  html += `</div>`;
+
+  // ── Career Stats ──
+  html += `<div class="modal-section">`;
+  html += `<div class="modal-sec-title">Career Stats</div>`;
+  if (CAREER_STATS === false) {
+    html += `<div style="padding:20px;text-align:center;color:#475569;font-size:12px"><span class="spinner" style="margin-right:8px"></span>Loading career data...</div>`;
+  } else if (!career.length) {
+    html += `<div style="padding:16px;text-align:center;color:#475569;font-size:12px">No career stats found</div>`;
+  } else {
+    const pos = player.pos;
+    const sorted = [...career].sort((a,b)=>b.year-a.year);
+    html += `<table class="modal-table"><thead><tr>`;
+    html += `<th>Year</th><th style="text-align:left">Team</th>`;
+    if (pos === 'QB') html += `<th>Cmp/Att</th><th>Yds</th><th>TD</th><th>INT</th><th>Ru Yds</th>`;
+    else if (pos === 'RB') html += `<th>Att</th><th>Ru Yds</th><th>Ru TD</th><th>Rec</th><th>Re Yds</th>`;
+    else if (['WR','TE'].includes(pos)) html += `<th>Tgt</th><th>Rec</th><th>Re Yds</th><th>Re TD</th>`;
+    html += `<th>FPTS</th></tr></thead><tbody>`;
+    sorted.forEach(r => {
+      const tl = S.teamLogos[r.nfl_team] || '';
+      html += `<tr class="${r.fpts>0?'career-row-active':''}">`;
+      html += `<td style="color:#94a3b8;font-weight:700">${r.year}</td>`;
+      html += `<td style="text-align:left"><div style="display:flex;align-items:center;gap:5px">${tl?`<img src="${tl}" style="height:14px;width:auto;object-fit:contain" onerror="this.style.display='none'">`:''}${r.nfl_team||'—'}</div></td>`;
+      if (pos === 'QB') {
+        html += `<td>${r.pass_comp||0}/${r.pass_att||0}</td><td>${r.pass_yds||0}</td><td>${r.pass_td||0}</td><td>${r.pass_int||0}</td><td>${r.rush_yds||0}</td>`;
+      } else if (pos === 'RB') {
+        html += `<td>${r.rush_att||0}</td><td>${r.rush_yds||0}</td><td>${r.rush_td||0}</td><td>${r.rec_rec||0}</td><td>${r.rec_yds||0}</td>`;
+      } else if (['WR','TE'].includes(pos)) {
+        html += `<td>${r.rec_tar||0}</td><td>${r.rec_rec||0}</td><td>${r.rec_yds||0}</td><td>${r.rec_td||0}</td>`;
+      }
+      html += `<td class="pts-cell" style="color:${r.fpts>0?posColor:'#2d3f5a'}">${r.fpts > 0 ? r.fpts.toFixed(1) : '—'}</td>`;
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+  html += `</div>`;
+
+  el.innerHTML = html;
 }
 
 /* ===== INIT ===== */
