@@ -575,7 +575,7 @@ function render(){
   else if(state.tab==='Champions')el.innerHTML=renderChampions();
   else if(state.tab==='Seasons')el.innerHTML=renderSeasons();
   else if(state.tab==='Record Book')el.innerHTML=renderRecords();
-  else if(state.tab==='Draft History')el.innerHTML=renderDraft();
+  else if(state.tab==='Draft History'){loadCareerStats();el.innerHTML=renderDraft();}
   else if(state.tab==='Player Stats')el.innerHTML=renderPlayers();
   else if(state.tab==='Fun Facts')el.innerHTML=renderFunFacts();
   else if(state.tab==='Teams')el.innerHTML=renderTeams();
@@ -1649,11 +1649,23 @@ function renderDraft(){
   if(!rounds.includes(state.draftRound))state.draftRound=rounds[0]||1;
   const rdPicks=yrPicks.filter(p=>p.round===state.draftRound);
 
+  // Build last-known-team fallback from CAREER_CACHE for retired players
+  const lastTeamMap={};
+  if(CAREER_CACHE&&typeof CAREER_CACHE==='object'){
+    Object.entries(CAREER_CACHE).forEach(([name,seasons])=>{
+      if(Array.isArray(seasons)&&seasons.length){
+        const s=seasons.filter(x=>x.nfl_team).sort((a,b)=>b.year-a.year);
+        if(s.length)lastTeamMap[name]=s[0].nfl_team;
+      }
+    });
+  }
+  function getTeam(name){return(playerMeta[name]||{}).nfl_team||lastTeamMap[name]||'';}
+
   // helpers
   const posColors={QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#22c55e'};
   function abbrevName(n){const p=n.trim().split(' ');return p.length>=2?p[0][0]+'. '+p.slice(1).join(' '):n;}
   function draftPlayerCell(p){
-    const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
+    const nflTeam=getTeam(p.player_name);
     const logoUrl=teamLogos[nflTeam]||'';
     const logoHtml=logoUrl?`<img src="${logoUrl}" onerror="this.style.display='none'" style="height:16px;width:auto;max-width:20px;flex-shrink:0;object-fit:contain">`:'';
     const teamLine=nflTeam?`<div style="display:flex;align-items:center;gap:4px;margin-top:2px">${logoHtml}<span style="font-size:11px;color:#64748b">${nflTeam}</span></div>`:'';
@@ -1702,7 +1714,7 @@ function renderDraft(){
         const pos=p.position||'';
         const pc=posColors[pos]||'#64748b';
         const photo=(playerMeta[p.player_name]||{}).photo_url||'';
-        const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
+        const nflTeam=getTeam(p.player_name);
         const nflLogo=teamLogos[nflTeam]||'';
         const name=abbrevName(p.player_name);
         html+=`<td style="width:${CW}px;padding:4px 3px;border:1px solid rgba(255,255,255,0.05);vertical-align:top">`;
@@ -1742,7 +1754,7 @@ function renderDraft(){
       html+=`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden">`;
       html+=`<div style="padding:10px 14px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:800;color:#e2e8f0;letter-spacing:0.5px">${tn}</div>`;
       tpicks.forEach(p=>{
-        const nflTeam=(playerMeta[p.player_name]||{}).nfl_team||'';
+        const nflTeam=getTeam(p.player_name);
         const logoUrl=teamLogos[nflTeam]||'';
         const logoHtml=logoUrl?`<img src="${logoUrl}" onerror="this.style.display='none'" style="height:14px;width:auto;max-width:18px;flex-shrink:0;object-fit:contain">`:'';
         html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.04)">`;
@@ -2135,7 +2147,7 @@ function loadCareerStats(){
   CAREER_CACHE=false;
   fetch(`${NFL_DATA_BASE}/career_stats.json`)
     .then(r=>r.json())
-    .then(data=>{CAREER_CACHE=data;if(state.tab==='Player Stats')render();})
+    .then(data=>{CAREER_CACHE=data;if(state.tab==='Player Stats'||state.tab==='Draft History')render();})
     .catch(()=>{CAREER_CACHE={};});
 }
 function loadPlayerMeta(){
