@@ -510,7 +510,7 @@ function initApp(){
 }
 
 function renderTabs(){
-  const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Head-to-Head','Player Stats','News','Transactions','Fun Facts','Rules'];
+  const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Player Stats','News','Transactions','Fun Facts','Rules'];
   document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="tab ${state.tab===t?'active':''}" onclick="state.tab='${t}';render()">${t}</button>`).join('');
 }
 
@@ -576,7 +576,6 @@ function render(){
   else if(state.tab==='Seasons')el.innerHTML=renderSeasons();
   else if(state.tab==='Record Book')el.innerHTML=renderRecords();
   else if(state.tab==='Draft History')el.innerHTML=renderDraft();
-  else if(state.tab==='Head-to-Head')el.innerHTML=renderH2H();
   else if(state.tab==='Player Stats')el.innerHTML=renderPlayers();
   else if(state.tab==='Fun Facts')el.innerHTML=renderFunFacts();
   else if(state.tab==='Teams')el.innerHTML=renderTeams();
@@ -919,7 +918,9 @@ function renderRules(){
 }
 
 function renderTeams(){
-  let html=secTitle('Teams','Franchise Histories & Records');
+  const _tst=`<div class="sub-tabs"><button class="sub-tab ${state.teamsSection!=='h2h'?'active':''}" onclick="state.teamsSection='franchises';render()">Franchises</button><button class="sub-tab ${state.teamsSection==='h2h'?'active':''}" onclick="state.teamsSection='h2h';state.teamsFranchise=null;render()">Head-to-Head</button></div>`;
+  if(state.teamsSection==='h2h')return _tst+renderH2H();
+  let html=secTitle('Teams','Franchise Histories & Records')+_tst;
   const champLookup={};
   (DATA.champions||[]).forEach(c=>{
     champLookup[c.season]={champion:c.team_name,runner_up:c.runner_up,third:c.third_place,booty:c.booty_bowl_champ,loser:c.biggest_loser};
