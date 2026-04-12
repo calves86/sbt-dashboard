@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nav Concept — SBT</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060d1a; color: #e2e8f0; font-family: 'DM Sans', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+
+/* ===== LEFT NAV ===== */
+#leftnav {
+  width: 220px;
+  flex-shrink: 0;
+  background: #080f1e;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.ln-brand {
+  padding: 20px 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+.ln-logo { width: 36px; height: 36px; object-fit: contain; }
+.ln-league { font-size: 13px; font-weight: 800; color: #e2e8f0; letter-spacing: .5px; line-height: 1.2; }
+.ln-season { font-size: 10px; color: #475569; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+.ln-section {
+  padding: 16px 12px 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.ln-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  margin: 1px 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .15s;
+  cursor: pointer;
+  user-select: none;
+}
+.ln-item:hover { background: rgba(255,255,255,0.04); color: #94a3b8; }
+.ln-item.active { background: rgba(16,185,129,0.12); color: #10b981; }
+.ln-item.active .ln-icon { color: #10b981; }
+.ln-item.section-history.active { background: rgba(139,92,246,0.12); color: #a78bfa; }
+.ln-item.section-history:hover { color: #94a3b8; }
+
+.ln-icon {
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #334155;
+}
+.ln-item:hover .ln-icon { color: #64748b; }
+
+.ln-badge {
+  margin-left: auto;
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+}
+
+.ln-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+  margin: 8px 14px;
+}
+
+/* Sub-items (archive years) */
+.ln-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px 7px 40px;
+  margin: 1px 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .15s;
+  cursor: pointer;
+}
+.ln-sub:hover { background: rgba(255,255,255,0.03); color: #64748b; }
+.ln-sub.active { color: #a78bfa; }
+
+.ln-spacer { flex: 1; }
+
+.ln-footer {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 10px;
+  color: #1e293b;
+  text-align: center;
+  letter-spacing: .5px;
+}
+
+/* ===== MAIN CONTENT ===== */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* thin top bar — just league title + actions on mobile */
+#topbar {
+  background: #080f1e;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.tb-title { font-size: 13px; font-weight: 700; color: #475569; }
+.tb-page  { font-size: 15px; font-weight: 800; color: #e2e8f0; margin-left: 4px; }
+.tb-actions { margin-left: auto; display: flex; gap: 8px; }
+.tb-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.tb-btn:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+.tb-btn.accent { background: rgba(16,185,129,0.12); color: #10b981; }
+
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+
+/* Demo placeholder cards */
+.demo-section { margin-bottom: 32px; }
+.demo-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #334155;
+  margin-bottom: 14px;
+}
+.demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.demo-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 16px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.demo-card-title { font-size: 13px; font-weight: 700; color: #64748b; }
+.demo-card-val { font-size: 28px; font-weight: 800; font-family: 'Bebas Neue', sans-serif; color: #10b981; }
+
+.note {
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+}
+.note strong { color: #10b981; }
+
+/* ===== TOGGLE (collapsed nav) ===== */
+#nav-toggle-btn {
+  display: none;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ===== COLLAPSE BUTTON ===== */
+#nav-collapse-btn {
+  background: none;
+  border: none;
+  color: #334155;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 6px;
+  border-radius: 8px;
+  transition: all .15s;
+  letter-spacing: .5px;
+}
+#nav-collapse-btn:hover { background: rgba(255,255,255,0.03); color: #64748b; }
+
+/* ===== COLLAPSED STATE ===== */
+body.nav-collapsed #leftnav { width: 56px; }
+body.nav-collapsed .ln-brand { padding: 14px 10px; justify-content: center; }
+body.nav-collapsed .ln-logo { width: 32px; height: 32px; }
+body.nav-collapsed .ln-league, body.nav-collapsed .ln-season { display: none; }
+body.nav-collapsed .ln-section { display: none; }
+body.nav-collapsed .ln-item { justify-content: center; padding: 10px; margin: 2px 4px; }
+body.nav-collapsed .ln-item span:not(.ln-icon) { display: none; }
+body.nav-collapsed .ln-badge { display: none; }
+body.nav-collapsed .ln-sub { display: none; }
+body.nav-collapsed .ln-divider { margin: 6px 8px; }
+body.nav-collapsed #nav-collapse-btn { justify-content: center; padding: 10px; }
+body.nav-collapsed #nav-collapse-btn span { display: none; }
+body.nav-collapsed .ln-footer { display: none; }
+
+@media(max-width:700px) {
+  #leftnav { position: fixed; left: 0; top: 0; bottom: 0; z-index: 200; transform: translateX(-100%); transition: transform .25s; width: 220px !important; }
+  #leftnav.open { transform: translateX(0); }
+  #nav-toggle-btn { display: block; }
+  body.nav-collapsed #leftnav { transform: translateX(-100%); width: 220px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LEFT NAV ===== -->
+<nav id="leftnav">
+  <div class="ln-brand">
+    <img src="sbt-logo.png" class="ln-logo" alt="SBT" onerror="this.style.display='none'">
+    <div>
+      <div class="ln-league">SBT Fantasy</div>
+      <div class="ln-season">Sigma Beta Tau</div>
+    </div>
+  </div>
+
+  <div class="ln-section">2025 Season</div>
+
+  <a href="index.html" class="ln-item active" onclick="setActive(this)">
+    <span class="ln-icon">&#127968;</span>
+    <span>Dashboard</span>
+  </a>
+  <a href="team.html" class="ln-item" onclick="setActive(this)">
+    <span class="ln-icon">&#128101;</span>
+    <span>My Teams</span>
+  </a>
+  <a href="transactions.html" class="ln-item" onclick="setActive(this)">
+    <span class="ln-icon">&#128257;</span>
+    <span>Activity</span>
+  </a>
+  <a href="players.html" class="ln-item" onclick="setActive(this)">
+    <span class="ln-icon">&#10133;</span>
+    <span>Free Agents</span>
+  </a>
+  <a href="trade.html" class="ln-item" onclick="setActive(this)">
+    <span class="ln-icon">&#8652;</span>
+    <span>Trade Builder</span>
+  </a>
+  <a href="mock-draft.html" class="ln-item" onclick="setActive(this)">
+    <span class="ln-icon">&#127919;</span>
+    <span>Mock Draft</span>
+    <span class="ln-badge">NEW</span>
+  </a>
+
+  <div class="ln-divider"></div>
+
+  <div class="ln-section">History</div>
+
+  <div class="ln-item section-history" onclick="toggleArchive()">
+    <span class="ln-icon">&#127942;</span>
+    <span>Season Archive</span>
+    <span id="archive-chevron" style="margin-left:auto;font-size:10px;color:#334155;transition:transform .2s">&#9660;</span>
+  </div>
+  <div id="archive-years">
+    <div class="ln-sub active">2024 Season</div>
+    <div class="ln-sub">2023 Season</div>
+    <div class="ln-sub">2022 Season</div>
+    <div class="ln-sub">2021 Season</div>
+    <div class="ln-sub">2020 Season</div>
+    <div class="ln-sub">2019 Season</div>
+  </div>
+
+  <a href="#" class="ln-item section-history" onclick="setActive(this)">
+    <span class="ln-icon">&#128200;</span>
+    <span>All-Time Stats</span>
+  </a>
+  <a href="#" class="ln-item section-history" onclick="setActive(this)">
+    <span class="ln-icon">&#127939;</span>
+    <span>Hall of Fame</span>
+  </a>
+  <a href="#" class="ln-item section-history" onclick="setActive(this)">
+    <span class="ln-icon">&#128081;</span>
+    <span>Champions</span>
+  </a>
+
+  <div class="ln-spacer"></div>
+
+  <button id="nav-collapse-btn" onclick="toggleCollapse()">
+    <span>&#9664;</span>
+    <span>Collapse</span>
+  </button>
+
+  <div class="ln-footer">SBT · 2025</div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<div id="main">
+  <div id="topbar">
+    <button id="nav-toggle-btn" onclick="document.getElementById('leftnav').classList.toggle('open')">&#9776;</button>
+    <span class="tb-title">Sigma Beta Tau &rsaquo;</span>
+    <span class="tb-page">Dashboard</span>
+    <div class="tb-actions">
+      <button class="tb-btn accent">&#128101; My Team</button>
+      <button class="tb-btn">&#9776; All Teams</button>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="note">
+      <strong>Design Concept &mdash;</strong> This is a preview of the vertical left navigation layout.
+      The nav separates <strong>2025 Season</strong> (active management) from <strong>History</strong> (archive/stats).
+      Try the <strong>collapse button</strong> (bottom of nav) to see the icon-only mode.
+      On mobile the nav slides in from the left via the &#9776; button.
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-label">League Overview</div>
+      <div class="demo-grid">
+        <div class="demo-card"><div class="demo-card-title">Weeks Played</div><div class="demo-card-val">17</div></div>
+        <div class="demo-card"><div class="demo-card-title">Total Transactions</div><div class="demo-card-val">284</div></div>
+        <div class="demo-card"><div class="demo-card-title">Avg Score / Week</div><div class="demo-card-val">118.4</div></div>
+        <div class="demo-card"><div class="demo-card-title">Active Rosters</div><div class="demo-card-val">12</div></div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-label">Current Standings (placeholder)</div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;color:#475569;font-size:13px;text-align:center;height:160px;display:flex;align-items:center;justify-content:center">
+        Standings table would appear here (same as current Dashboard)
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-label">This Week's Matchups (placeholder)</div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;color:#475569;font-size:13px;text-align:center;height:120px;display:flex;align-items:center;justify-content:center">
+        Matchup cards would appear here
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setActive(el) {
+  // Demo only — just updates visual active state
+  document.querySelectorAll('.ln-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+let archiveOpen = true;
+function toggleArchive() {
+  archiveOpen = !archiveOpen;
+  document.getElementById('archive-years').style.display = archiveOpen ? '' : 'none';
+  document.getElementById('archive-chevron').style.transform = archiveOpen ? '' : 'rotate(-90deg)';
+}
+
+let navCollapsed = false;
+function toggleCollapse() {
+  navCollapsed = !navCollapsed;
+  document.body.classList.toggle('nav-collapsed', navCollapsed);
+  const btn = document.getElementById('nav-collapse-btn');
+  btn.innerHTML = navCollapsed
+    ? '<span>&#9654;</span>'
+    : '<span>&#9664;</span><span>Collapse</span>';
+}
+</script>
+</body>
+</html>
