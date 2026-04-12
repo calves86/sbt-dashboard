@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity · SBT Fantasy Football</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:#10b981;text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+
+/* ===== LAYOUT ===== */
+#app{display:flex;min-height:100vh}
+#sidebar{width:240px;min-width:240px;background:#060d1b;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+#main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ===== SIDEBAR ===== */
+.sb-header{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sb-back{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b;margin-bottom:12px;cursor:pointer;text-decoration:none}
+.sb-back:hover{color:#10b981}
+.sb-logo-row{display:flex;align-items:center;gap:10px}
+.sb-logo{width:36px;height:36px;border-radius:8px;object-fit:contain}
+.sb-title{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-season{font-size:11px;color:#475569;letter-spacing:1px}
+.sb-section-label{padding:14px 14px 6px;font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase}
+.sb-stat-card{margin:0 12px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px}
+.sb-stat-num{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;letter-spacing:1px;line-height:1}
+.sb-stat-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.team-rank-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-left:3px solid transparent}
+.team-rank-item:hover{background:rgba(255,255,255,0.02)}
+.team-rank-logo{width:22px;height:22px;border-radius:5px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.team-rank-logo-ph{width:22px;height:22px;border-radius:5px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#64748b;flex-shrink:0}
+.team-rank-name{font-size:11px;font-weight:600;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.team-rank-count{font-size:11px;font-weight:800;color:#64748b;flex-shrink:0}
+
+/* ===== TOP NAV ===== */
+#topnav{background:linear-gradient(135deg,#0d1526,#111f38);border-bottom:1px solid rgba(16,185,129,0.1);padding:12px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;flex-shrink:0}
+.nav-league{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;flex:1}
+.nav-links{display:flex;gap:4px}
+.nav-link{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:#64748b;text-decoration:none;transition:all .15s;letter-spacing:.5px}
+.nav-link:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#10b981;background:rgba(16,185,129,0.1)}
+
+/* ===== PAGE HEADER ===== */
+#page-header{padding:24px 28px 0;flex-shrink:0}
+.page-title{font-size:32px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;line-height:1;margin-bottom:4px}
+.page-sub{font-size:13px;color:#475569;margin-bottom:0}
+
+/* ===== SUMMARY STRIP ===== */
+#summary-strip{display:flex;gap:12px;padding:16px 28px;flex-wrap:wrap;flex-shrink:0}
+.sum-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px 18px;min-width:110px;flex:1}
+.sum-val{font-size:24px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;line-height:1}
+.sum-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+/* ===== FILTER BAR ===== */
+#filter-bar{display:flex;align-items:center;gap:8px;padding:0 28px 16px;flex-wrap:wrap;flex-shrink:0}
+.filter-type-group{display:flex;gap:4px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:4px}
+.ftype-btn{padding:5px 14px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:transparent;color:#475569;font-family:'DM Sans',sans-serif;transition:all .15s}
+.ftype-btn:hover{color:#94a3b8}
+.ftype-btn.active{background:#10b981;color:#0b1120}
+.filter-select{background:#0d1526;border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none}
+.filter-select:focus{border-color:rgba(16,185,129,0.4)}
+.filter-select option{background:#0d1526}
+.result-count{font-size:11px;color:#334155;margin-left:auto}
+
+/* ===== FEED ===== */
+#feed{padding:0 28px 60px;flex:1;overflow-y:auto}
+.week-group{margin-bottom:28px}
+.week-label{font-size:11px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.week-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.04)}
+
+/* ===== TRANSACTION CARDS ===== */
+.tx-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:14px 16px;margin-bottom:8px;transition:background .12s}
+.tx-card:hover{background:rgba(255,255,255,0.035)}
+.tx-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.tx-team-logo{width:28px;height:28px;border-radius:6px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.tx-team-logo-ph{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#64748b;flex-shrink:0}
+.tx-team-name{font-size:13px;font-weight:700;color:#cbd5e1}
+.tx-type-badge{font-size:9px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:5px;text-transform:uppercase}
+.type-add_drop{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)}
+.type-waiver{background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25)}
+.type-add{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)}
+.type-drop{background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+.type-trade{background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.25)}
+.tx-week-badge{font-size:10px;font-weight:700;color:#475569;background:rgba(255,255,255,0.04);border-radius:5px;padding:2px 8px;letter-spacing:.5px}
+.tx-timestamp{font-size:11px;color:#334155}
+.faab-pill{font-size:10px;font-weight:800;color:#f59e0b;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:5px;padding:2px 8px;margin-left:auto}
+
+/* Player rows inside cards */
+.tx-players{display:flex;flex-direction:column;gap:6px}
+.tx-player-row{display:flex;align-items:center;gap:8px}
+.tx-action{width:44px;font-size:9px;font-weight:800;letter-spacing:.5px;flex-shrink:0;text-align:right}
+.tx-add-lbl{color:#10b981}
+.tx-drop-lbl{color:#ef4444}
+.tx-recv-lbl{color:#a78bfa}
+.tx-player-photo{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.06);flex-shrink:0}
+.tx-player-photo-ph{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.tx-player-info{flex:1;min-width:0}
+.tx-player-name{font-size:12px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.tx-player-meta{font-size:10px;color:#475569;font-weight:600;display:flex;align-items:center;gap:5px}
+.tx-pos-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tx-divider{height:1px;background:rgba(255,255,255,0.04);margin:8px 0}
+
+/* ===== TRADE CARDS ===== */
+.trade-card{background:linear-gradient(135deg,rgba(167,139,250,0.04),rgba(139,92,246,0.02));border:1px solid rgba(167,139,250,0.15);border-radius:16px;padding:16px;margin-bottom:8px;transition:background .12s}
+.trade-card:hover{background:linear-gradient(135deg,rgba(167,139,250,0.07),rgba(139,92,246,0.04))}
+.trade-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.trade-label{font-size:12px;font-weight:800;letter-spacing:1px;color:#a78bfa;text-transform:uppercase}
+.trade-sides{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.trade-side{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px}
+.trade-side-team{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.trade-side-logo{width:24px;height:24px;border-radius:5px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.trade-side-logo-ph{width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#64748b;flex-shrink:0}
+.trade-side-name{font-size:11px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trade-receives-lbl{font-size:9px;font-weight:800;letter-spacing:1px;color:#475569;text-transform:uppercase;margin-bottom:6px}
+.trade-arrow{display:flex;align-items:center;justify-content:center;font-size:18px;color:#a78bfa;padding-top:40px}
+
+/* ===== LOADING ===== */
+#loading{position:fixed;inset:0;background:#0b1120;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
+.spin{width:36px;height:36px;border:3px solid rgba(16,185,129,0.15);border-top-color:#10b981;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:14px;color:#475569}
+.empty-state{text-align:center;padding:40px 20px;color:#334155;font-size:14px}
+
+/* ===== MOBILE ===== */
+#sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
+@media(max-width:700px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-toggle{display:block}
+  #topnav{padding:10px 16px}
+  #page-header{padding:14px 16px 0}
+  #summary-strip{padding:12px 16px}
+  #filter-bar{padding:0 16px 12px}
+  #feed{padding:0 16px 60px}
+  .trade-sides{grid-template-columns:1fr;gap:8px}
+  .trade-arrow{padding-top:0;transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><p>Loading activity...</p></div>
+
+<div id="app" style="display:none">
+  <aside id="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-back">&#8592; Dashboard</a>
+      <div class="sb-logo-row">
+        <img src="sbt-logo.png" class="sb-logo" alt="SBT">
+        <div>
+          <div class="sb-title">SBT</div>
+          <div class="sb-season">2025 Season</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-section-label">League Summary</div>
+    <div id="sb-stats"></div>
+    <div class="sb-section-label" style="margin-top:8px">Most Active Teams</div>
+    <div id="sb-team-ranks"></div>
+  </aside>
+
+  <div id="main">
+    <div id="topnav">
+      <button id="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776; Menu</button>
+      <div class="nav-league">Sigma Beta Tau Fantasy Football</div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="team.html" class="nav-link">Teams</a>
+        <a href="transactions.html" class="nav-link active">Activity</a>
+        <a href="mock-draft.html" class="nav-link">Mock Draft</a>
+      </nav>
+    </div>
+
+    <div id="page-header">
+      <div class="page-title">League Activity</div>
+      <div class="page-sub">2025 Season · All waivers, add/drops &amp; trades</div>
+    </div>
+
+    <div id="summary-strip"></div>
+    <div id="filter-bar"></div>
+    <div id="feed"></div>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const FRANCHISE_LOGOS = {
+  "Bear Exposures":"bearexposures-logo.jpg",
+  "Big Fat Chubby":"bigfatchubby-logo.jpg",
+  "Ceaser Salad Tossers \u00c3\u00b0\u00c2\u0178\u00c2\u02dc\u00c2\u203a":"ceaser-logo.jpg",
+  "Ceaser Salad Tossers":"ceaser-logo.jpg",
+  "Clitsburgh Feelers":"clitsburg-logo.jpg",
+  "Comeback Kid":"comebackkid-logo.jpg",
+  "Cooked To Perfection":"cookedtoperfection-logo.jpg",
+  "Gotham Rogues":"gotham-logo.gif",
+  "Smease Appeasers":"smease-logo.png",
+  "Team Freesh":"freesh-logo.jpg",
+  "The MUFF Divers":"muff-logo.png",
+  "Trump Train":"trumptrain-logo.jpg",
+  "skoot":"skoot-logo.jpg"
+};
+
+const POS_COLOR = {QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#ec4899'};
+const TYPE_LABEL = {add_drop:'Add/Drop',waiver:'Waiver',add:'Add',drop:'Drop',trade:'Trade'};
+
+/* ===== STATE ===== */
+let DATA = null;
+let filterType = 'all';
+let filterTeam = 'all';
+let filterWeek = 'all';
+
+/* ===== INIT ===== */
+async function init() {
+  try {
+    const r = await fetch('data/activity_2025.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    DATA = await r.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    buildSidebar();
+    buildSummary();
+    buildFilters();
+    renderFeed();
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:#ef4444">Failed to load data.<br><small>${e.message}</small></p>`;
+  }
+}
+
+function franchiseLogo(name) {
+  const f = FRANCHISE_LOGOS[name];
+  return f ? `team-logo/${f}` : '';
+}
+
+function teamLogoEl(name, cls='tx-team-logo', phCls='tx-team-logo-ph') {
+  const logo = franchiseLogo(name);
+  if (logo) return `<img src="${logo}" class="${cls}" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="${phCls}" style="display:none">${(name||'?')[0]}</div>`;
+  return `<div class="${phCls}">${(name||'?')[0]}</div>`;
+}
+
+/* ===== SIDEBAR ===== */
+function buildSidebar() {
+  const txs = DATA.transactions;
+
+  // Count by type
+  const moves = txs.filter(t => t.type !== 'trade').length;
+  const trades = txs.filter(t => t.type === 'trade').length;
+  const totalFaab = txs.reduce((sum, t) => {
+    if (t.type === 'waiver') return sum + (t.adds||[]).reduce((s,p) => s + (p.faab||0), 0);
+    return sum;
+  }, 0);
+
+  document.getElementById('sb-stats').innerHTML = `
+    <div class="sb-stat-card">
+      <div class="sb-stat-num">${moves}</div>
+      <div class="sb-stat-lbl">Waiver Moves</div>
+    </div>
+    <div class="sb-stat-card" style="border-color:rgba(167,139,250,0.15)">
+      <div class="sb-stat-num" style="color:#a78bfa">${trades}</div>
+      <div class="sb-stat-lbl">Trades</div>
+    </div>
+    <div class="sb-stat-card" style="border-color:rgba(245,158,11,0.15)">
+      <div class="sb-stat-num" style="color:#f59e0b">$${totalFaab.toFixed(0)}</div>
+      <div class="sb-stat-lbl">FAAB Spent</div>
+    </div>`;
+
+  // Team activity counts
+  const teamCounts = {};
+  txs.forEach(t => {
+    if (t.type === 'trade') {
+      (t.sides||[]).forEach(s => { teamCounts[s.team] = (teamCounts[s.team]||0) + 1; });
+    } else {
+      if (t.team) teamCounts[t.team] = (teamCounts[t.team]||0) + 1;
+    }
+  });
+
+  const sorted = Object.entries(teamCounts).sort((a,b) => b[1]-a[1]);
+  document.getElementById('sb-team-ranks').innerHTML = sorted.map(([name, count]) =>
+    `<div class="team-rank-item">
+      ${teamLogoEl(name,'team-rank-logo','team-rank-logo-ph')}
+      <span class="team-rank-name">${name}</span>
+      <span class="team-rank-count">${count}</span>
+    </div>`
+  ).join('');
+}
+
+/* ===== SUMMARY STRIP ===== */
+function buildSummary() {
+  const txs = DATA.transactions;
+  const adds = txs.filter(t => t.type !== 'drop' && t.type !== 'trade').flatMap(t => t.adds||[]).length;
+  const drops = txs.filter(t => t.type !== 'trade').flatMap(t => t.drops||[]).length;
+  const waivers = txs.filter(t => t.type === 'waiver').length;
+  const trades = txs.filter(t => t.type === 'trade').length;
+  const totalFaab = txs.reduce((sum,t) => {
+    if (t.type === 'waiver') return sum + (t.adds||[]).reduce((s,p)=>s+(p.faab||0),0);
+    return sum;
+  }, 0);
+
+  // Most active team
+  const teamCounts = {};
+  txs.forEach(t => {
+    if (t.type === 'trade') (t.sides||[]).forEach(s => { teamCounts[s.team]=(teamCounts[s.team]||0)+1; });
+    else if (t.team) teamCounts[t.team]=(teamCounts[t.team]||0)+1;
+  });
+  const [topTeam] = Object.entries(teamCounts).sort((a,b)=>b[1]-a[1]);
+
+  document.getElementById('summary-strip').innerHTML = `
+    <div class="sum-card"><div class="sum-val" style="color:#10b981">${adds}</div><div class="sum-lbl">Players Added</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#ef4444">${drops}</div><div class="sum-lbl">Players Dropped</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#60a5fa">${waivers}</div><div class="sum-lbl">Waiver Claims</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#a78bfa">${trades}</div><div class="sum-lbl">Trades</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#f59e0b">$${totalFaab.toFixed(0)}</div><div class="sum-lbl">FAAB Spent</div></div>
+    <div class="sum-card" style="border-color:rgba(16,185,129,0.12)"><div class="sum-val" style="font-size:14px;color:#10b981;font-family:'DM Sans'">${topTeam?topTeam[0]:'—'}</div><div class="sum-lbl">Most Active</div></div>`;
+}
+
+/* ===== FILTERS ===== */
+function buildFilters() {
+  const txs = DATA.transactions;
+  const teams = [...new Set(txs.flatMap(t => t.type === 'trade' ? (t.sides||[]).map(s=>s.team) : [t.team]).filter(Boolean))].sort();
+  const weeks = [...new Set(txs.map(t=>t.week))].sort((a,b)=>b-a);
+
+  document.getElementById('filter-bar').innerHTML = `
+    <div class="filter-type-group">
+      <button class="ftype-btn active" data-type="all" onclick="setType('all')">All</button>
+      <button class="ftype-btn" data-type="waiver" onclick="setType('waiver')">Waivers</button>
+      <button class="ftype-btn" data-type="add_drop" onclick="setType('add_drop')">Add/Drop</button>
+      <button class="ftype-btn" data-type="trade" onclick="setType('trade')">Trades</button>
+    </div>
+    <select class="filter-select" id="team-sel" onchange="filterTeam=this.value;renderFeed()">
+      <option value="all">All Teams</option>
+      ${teams.map(t=>`<option value="${t}">${t}</option>`).join('')}
+    </select>
+    <select class="filter-select" id="week-sel" onchange="filterWeek=this.value;renderFeed()">
+      <option value="all">All Weeks</option>
+      ${weeks.map(w=>`<option value="${w}">Week ${w}</option>`).join('')}
+    </select>
+    <span class="result-count" id="result-count"></span>`;
+}
+
+function setType(type) {
+  filterType = type;
+  document.querySelectorAll('.ftype-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  renderFeed();
+}
+
+/* ===== RENDER FEED ===== */
+function getFiltered() {
+  return DATA.transactions.filter(t => {
+    // type filter
+    if (filterType !== 'all') {
+      if (filterType === 'add_drop' && !['add_drop','add','drop'].includes(t.type)) return false;
+      if (filterType === 'waiver' && t.type !== 'waiver') return false;
+      if (filterType === 'trade' && t.type !== 'trade') return false;
+    }
+    // team filter
+    if (filterTeam !== 'all') {
+      if (t.type === 'trade') {
+        if (!(t.sides||[]).some(s => s.team === filterTeam)) return false;
+      } else {
+        if (t.team !== filterTeam) return false;
+      }
+    }
+    // week filter
+    if (filterWeek !== 'all' && String(t.week) !== String(filterWeek)) return false;
+    return true;
+  });
+}
+
+function renderFeed() {
+  const filtered = getFiltered();
+  document.getElementById('result-count').textContent = `${filtered.length} transaction${filtered.length!==1?'s':''}`;
+
+  if (!filtered.length) {
+    document.getElementById('feed').innerHTML = '<div class="empty-state">No transactions match your filters</div>';
+    return;
+  }
+
+  // Group by week descending
+  const byWeek = {};
+  filtered.forEach(t => {
+    const w = t.week;
+    if (!byWeek[w]) byWeek[w] = [];
+    byWeek[w].push(t);
+  });
+
+  const weeks = Object.keys(byWeek).map(Number).sort((a,b)=>b-a);
+
+  document.getElementById('feed').innerHTML = weeks.map(wk => {
+    const txs = byWeek[wk];
+    // Sort: trades first, then waivers, then add_drop, then by timestamp
+    txs.sort((a,b) => {
+      const order = {trade:0,waiver:1,add_drop:2,add:3,drop:4};
+      const oa = order[a.type]??5, ob = order[b.type]??5;
+      if (oa !== ob) return oa - ob;
+      return (a.timestamp||'').localeCompare(b.timestamp||'');
+    });
+    return `<div class="week-group">
+      <div class="week-label">Week ${wk}</div>
+      ${txs.map(t => t.type === 'trade' ? renderTrade(t) : renderMove(t)).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderMove(t) {
+  const logo = franchiseLogo(t.team);
+  const logoEl = logo
+    ? `<img src="${logo}" class="tx-team-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="tx-team-logo-ph" style="display:none">${(t.team||'?')[0]}</div>`
+    : `<div class="tx-team-logo-ph">${(t.team||'?')[0]}</div>`;
+
+  const typeKey = t.type === 'add' ? 'add_drop' : t.type === 'drop' ? 'drop' : t.type;
+  const typeName = TYPE_LABEL[t.type] || t.type;
+
+  const totalFaab = (t.adds||[]).reduce((s,p)=>s+(p.faab||0),0);
+  const faabEl = (t.type === 'waiver' && totalFaab > 0)
+    ? `<span class="faab-pill">$${totalFaab.toFixed(0)} FAAB</span>` : '';
+
+  const addRows = (t.adds||[]).map(p => playerRow(p, 'add')).join('');
+  const dropRows = (t.drops||[]).map(p => playerRow(p, 'drop')).join('');
+
+  return `<div class="tx-card">
+    <div class="tx-header">
+      ${logoEl}
+      <span class="tx-team-name">${t.team}</span>
+      <span class="tx-type-badge type-${typeKey}">${typeName}</span>
+      <span class="tx-week-badge">WK ${t.week}</span>
+      <span class="tx-timestamp">${t.timestamp || ''}</span>
+      ${faabEl}
+    </div>
+    <div class="tx-players">
+      ${addRows}
+      ${addRows && dropRows ? '<div class="tx-divider"></div>' : ''}
+      ${dropRows}
+    </div>
+  </div>`;
+}
+
+function renderTrade(t) {
+  const sides = t.sides || [];
+  const sidesHtml = sides.map((s, i) => {
+    const logo = franchiseLogo(s.team);
+    const logoEl = logo
+      ? `<img src="${logo}" class="trade-side-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="trade-side-logo-ph" style="display:none">${(s.team||'?')[0]}</div>`
+      : `<div class="trade-side-logo-ph">${(s.team||'?')[0]}</div>`;
+
+    const players = (s.receives||[]).map(p => playerRow(p, 'recv')).join('');
+    return `<div class="trade-side">
+      <div class="trade-side-team">
+        ${logoEl}
+        <span class="trade-side-name">${s.team}</span>
+      </div>
+      <div class="trade-receives-lbl">Receives</div>
+      <div class="tx-players">${players}</div>
+    </div>`;
+  });
+
+  // Insert arrow between sides (only for 2-team trades)
+  const inner = sides.length === 2
+    ? sidesHtml[0] + '<div class="trade-arrow">&#8646;</div>' + sidesHtml[1]
+    : sidesHtml.join('');
+
+  return `<div class="trade-card">
+    <div class="trade-header">
+      <span class="tx-type-badge type-trade">Trade</span>
+      <span class="tx-week-badge">WK ${t.week}</span>
+      <span class="tx-timestamp">${t.timestamp || ''}</span>
+    </div>
+    <div class="trade-sides">${inner}</div>
+  </div>`;
+}
+
+function playerRow(p, action) {
+  const pc = POS_COLOR[p.pos] || '#64748b';
+  const photo = p.photo_url || '';
+  const photoEl = photo
+    ? `<img src="${photo}" class="tx-player-photo" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+    : '';
+  const phEl = `<div class="tx-player-photo-ph" style="${photo?'display:none':'display:flex'};background:${pc}18;color:${pc}">${(p.name||'?')[0]}</div>`;
+
+  const actionLabel = action === 'add' ? '+ ADD' : action === 'drop' ? '− DROP' : 'RECV';
+  const actionCls = action === 'add' ? 'tx-add-lbl' : action === 'drop' ? 'tx-drop-lbl' : 'tx-recv-lbl';
+
+  return `<div class="tx-player-row">
+    <div class="tx-action ${actionCls}">${actionLabel}</div>
+    ${photoEl}${phEl}
+    <div class="tx-player-info">
+      <div class="tx-player-name">${p.name || '—'}</div>
+      <div class="tx-player-meta">
+        <div class="tx-pos-dot" style="background:${pc}"></div>
+        ${p.pos || ''} · ${p.nfl_team || 'FA'}
+      </div>
+    </div>
+  </div>`;
+}
+
+init();
+</script>
+</body>
+</html>
