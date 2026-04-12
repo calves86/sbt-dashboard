@@ -511,7 +511,7 @@ function initApp(){
 
 function renderTabs(){
   const tabs=['Overview','Teams','Champions','Seasons','Record Book','Draft History','Player Stats','News','Transactions','Fun Facts','Rules'];
-  document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="tab ${state.tab===t?'active':''}" onclick="state.tab='${t}';render()">${t}</button>`).join('')+`<a href="mock-draft.html" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.5px;background:rgba(16,185,129,0.12);color:#10b981;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px">🎯 Mock Draft</a>`;
+  document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="tab ${state.tab===t?'active':''}" onclick="state.tab='${t}';render()">${t}</button>`).join('')+`<a href="team.html" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.5px;background:rgba(255,255,255,0.06);color:#94a3b8;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px">&#128101; Team Pages</a><a href="mock-draft.html" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.5px;background:rgba(16,185,129,0.12);color:#10b981;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px">🎯 Mock Draft</a>`;
 }
 
 function secTitle(title,accent){return `<div class="section-title"><h2>${title}</h2>${accent?`<span class="badge">${accent}</span>`:''}<div class="line"></div></div>`;}

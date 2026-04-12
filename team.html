@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Pages · SBT Fantasy Football</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:#10b981;text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+
+/* ===== LAYOUT ===== */
+#app{display:flex;min-height:100vh}
+#sidebar{width:240px;min-width:240px;background:#060d1b;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+#main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ===== SIDEBAR ===== */
+.sb-header{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sb-back{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b;margin-bottom:12px;cursor:pointer;text-decoration:none}
+.sb-back:hover{color:#10b981}
+.sb-logo-row{display:flex;align-items:center;gap:10px}
+.sb-logo{width:36px;height:36px;border-radius:8px;object-fit:contain}
+.sb-title{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-season{font-size:11px;color:#475569;letter-spacing:1px}
+.sb-section-label{padding:14px 14px 6px;font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase}
+.team-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.team-item:hover{background:rgba(255,255,255,0.03);border-left-color:rgba(16,185,129,0.3)}
+.team-item.active{background:rgba(16,185,129,0.07);border-left-color:#10b981}
+.team-item-logo{width:28px;height:28px;border-radius:6px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.team-item-logo-ph{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#64748b;flex-shrink:0}
+.team-item-info{min-width:0;flex:1}
+.team-item-name{font-size:12px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.team-item.active .team-item-name{color:#10b981}
+.team-item-record{font-size:10px;color:#475569;font-weight:600}
+.team-item-pts{font-size:11px;font-weight:700;color:#475569;flex-shrink:0;text-align:right}
+
+/* ===== TOP NAV ===== */
+#topnav{background:linear-gradient(135deg,#0d1526,#111f38);border-bottom:1px solid rgba(16,185,129,0.1);padding:12px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;flex-shrink:0}
+.nav-league{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;flex:1}
+.nav-links{display:flex;gap:4px}
+.nav-link{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:#64748b;text-decoration:none;transition:all .15s;letter-spacing:.5px}
+.nav-link:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#10b981;background:rgba(16,185,129,0.1)}
+
+/* ===== TEAM HEADER ===== */
+#team-header{padding:24px 28px 0;flex-shrink:0}
+.th-card{background:linear-gradient(135deg,rgba(16,185,129,0.06),rgba(167,139,250,0.04));border:1px solid rgba(16,185,129,0.12);border-radius:20px;padding:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.th-logo-wrap{flex-shrink:0}
+.th-logo{width:80px;height:80px;border-radius:16px;object-fit:contain;background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.07)}
+.th-logo-ph{width:80px;height:80px;border-radius:16px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#64748b}
+.th-info{flex:1;min-width:0}
+.th-name{font-size:28px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;line-height:1;margin-bottom:4px}
+.th-owner{font-size:13px;color:#64748b;margin-bottom:14px}
+.th-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.th-rank{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;background:rgba(16,185,129,0.15);color:#10b981;letter-spacing:.5px}
+.th-record{padding:4px 12px;border-radius:20px;font-size:13px;font-weight:800;background:rgba(255,255,255,0.07);color:#e2e8f0}
+.th-stats{display:flex;gap:24px;flex-wrap:wrap}
+.th-stat{text-align:center}
+.th-stat-val{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;letter-spacing:1px;line-height:1}
+.th-stat-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* ===== TAB BAR ===== */
+#tab-bar{display:flex;gap:4px;padding:20px 28px 0;flex-shrink:0}
+.tab-btn{padding:9px 20px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;background:transparent;color:#475569;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
+.tab-btn.active{background:rgba(16,185,129,0.12);color:#10b981}
+
+/* ===== TAB CONTENT ===== */
+#tab-content{padding:20px 28px 60px;flex:1;overflow-y:auto}
+
+/* ===== ROSTER ===== */
+.roster-section-label{font-size:11px;font-weight:800;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.roster-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05)}
+.roster-table{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:14px;overflow:hidden;margin-bottom:24px}
+.roster-hdr{display:grid;grid-template-columns:52px 52px 1fr 78px 68px 52px;gap:0;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.roster-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
+.roster-hdr .r-pts{text-align:right}
+.roster-hdr .r-avg{text-align:right}
+.roster-hdr .r-bye{text-align:center}
+.p-row{display:grid;grid-template-columns:52px 52px 1fr 78px 68px 52px;gap:0;padding:10px 12px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .12s}
+.p-row:last-child{border-bottom:none}
+.p-row:hover{background:rgba(255,255,255,0.025)}
+.slot-badge{font-size:9px;font-weight:800;letter-spacing:.5px;color:#475569;text-transform:uppercase;background:rgba(255,255,255,0.04);border-radius:5px;padding:3px 6px;text-align:center;white-space:nowrap}
+.p-photo-col{display:flex;align-items:center;justify-content:center}
+.p-photo-wrap{position:relative;width:40px;height:40px}
+.p-photo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.08)}
+.p-photo-ph{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid rgba(255,255,255,0.06)}
+.p-nfl-badge{position:absolute;bottom:-3px;right:-3px;width:16px;height:16px;border-radius:50%;object-fit:contain;background:#0b1120;border:1.5px solid rgba(255,255,255,0.1)}
+.p-info{min-width:0;padding:0 10px}
+.p-name{font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.p-sub{display:flex;align-items:center;gap:5px;margin-top:2px}
+.pos-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.p-nfl{font-size:10px;color:#475569;font-weight:600}
+.p-pts{text-align:right;font-size:15px;font-weight:800;color:#e2e8f0;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+.p-pts-zero{color:#334155}
+.p-avg{text-align:right;font-size:11px;color:#64748b;font-weight:600}
+.p-bye{text-align:center;font-size:10px;color:#475569;font-weight:700;background:rgba(255,255,255,0.03);border-radius:5px;padding:3px 6px;white-space:nowrap}
+
+/* ===== BENCH TOGGLE ===== */
+.bench-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-bottom:8px}
+.bench-toggle:hover .roster-section-label{color:#64748b}
+.bench-caret{font-size:10px;color:#475569;transition:transform .2s}
+.bench-caret.open{transform:rotate(90deg)}
+
+/* ===== SCHEDULE ===== */
+.schedule-table{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:14px;overflow:hidden}
+.sched-hdr{display:grid;grid-template-columns:52px 1fr 120px 60px;gap:0;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sched-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
+.sched-hdr .s-score{text-align:center}
+.sched-hdr .s-result{text-align:center}
+.sched-row{display:grid;grid-template-columns:52px 1fr 120px 60px;gap:0;padding:10px 16px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .12s}
+.sched-row:last-child{border-bottom:none}
+.sched-row:hover{background:rgba(255,255,255,0.02)}
+.sched-row.playoff-row{background:rgba(250,204,21,0.03)}
+.sched-week{font-size:12px;font-weight:800;color:#475569;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.sched-opp{display:flex;align-items:center;gap:8px;min-width:0}
+.sched-opp-logo{width:24px;height:24px;border-radius:5px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.sched-opp-logo-ph{width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#64748b;flex-shrink:0}
+.sched-opp-name{font-size:12px;font-weight:600;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sched-playoff-tag{font-size:9px;font-weight:800;color:#facc15;background:rgba(250,204,21,0.12);border-radius:4px;padding:1px 5px;flex-shrink:0;letter-spacing:.5px}
+.sched-score{text-align:center}
+.sched-score-line{font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:.5px}
+.sched-score-opp{font-size:11px;color:#475569}
+.result-badge{display:inline-block;width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:800;text-align:center;line-height:28px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.result-w{background:rgba(16,185,129,0.15);color:#10b981}
+.result-l{background:rgba(239,68,68,0.12);color:#ef4444}
+.result-t{background:rgba(148,163,184,0.12);color:#94a3b8}
+
+/* ===== TRANSACTIONS ===== */
+.trans-item{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.trans-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.trans-week{font-size:10px;font-weight:800;color:#475569;background:rgba(255,255,255,0.05);border-radius:5px;padding:3px 8px;letter-spacing:1px}
+.trans-date{font-size:11px;color:#334155}
+.trans-type-badge{font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:6px}
+.type-add_drop,.type-add,.type-drop,.type-waiver{background:rgba(16,185,129,0.1);color:#10b981}
+.type-trade{background:rgba(167,139,250,0.12);color:#a78bfa}
+.trans-body{display:flex;flex-direction:column;gap:6px}
+.trans-side{display:flex;align-items:flex-start;gap:10px}
+.trans-action-col{width:50px;font-size:9px;font-weight:800;letter-spacing:.5px;padding-top:2px;flex-shrink:0}
+.trans-add-col{color:#10b981}
+.trans-drop-col{color:#ef4444}
+.trans-recv-col{color:#a78bfa}
+.trans-players{display:flex;flex-direction:column;gap:4px}
+.trans-player{display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8}
+.trans-pos{font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px}
+.trans-trade-divider{height:1px;background:rgba(255,255,255,0.04);margin:6px 0}
+.trans-trade-team{font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px;letter-spacing:.5px}
+.faab-tag{font-size:10px;color:#f59e0b;font-weight:700}
+
+/* ===== LOADING / EMPTY ===== */
+#loading{position:fixed;inset:0;background:#0b1120;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
+.spin{width:36px;height:36px;border:3px solid rgba(16,185,129,0.15);border-top-color:#10b981;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:14px;color:#475569}
+.empty-state{text-align:center;padding:60px 20px;color:#334155;font-size:14px}
+
+/* ===== MOBILE ===== */
+#sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
+@media(max-width:700px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-toggle{display:block}
+  #topnav{padding:10px 16px}
+  #team-header{padding:14px 16px 0}
+  #tab-content{padding:14px 16px 60px}
+  #tab-bar{padding:14px 16px 0}
+  .th-card{padding:16px}
+  .th-logo,.th-logo-ph{width:60px;height:60px}
+  .th-name{font-size:22px}
+  .roster-hdr,.p-row{grid-template-columns:44px 44px 1fr 64px 52px 44px}
+  .sched-hdr,.sched-row{grid-template-columns:44px 1fr 110px 50px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><p>Loading team data...</p></div>
+
+<div id="app" style="display:none">
+  <aside id="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-back">&#8592; Dashboard</a>
+      <div class="sb-logo-row">
+        <img src="sbt-logo.png" class="sb-logo" alt="SBT">
+        <div>
+          <div class="sb-title">SBT</div>
+          <div class="sb-season">2025 Season</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-section-label">Teams</div>
+    <div id="team-list"></div>
+  </aside>
+
+  <div id="main">
+    <div id="topnav">
+      <button id="sidebar-toggle" onclick="toggleSidebar()">&#9776; Teams</button>
+      <div class="nav-league">Sigma Beta Tau Fantasy Football</div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="team.html" class="nav-link active">Teams</a>
+        <a href="mock-draft.html" class="nav-link">Mock Draft</a>
+      </nav>
+    </div>
+
+    <div id="team-header"></div>
+
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="roster" onclick="switchTab('roster')">Roster</button>
+      <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">Schedule</button>
+      <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">Transactions</button>
+    </div>
+
+    <div id="tab-content"></div>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const FRANCHISE_LOGOS = {
+  "Bear Exposures":"bearexposures-logo.jpg",
+  "Big Fat Chubby":"bigfatchubby-logo.jpg",
+  "Ceaser Salad Tossers \u00c3\u00b0\u00c2\u0178\u00c2\u02dc\u00c2\u203a":"ceaser-logo.jpg",
+  "Ceaser Salad Tossers":"ceaser-logo.jpg",
+  "Clitsburgh Feelers":"clitsburg-logo.jpg",
+  "Comeback Kid":"comebackkid-logo.jpg",
+  "Cooked To Perfection":"cookedtoperfection-logo.jpg",
+  "Gotham Rogues":"gotham-logo.gif",
+  "Smease Appeasers":"smease-logo.png",
+  "Team Freesh":"freesh-logo.jpg",
+  "The MUFF Divers":"muff-logo.png",
+  "Trump Train":"trumptrain-logo.jpg",
+  "skoot":"skoot-logo.jpg"
+};
+
+const POS_COLOR = {QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#ec4899'};
+
+const DST_NFL = {
+  'Bears':'chi','Bengals':'cin','Bills':'buf','Broncos':'den','Browns':'cle',
+  'Buccaneers':'tb','Cardinals':'ari','Chargers':'lac','Chiefs':'kc','Colts':'ind',
+  'Cowboys':'dal','Dolphins':'mia','Eagles':'phi','Falcons':'atl','Giants':'nyg',
+  'Jaguars':'jax','Jets':'nyj','Lions':'det','Packers':'gb','Panthers':'car',
+  'Patriots':'ne','Raiders':'lv','Rams':'lar','Ravens':'bal','Saints':'no',
+  'Seahawks':'sea','Steelers':'pit','Texans':'hou','Titans':'ten','Vikings':'min',
+  'Washington':'was','49ers':'sf','Commanders':'was','Football Team':'was'
+};
+
+// Normalize CBS team abbreviations to ESPN CDN format
+const NFL_ABBREV_MAP = {
+  'JAC':'jax','JAX':'jax','LA':'lar','LAR':'lar','LAC':'lac','NO':'no',
+  'NE':'ne','TB':'tb','SF':'sf','GB':'gb','KC':'kc','LV':'lv','LV':'lv',
+  'WAS':'was','NYG':'nyg','NYJ':'nyj','ARI':'ari','ATL':'atl','BAL':'bal',
+  'BUF':'buf','CAR':'car','CHI':'chi','CIN':'cin','CLE':'cle','DAL':'dal',
+  'DEN':'den','DET':'det','HOU':'hou','IND':'ind','MIN':'min','MIA':'mia',
+  'PHI':'phi','PIT':'pit','SEA':'sea','TEN':'ten','CLE':'cle','OAK':'lv'
+};
+
+function nflLogo(abbrev, name, pos) {
+  let a = abbrev;
+  if (pos === 'DST') {
+    a = DST_NFL[name] || a;
+  }
+  const mapped = NFL_ABBREV_MAP[a] || (a ? a.toLowerCase() : null);
+  if (!mapped) return '';
+  return `https://a.espncdn.com/i/teamlogos/nfl/500/${mapped}.png`;
+}
+
+function franchiseLogo(teamName) {
+  const f = FRANCHISE_LOGOS[teamName];
+  return f ? `team-logo/${f}` : '';
+}
+
+function slotLabel(slot) {
+  if (!slot) return '';
+  const s = slot.toUpperCase();
+  if (s === 'RB-WR-TE' || s === 'RB/WR/TE') return 'FLEX';
+  if (s === 'WR-RB-TE') return 'FLEX';
+  if (s.includes('-') || s.includes('/')) return 'FLEX';
+  return s;
+}
+
+/* ===== STATE ===== */
+let DATA = null;
+let currentIdx = 0;
+let currentTab = 'roster';
+let benchOpen = true;
+
+/* ===== INIT ===== */
+async function init() {
+  try {
+    const r = await fetch('data/team_data_2025.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    DATA = await r.json();
+    // Read ?team= param
+    const params = new URLSearchParams(location.search);
+    const teamParam = params.get('team');
+    if (teamParam) {
+      const idx = DATA.teams.findIndex(t => t.team_name === teamParam);
+      if (idx >= 0) currentIdx = idx;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    buildSidebar();
+    renderTeam(currentIdx);
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:#ef4444">Failed to load data.<br><small>${e.message}</small><br><br>
+      <small style="color:#334155">Open via GitHub Pages or a local server (not file://)</small></p>`;
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+/* ===== SIDEBAR ===== */
+function buildSidebar() {
+  const el = document.getElementById('team-list');
+  el.innerHTML = DATA.teams.map((t, i) => {
+    const logo = franchiseLogo(t.team_name);
+    const logoEl = logo
+      ? `<img src="${logo}" class="team-item-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+      : '';
+    const ph = `<div class="team-item-logo-ph" ${logo ? 'style="display:none"' : ''}>${t.team_name[0]}</div>`;
+    return `<div class="team-item ${i===currentIdx?'active':''}" onclick="selectTeam(${i})">
+      ${logoEl}${ph}
+      <div class="team-item-info">
+        <div class="team-item-name">${t.team_name}</div>
+        <div class="team-item-record">${t.wins}-${t.losses}${t.ties?`-${t.ties}`:''} · Rank #${t.rank}</div>
+      </div>
+      <div class="team-item-pts">${t.points_for.toFixed(0)}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectTeam(idx) {
+  currentIdx = idx;
+  currentTab = 'roster';
+  benchOpen = true;
+  // Update sidebar active state
+  document.querySelectorAll('.team-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  // Update URL without reload
+  const t = DATA.teams[idx];
+  history.replaceState(null, '', `?team=${encodeURIComponent(t.team_name)}`);
+  renderTeam(idx);
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  // Reset tabs
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'roster'));
+}
+
+/* ===== RENDER TEAM ===== */
+function renderTeam(idx) {
+  const t = DATA.teams[idx];
+  renderHeader(t);
+  renderTab(t);
+}
+
+function renderHeader(t) {
+  const logo = franchiseLogo(t.team_name);
+  const logoEl = logo
+    ? `<img src="${logo}" class="th-logo" onerror="this.onerror=null;this.style.display='none';this.nextSibling.style.display='flex'"><div class="th-logo-ph" style="display:none">${t.team_name[0]}</div>`
+    : `<div class="th-logo-ph">${t.team_name[0]}</div>`;
+
+  const ppg = t.matchups.filter(m=>m.type==='regular').length;
+  const avgPts = ppg > 0 ? (t.points_for / ppg).toFixed(1) : '—';
+  const playoffAppearance = t.matchups.some(m => m.type !== 'regular');
+
+  document.getElementById('team-header').innerHTML = `
+    <div class="th-card">
+      <div class="th-logo-wrap">${logoEl}</div>
+      <div class="th-info">
+        <div class="th-name">${t.team_name}</div>
+        <div class="th-owner">${t.owner}</div>
+        <div class="th-badges">
+          <span class="th-rank">#${t.rank} in League</span>
+          <span class="th-record">${t.wins}-${t.losses}${t.ties?`-${t.ties}`:''}</span>
+          ${playoffAppearance ? '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;background:rgba(250,204,21,0.12);color:#facc15">Playoffs</span>' : ''}
+        </div>
+        <div class="th-stats">
+          <div class="th-stat">
+            <div class="th-stat-val">${t.points_for.toFixed(1)}</div>
+            <div class="th-stat-lbl">Points For</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val">${t.points_against.toFixed(1)}</div>
+            <div class="th-stat-lbl">Points Against</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val">${avgPts}</div>
+            <div class="th-stat-lbl">Avg / Week</div>
+          </div>
+          <div class="th-stat">
+            <div class="th-stat-val">${t.starters.length + t.bench.length}</div>
+            <div class="th-stat-lbl">Roster Size</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ===== TABS ===== */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  renderTab(DATA.teams[currentIdx]);
+}
+
+function renderTab(t) {
+  if (currentTab === 'roster') renderRoster(t);
+  else if (currentTab === 'schedule') renderSchedule(t);
+  else renderTransactions(t);
+}
+
+/* ===== ROSTER TAB ===== */
+function renderRoster(t) {
+  const el = document.getElementById('tab-content');
+  const hdr = `<div class="roster-hdr">
+    <span>SLOT</span><span></span><span>PLAYER</span>
+    <span class="r-pts">PTS</span><span class="r-avg">AVG</span><span class="r-bye">BYE</span>
+  </div>`;
+
+  const rows = (players, showBench) => {
+    if (!players.length) return '<div class="empty-state">No players</div>';
+    return players.map(p => playerRow(p)).join('');
+  };
+
+  const starterSection = `
+    <div class="roster-section-label" style="margin-bottom:8px">Starters</div>
+    <div class="roster-table">${hdr}${rows(t.starters)}</div>`;
+
+  const benchRows = rows(t.bench);
+  const benchSection = t.bench.length ? `
+    <div class="bench-toggle" onclick="toggleBench()">
+      <div class="roster-section-label" style="margin-bottom:0;cursor:pointer">Bench</div>
+      <span class="bench-caret ${benchOpen?'open':''}">&#9654;</span>
+    </div>
+    <div id="bench-body" style="${benchOpen?'':'display:none'}">
+      <div class="roster-table">${hdr}${benchRows}</div>
+    </div>` : '';
+
+  el.innerHTML = starterSection + benchSection;
+}
+
+function toggleBench() {
+  benchOpen = !benchOpen;
+  document.getElementById('bench-body').style.display = benchOpen ? '' : 'none';
+  const caret = document.querySelector('.bench-caret');
+  if (caret) caret.classList.toggle('open', benchOpen);
+}
+
+function playerRow(p) {
+  const pc = POS_COLOR[p.position] || '#64748b';
+  const photo = p.photo_url || '';
+  const logo = nflLogo(p.nfl_team, p.name, p.position);
+  const pts = p.season_pts || 0;
+  const ptsDisplay = pts > 0 ? pts.toFixed(1) : '—';
+  const avgDisplay = p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—';
+  const byeDisplay = p.bye_week ? `Wk ${p.bye_week}` : '—';
+  const slot = slotLabel(p.slot);
+
+  const photoEl = photo
+    ? `<img src="${photo}" class="p-photo" onerror="this.style.display='none';this.nextSibling.style.display='flex'" alt="${p.name}">`
+    : '';
+  const phEl = `<div class="p-photo-ph" style="${photo?'display:none':'display:flex'};background:${pc}18;color:${pc}">${(p.name||'?')[0]}</div>`;
+  const nflEl = logo ? `<img src="${logo}" class="p-nfl-badge" alt="${p.nfl_team}">` : '';
+
+  return `<div class="p-row">
+    <div><span class="slot-badge">${slot}</span></div>
+    <div class="p-photo-col"><div class="p-photo-wrap">${photoEl}${phEl}${nflEl}</div></div>
+    <div class="p-info">
+      <div class="p-name">${p.name}</div>
+      <div class="p-sub">
+        <div class="pos-dot" style="background:${pc}"></div>
+        <span class="p-nfl">${p.position} · ${p.nfl_team || 'FA'}</span>
+      </div>
+    </div>
+    <div class="p-pts ${pts===0?'p-pts-zero':''}">${ptsDisplay}</div>
+    <div class="p-avg">${avgDisplay}</div>
+    <div class="p-bye">${byeDisplay}</div>
+  </div>`;
+}
+
+/* ===== SCHEDULE TAB ===== */
+function renderSchedule(t) {
+  const el = document.getElementById('tab-content');
+  if (!t.matchups.length) {
+    el.innerHTML = '<div class="empty-state">No matchup data</div>';
+    return;
+  }
+
+  const regularW = t.matchups.filter(m=>m.result==='W'&&m.type==='regular').length;
+  const regularL = t.matchups.filter(m=>m.result==='L'&&m.type==='regular').length;
+  const playoffGames = t.matchups.filter(m=>m.type!=='regular');
+
+  const summary = `<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+    <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12);border-radius:10px;padding:10px 18px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue';color:#10b981">${regularW}</div>
+      <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Wins</div>
+    </div>
+    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.1);border-radius:10px;padding:10px 18px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue';color:#ef4444">${regularL}</div>
+      <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Losses</div>
+    </div>
+    ${playoffGames.length ? `<div style="background:rgba(250,204,21,0.06);border:1px solid rgba(250,204,21,0.12);border-radius:10px;padding:10px 18px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue';color:#facc15">${playoffGames.length}</div>
+      <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Playoff Games</div>
+    </div>` : ''}
+  </div>`;
+
+  const hdr = `<div class="sched-hdr">
+    <span>WK</span><span>OPPONENT</span><span class="s-score">SCORE</span><span class="s-result">W/L</span>
+  </div>`;
+
+  const rows = t.matchups.map(m => {
+    const isPlayoff = m.type !== 'regular';
+    const logo = franchiseLogo(m.opp);
+    const logoEl = logo
+      ? `<img src="${logo}" class="sched-opp-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+      : '';
+    const ph = `<div class="sched-opp-logo-ph" ${logo?'style="display:none"':''}>${(m.opp||'?')[0]}</div>`;
+    const resultClass = m.result==='W'?'result-w':m.result==='L'?'result-l':'result-t';
+
+    return `<div class="sched-row ${isPlayoff?'playoff-row':''}">
+      <div class="sched-week">WK${m.week}</div>
+      <div class="sched-opp">
+        ${logoEl}${ph}
+        <span class="sched-opp-name">${m.opp}</span>
+        ${isPlayoff ? '<span class="sched-playoff-tag">PLAYOFF</span>' : ''}
+      </div>
+      <div class="sched-score">
+        <div class="sched-score-line">${m.score.toFixed(1)} <span style="color:#334155">·</span> ${m.opp_score.toFixed(1)}</div>
+      </div>
+      <div style="display:flex;justify-content:center"><div class="result-badge ${resultClass}">${m.result}</div></div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = summary + `<div class="schedule-table">${hdr}${rows}</div>`;
+}
+
+/* ===== TRANSACTIONS TAB ===== */
+function renderTransactions(t) {
+  const el = document.getElementById('tab-content');
+  if (!t.transactions.length) {
+    el.innerHTML = '<div class="empty-state">No transactions this season</div>';
+    return;
+  }
+
+  const typeLabel = {add_drop:'Add/Drop',add:'Add',drop:'Drop',waiver:'Waiver',trade:'Trade'};
+
+  const items = t.transactions.map(tx => {
+    const typeName = typeLabel[tx.type] || tx.type;
+    const isTradeType = tx.type === 'trade';
+
+    let body = '';
+    if (isTradeType) {
+      body = tx.sides.map(side => {
+        const players = (side.receives || []).map(p =>
+          `<div class="trans-player">
+            <span class="trans-pos" style="background:${POS_COLOR[p.pos]||'#64748b'}22;color:${POS_COLOR[p.pos]||'#64748b'}">${p.pos}</span>
+            ${p.name} <span class="p-nfl" style="margin-left:4px">${p.nfl_team||''}</span>
+          </div>`
+        ).join('');
+        return `<div style="margin-bottom:4px">
+          <div class="trans-trade-team">${side.team} receives:</div>
+          <div class="trans-players">${players}</div>
+        </div>`;
+      }).join(`<div class="trans-trade-divider"></div>`);
+    } else {
+      const addPlayers = (tx.adds || []).map(p =>
+        `<div class="trans-player">
+          <span class="trans-pos" style="background:${POS_COLOR[p.pos]||'#64748b'}22;color:${POS_COLOR[p.pos]||'#64748b'}">${p.pos}</span>
+          ${p.name} <span class="p-nfl" style="margin-left:4px">${p.nfl_team||''}</span>
+          ${p.faab > 0 ? `<span class="faab-tag">$${p.faab}</span>` : ''}
+        </div>`
+      ).join('');
+      const dropPlayers = (tx.drops || []).map(p =>
+        `<div class="trans-player">
+          <span class="trans-pos" style="background:${POS_COLOR[p.pos]||'#64748b'}22;color:${POS_COLOR[p.pos]||'#64748b'}">${p.pos}</span>
+          ${p.name} <span class="p-nfl" style="margin-left:4px">${p.nfl_team||''}</span>
+        </div>`
+      ).join('');
+
+      if (addPlayers) body += `<div class="trans-side">
+        <div class="trans-action-col trans-add-col">+ ADD</div>
+        <div class="trans-players">${addPlayers}</div>
+      </div>`;
+      if (dropPlayers) body += `<div class="trans-side">
+        <div class="trans-action-col trans-drop-col">− DROP</div>
+        <div class="trans-players">${dropPlayers}</div>
+      </div>`;
+    }
+
+    return `<div class="trans-item">
+      <div class="trans-header">
+        <span class="trans-week">WK ${tx.week}</span>
+        <span class="trans-type-badge type-${tx.type}">${typeName}</span>
+        <span class="trans-date">${tx.timestamp || ''}</span>
+      </div>
+      <div class="trans-body">${body}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div style="margin-bottom:10px;font-size:12px;color:#475569">${t.transactions.length} transactions this season</div>${items}`;
+}
+
+init();
+</script>
+</body>
+</html>
