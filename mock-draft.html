@@ -303,7 +303,8 @@ let S = {
 };
 let CAREER_STATS = null; // null=not loaded, false=loading, object=loaded
 let MODAL_PID = null;
-let NEWS_CACHE = {}; // espnId -> articles[]
+let NEWS_CACHE = {};
+let LOCAL_NEWS = null; // null=not loaded, {}=loaded (name.lower -> articles[])
 
 /* ===== DATA ===== */
 async function loadData() {
@@ -1240,44 +1241,77 @@ function renderModalContent(id) {
   el.innerHTML = html;
 }
 
+async function getLocalNews() {
+  if (LOCAL_NEWS !== null) return LOCAL_NEWS;
+  try {
+    const r = await fetch('data/player_news_2025.json');
+    if (r.ok) {
+      const d = await r.json();
+      const map = {};
+      Object.values(d.teams || {}).forEach(players => {
+        players.forEach(p => {
+          if (p.name && p.articles && p.articles.length) {
+            map[p.name.toLowerCase()] = p.articles;
+          }
+        });
+      });
+      LOCAL_NEWS = map;
+    } else { LOCAL_NEWS = {}; }
+  } catch(e) { LOCAL_NEWS = {}; }
+  return LOCAL_NEWS;
+}
+
 async function loadPlayerNews(id) {
   const newsEl = document.getElementById('p-modal-news');
   if (!newsEl) return;
   const player = S.players.find(p => p.id === id);
   if (!player) return;
 
-  // Extract ESPN athlete ID from photo URL (e.g. .../full/3139477.png)
-  const m = S.meta[player.name] || {};
-  const photo = m.photo_url || '';
-  const espnMatch = photo.match(/\/full\/(\d+)\./);
-  const espnId = espnMatch ? espnMatch[1] : null;
-
-  // Serve from cache if already fetched
-  const cacheKey = espnId || ('name:' + player.name);
-  if (NEWS_CACHE[cacheKey]) { renderNews(newsEl, NEWS_CACHE[cacheKey], player.name); return; }
+  const cacheKey = player.name;
+  if (NEWS_CACHE[cacheKey] !== undefined) { renderNews(newsEl, NEWS_CACHE[cacheKey], player.name); return; }
 
   try {
-    let articles = [];
-    if (espnId) {
-      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/athletes/${espnId}/news?limit=4`);
-      if (r.ok) {
-        const d = await r.json();
-        articles = (d.feed || []).slice(0, 4);
-      }
+    // 1. Try local pre-built Rotowire news
+    const localMap = await getLocalNews();
+    const raw = localMap[player.name.toLowerCase()] || [];
+    if (raw.length) {
+      const articles = raw.slice(0, 4).map(a => ({
+        headline: a.headline,
+        dateStr: a.date,
+        description: a.story + (a.analysis ? ' ' + a.analysis : ''),
+        src: a.source || 'Rotowire'
+      }));
+      NEWS_CACHE[cacheKey] = articles;
+      if (MODAL_PID === id) renderNews(newsEl, articles, player.name);
+      return;
     }
-    if (!articles.length) {
-      // Fallback: search general NFL news for player name
-      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=100`);
+
+    // 2. ESPN fallback with 5s timeout
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=100', { signal: ctrl.signal });
+      clearTimeout(timer);
       if (r.ok) {
         const d = await r.json();
         const name = player.name.toLowerCase();
-        articles = (d.articles || [])
+        const espnArticles = (d.articles || [])
           .filter(a => (a.headline||'').toLowerCase().includes(name) || (a.description||'').toLowerCase().includes(name))
-          .slice(0, 4);
+          .slice(0, 4)
+          .map(a => ({
+            headline: a.headline || '',
+            dateStr: a.published ? new Date(a.published).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '',
+            description: a.description || '',
+            src: (a.source && a.source.description) || 'ESPN'
+          }));
+        NEWS_CACHE[cacheKey] = espnArticles;
+        if (MODAL_PID === id) renderNews(newsEl, espnArticles, player.name);
+        return;
       }
-    }
-    NEWS_CACHE[cacheKey] = articles;
-    if (MODAL_PID === id) renderNews(newsEl, articles, player.name);
+    } catch(e2) { clearTimeout(timer); }
+
+    NEWS_CACHE[cacheKey] = [];
+    if (MODAL_PID === id) renderNews(newsEl, [], player.name);
   } catch(e) {
     if (MODAL_PID === id) newsEl.innerHTML = '<div style="padding:14px;text-align:center;color:#475569;font-size:12px">Unable to load news</div>';
   }
@@ -1289,18 +1323,13 @@ function renderNews(el, articles, playerName) {
     return;
   }
   el.innerHTML = articles.map(a => {
-    const date = a.published ? new Date(a.published).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-    const url = (a.links&&a.links.web&&a.links.web.href) || '#';
-    const title = a.headline || '';
-    const desc = a.description || '';
-    const src = (a.source && a.source.description) || (a.categories && a.categories.find(c=>c.type==='source')?.description) || 'ESPN';
     return `<div class="news-item">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">
-        <a href="${url}" target="_blank" rel="noopener" class="news-title">${title}</a>
-        ${date?`<span class="news-date">${date}</span>`:''}
+        <span class="news-title">${a.headline}</span>
+        ${a.dateStr?`<span class="news-date">${a.dateStr}</span>`:''}
       </div>
-      ${desc?`<div class="news-desc">${desc}</div>`:''}
-      <div class="news-src">${src}</div>
+      ${a.description?`<div class="news-desc">${a.description}</div>`:''}
+      <div class="news-src">${a.src||'Rotowire'}</div>
     </div>`;
   }).join('');
 }
