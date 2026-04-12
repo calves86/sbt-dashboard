@@ -516,9 +516,16 @@ function renderTabs(){
 
 function secTitle(title,accent){return `<div class="section-title"><h2>${title}</h2>${accent?`<span class="badge">${accent}</span>`:''}<div class="line"></div></div>`;}
 
+function tl(name,sz=20){
+  const tf=TEAM_FACTS[name];
+  if(!tf||!tf.logo)return'';
+  return`<img src="team-logo/${tf.logo}" onerror="this.style.display='none'" style="height:${sz}px;width:auto;max-width:${Math.round(sz*1.6)}px;object-fit:contain;border-radius:3px;flex-shrink:0">`;
+}
+
 function matchupCard(a,as,h,hs){
   const aw=as>hs;
-  return `<div class="matchup-card"><div class="matchup-team ${aw?'winner':'loser'}"><span style="color:${aw?'#e2e8f0':'#64748b'};font-weight:${aw?700:400}">${a}</span><span style="color:${aw?'#10b981':'#64748b'};font-weight:700">${as}</span></div><div class="matchup-div"></div><div class="matchup-team ${!aw?'winner':'loser'}"><span style="color:${!aw?'#e2e8f0':'#64748b'};font-weight:${!aw?700:400}">${h}</span><span style="color:${!aw?'#10b981':'#64748b'};font-weight:700">${hs}</span></div></div>`;
+  const al=tl(a,18),hl=tl(h,18);
+  return `<div class="matchup-card"><div class="matchup-team ${aw?'winner':'loser'}"><span style="display:flex;align-items:center;gap:6px;color:${aw?'#e2e8f0':'#64748b'};font-weight:${aw?700:400}">${al}${a}</span><span style="color:${aw?'#10b981':'#64748b'};font-weight:700">${as}</span></div><div class="matchup-div"></div><div class="matchup-team ${!aw?'winner':'loser'}"><span style="display:flex;align-items:center;gap:6px;color:${!aw?'#e2e8f0':'#64748b'};font-weight:${!aw?700:400}">${hl}${h}</span><span style="color:${!aw?'#10b981':'#64748b'};font-weight:700">${hs}</span></div></div>`;
 }
 const posColor={QB:'#ef4444',RB:'#10b981',WR:'#3b82f6',TE:'#f59e0b',K:'#a78bfa',DST:'#64748b',LB:'#f97316',DB:'#06b6d4',DL:'#f97316'};
 const weeklyScoresLookup={};
@@ -1234,7 +1241,7 @@ function renderOverview(){
     html+=`<div class="data-table"><div class="standings-grid header-row"><div>#</div><div>${colLabel}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('record')">Record${sortArrow('record')}</div><div style="text-align:center;cursor:pointer" onclick="toggleSort('winpct')">Win%${sortArrow('winpct')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pf')">PF${sortArrow('pf')}</div><div style="text-align:right;cursor:pointer" class="hide-mobile" onclick="toggleSort('pa')">PA${sortArrow('pa')}</div><div style="text-align:right;padding-right:8px" class="hide-mobile">${lastLabel}</div></div>`;
     sortedList.forEach((r,i)=>{
       const gm=r.wins+r.losses+(r.ties||0);const p=gm>0?(r.wins/gm).toFixed(3):'—';
-      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#94a3b8;font-weight:700;text-align:center">${i+1}</div><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#94a3b8;text-align:right;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="hide-mobile">${mode==='owner'?r.seasons:r.mgr||''}</div></div>`;
+      html+=`<div class="standings-grid" style="${i%2===0?'background:rgba(255,255,255,0.015)':''}"><div style="font-size:13px;color:#94a3b8;font-weight:700;text-align:center">${i+1}</div><div style="display:flex;align-items:center;gap:6px;overflow:hidden">${tl(r.team_name,20)}<span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team_name}</span></div><div style="font-size:13px;color:#94a3b8;text-align:center">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</div><div style="font-size:13px;color:${parseFloat(p)>=0.52?'#10b981':'#94a3b8'};text-align:center;font-weight:600">${p}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_for).toLocaleString()}</div><div style="font-size:12px;color:#94a3b8;text-align:right" class="hide-mobile">${Math.round(r.points_against).toLocaleString()}</div><div style="font-size:11px;color:#94a3b8;text-align:right;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="hide-mobile">${mode==='owner'?r.seasons:r.mgr||''}</div></div>`;
     });
     html+=`</div>`;
   }
@@ -1263,7 +1270,7 @@ function renderOverview(){
 function renderChampions(){
   let html=secTitle('League Champions','14 Seasons');
   html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:8px">${[...CHAMPS].reverse().map(ch=>{
-    return`<div class="champ-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;min-width:40px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${ch.y}</div><div style="flex:1"><div style="font-size:14px;font-weight:600">${ch.t}</div><div style="font-size:12px;color:#94a3b8">${ch.m}</div></div>${ch.n==='Back-to-back'?'<span style="font-size:10px;background:rgba(250,204,21,0.15);color:#facc15;padding:2px 8px;border-radius:20px;font-weight:700">REPEAT</span>':''}${ch.n&&ch.n!=="Back-to-back"?'<span style="font-size:10px;background:rgba(16,185,129,0.1);color:#10b981;padding:2px 8px;border-radius:20px;font-weight:600">'+ch.n+'</span>':''}</div>`;
+    return`<div class="champ-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;min-width:40px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${ch.y}</div>${tl(ch.t,32)}<div style="flex:1"><div style="font-size:14px;font-weight:600">${ch.t}</div><div style="font-size:12px;color:#94a3b8">${ch.m}</div></div>${ch.n==='Back-to-back'?'<span style="font-size:10px;background:rgba(250,204,21,0.15);color:#facc15;padding:2px 8px;border-radius:20px;font-weight:700">REPEAT</span>':''}${ch.n&&ch.n!=="Back-to-back"?'<span style="font-size:10px;background:rgba(16,185,129,0.1);color:#10b981;padding:2px 8px;border-radius:20px;font-weight:600">'+ch.n+'</span>':''}</div>`;
   }).join('')}</div>`;
   return html;
 }
@@ -1633,7 +1640,7 @@ function renderRecords(){
   html+=`<div style="margin-bottom:24px"><select class="dropdown" onchange="state.recIdx=Number(this.value);render()">${REC_CATS.map((c,i)=>`<option value="${i}" ${state.recIdx===i?'selected':''}>${c}</option>`).join('')}</select></div>`;
   html+=`<div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;margin-bottom:16px">${REC_CATS[state.recIdx]}</div>`;
   const data=REC[REC_CATS[state.recIdx]]||[];
-  html+=`<div class="data-table">${data.map((r,i)=>{const mc=i<3?['medal-1','medal-2','medal-3'][i]:'medal-other';return`<div class="record-row"><div class="medal ${mc}">${i+1}</div><div style="flex:2;font-size:13px;font-weight:600;line-height:1.4">${r.t}</div><div style="flex:0.7;font-size:14px;font-weight:800;color:${i<3?'#10b981':'#94a3b8'};text-align:right;font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${typeof r.v==='number'?r.v.toFixed(1):r.v}</div><div style="flex:1;font-size:12px;color:#94a3b8;text-align:right">${r.d}</div></div>`;}).join('')}</div>`;
+  html+=`<div class="data-table">${data.map((r,i)=>{const mc=i<3?['medal-1','medal-2','medal-3'][i]:'medal-other';return`<div class="record-row"><div class="medal ${mc}">${i+1}</div><div style="flex:2;font-size:13px;font-weight:600;line-height:1.4;display:flex;align-items:center;gap:6px">${tl(r.t,20)}${r.t}</div><div style="flex:0.7;font-size:14px;font-weight:800;color:${i<3?'#10b981':'#94a3b8'};text-align:right;font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${typeof r.v==='number'?r.v.toFixed(1):r.v}</div><div style="flex:1;font-size:12px;color:#94a3b8;text-align:right">${r.d}</div></div>`;}).join('')}</div>`;
   return html;
 }
 
@@ -1704,9 +1711,9 @@ function renderDraft(){
     // Team header row
     html+=`<thead><tr><td style="width:32px;min-width:32px"></td>`;
     teamsInOrder.forEach(tn=>{
-      // abbreviate long team names
       const disp=tn.length>12?tn.substring(0,11)+'…':tn;
-      html+=`<th style="width:${CW}px;padding:8px 4px 8px;background:#0d1526;font-size:10px;font-weight:800;color:#94a3b8;text-align:center;border:1px solid rgba(255,255,255,0.06);letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${CW}px" title="${tn}">${disp}</th>`;
+      const logoHtml=tl(tn,26);
+      html+=`<th style="width:${CW}px;padding:6px 4px;background:#0d1526;font-size:10px;font-weight:800;color:#94a3b8;text-align:center;border:1px solid rgba(255,255,255,0.06);letter-spacing:0.3px;overflow:hidden;max-width:${CW}px" title="${tn}">${logoHtml?`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${logoHtml}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${CW-8}px;display:block">${disp}</span></div>`:disp}</th>`;
     });
     html+=`</tr></thead><tbody>`;
     rounds.forEach(rd=>{
@@ -1759,7 +1766,7 @@ function renderDraft(){
     teamNames.forEach(tn=>{
       const tpicks=teamMap[tn].sort((a,b)=>a.pick-b.pick);
       html+=`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden">`;
-      html+=`<div style="padding:10px 14px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:800;color:#e2e8f0;letter-spacing:0.5px">${tn}</div>`;
+      html+=`<div style="padding:10px 14px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:800;color:#e2e8f0;letter-spacing:0.5px;display:flex;align-items:center;gap:7px">${tl(tn,22)}${tn}</div>`;
       tpicks.forEach(p=>{
         const nflTeam=getTeam(p.player_name,p.season);
         const logoUrl=teamLogos[nflTeam]||'';
@@ -1779,7 +1786,7 @@ function renderDraft(){
     html+=`<div style="font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;margin-bottom:16px">${state.draftYear} DRAFT — ROUND ${state.draftRound}</div>`;
     html+=`<div class="data-table"><div class="header-row" style="display:grid;grid-template-columns:50px 50px 1fr 60px 1fr"><div>Pick</div><div>Rd</div><div>Player</div><div>Pos</div><div>Team</div></div>`;
     rdPicks.forEach(p=>{
-      html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div>${draftPlayerCell(p)}<div><span class="pos-badge pos-${p.position||''}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8">${p.team_name}</div></div>`;
+      html+=`<div class="draft-row"><div style="font-size:15px;color:#94a3b8;font-weight:700;font-family:'Bebas Neue',sans-serif">${p.pick}</div><div style="font-size:13px;color:#94a3b8">${p.round}</div>${draftPlayerCell(p)}<div><span class="pos-badge pos-${p.position||''}">${p.position||'—'}</span></div><div style="font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:5px">${tl(p.team_name,18)}${p.team_name}</div></div>`;
     });
     html+=`</div>`;
   }

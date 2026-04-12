@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mock Draft — SBT Fantasy Football</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="data/player_stats_2025.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
@@ -173,6 +174,37 @@ select.sel option{background:#1e293b}
 .pts-bar-wrap{display:flex;align-items:center;gap:6px}
 .pts-bar{height:4px;border-radius:2px;background:rgba(16,185,129,0.6);flex-shrink:0}
 .career-row-active td{color:#e2e8f0}
+/* Main tabs (Players / Board) */
+.main-tabs{display:flex;gap:5px;margin-bottom:10px}
+.main-tab{padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.09);background:transparent;color:#64748b;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.main-tab.on{border-color:rgba(16,185,129,0.35);background:rgba(16,185,129,0.1);color:#10b981}
+/* Queue panel */
+.q-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);margin-bottom:4px;cursor:grab;user-select:none;transition:background .1s}
+.q-item.drag-over{border-color:rgba(16,185,129,0.4)!important;background:rgba(16,185,129,0.07)!important}
+.q-drag{color:#2d4060;font-size:11px;letter-spacing:-1px;flex-shrink:0}
+.q-num{font-size:10px;font-weight:800;color:#475569;min-width:14px;text-align:center;flex-shrink:0}
+.q-remove{background:none;border:none;color:#2d4060;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;flex-shrink:0;font-family:'DM Sans',sans-serif}
+.q-remove:hover{color:#ef4444}
+.star-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 3px;color:#2d3f55;line-height:1;transition:color .12s;flex-shrink:0}
+.star-btn.on{color:#facc15}
+.star-btn:hover{color:#facc15}
+/* Draft order panel */
+.order-list{display:flex;flex-direction:column;gap:4px}
+.order-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);cursor:grab;user-select:none;transition:all .1s}
+.order-item:hover{background:rgba(255,255,255,0.045)}
+.order-item.drag-over{border-color:rgba(16,185,129,0.45)!important;background:rgba(16,185,129,0.09)!important}
+.order-item.is-mine{border-color:rgba(16,185,129,0.22);background:rgba(16,185,129,0.04)!important}
+.order-drag-handle{color:#2d3f55;font-size:11px;letter-spacing:-1px;flex-shrink:0}
+.order-slot{font-size:14px;font-weight:800;font-family:'Bebas Neue',sans-serif;min-width:20px;text-align:center;flex-shrink:0}
+/* Visual board */
+.vboard-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.vboard-tbl{border-collapse:collapse;table-layout:fixed}
+.vboard-rnd-td{font-size:10px;font-weight:800;color:#475569;text-align:center;padding:0 3px;border:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.2);min-width:30px;white-space:nowrap;vertical-align:middle}
+.vboard-th{background:#0d1526;border:1px solid rgba(255,255,255,0.06);padding:6px 4px;text-align:center;font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:.3px;width:88px;max-width:88px;overflow:hidden;vertical-align:middle}
+.vboard-cell{width:88px;max-width:88px;padding:4px 3px;border:1px solid rgba(255,255,255,0.05);vertical-align:top;text-align:center;position:relative}
+.vboard-cell.v-mine{background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.1)}
+.vboard-cell.v-cur{background:rgba(16,185,129,0.14);border-color:rgba(16,185,129,0.35);animation:blink .9s ease-in-out infinite}
+.vboard-cell.v-queued{outline:2px solid rgba(250,204,21,0.45);outline-offset:-2px}
 </style>
 </head>
 <body>
@@ -211,6 +243,7 @@ const LEAGUE = {
   flexPos: ['RB','WR','TE'],
   bench: 6,
   teamNames: ["Bear Exposures","Big Fat Chubby","Ceaser Salad Tossers","Clitsburgh Feelers","Comeback Kid","Cooked To Perfection","Gotham Rogues","Smease Appeasers","Team Freesh","The MUFF Divers","Trump Train","skoot"],
+  franchiseLogos: {"Bear Exposures":"bearexposures-logo.jpg","Big Fat Chubby":"bigfatchubby-logo.jpg","Ceaser Salad Tossers":"ceaser-logo.jpg","Clitsburgh Feelers":"clitsburg-logo.jpg","Comeback Kid":"comebackkid-logo.jpg","Cooked To Perfection":"cookedtoperfection-logo.jpg","Gotham Rogues":"gotham-logo.gif","Smease Appeasers":"smease-logo.png","Team Freesh":"freesh-logo.jpg","The MUFF Divers":"muff-logo.png","Trump Train":"trumptrain-logo.jpg","skoot":"skoot-logo.jpg"},
   statsUrl: "data/player_stats_2025.json",
   metaUrl: "https://calves86.github.io/nfl-stats-data/player_meta.json",
 };
@@ -236,39 +269,37 @@ let S = {
   autoPick: false,
   teamLogos: {},
   weeklyStats: {},
+  teamOrder: [...LEAGUE.teamNames],
+  queue: [],
+  mainTab: 'players',
 };
 let CAREER_STATS = null; // null=not loaded, false=loading, object=loaded
 let MODAL_PID = null;
 
 /* ===== DATA ===== */
 async function loadData() {
+  // Load local stats from preloaded script tag (works with file:// protocol)
+  const sd = window.PLAYER_STATS_DATA;
+  if(sd){
+    const raw = [];
+    for (const [id,p] of Object.entries(sd)) {
+      if (!['QB','RB','WR','TE','K','DST'].includes(p.position)) continue;
+      const weeks = Object.values(p.stats||{});
+      const pts = weeks.reduce((s,w)=>s+(w.fpts||0),0);
+      const gp = weeks.filter(w=>w.fpts>0).length;
+      const ppg = gp>0 ? Math.round(pts/gp*10)/10 : 0;
+      S.weeklyStats[id] = p.stats || {};
+      raw.push({id,name:p.name,pos:p.position,team:p.nfl_team||'',totalPts:Math.round(pts*10)/10,gp,ppg});
+    }
+    S.players = computeVOR(raw);
+    S.available = new Set(S.players.map(p=>p.id));
+    S.loaded = true;
+  }
+  // Load remote meta (photos, NFL logos) — best-effort
   try {
-    const [sr,mr] = await Promise.allSettled([fetch(LEAGUE.statsUrl),fetch(LEAGUE.metaUrl)]);
-    if (mr.status==='fulfilled'&&mr.value.ok) {
-      const md = await mr.value.json();
-      if (md.team_logos) S.teamLogos = md.team_logos;
-      const src = md.players && typeof md.players==='object' ? md.players : md;
-      for (const [name,m] of Object.entries(src)) {
-        if (typeof m==='object' && m && m.photo_url) S.meta[name]=m;
-      }
-    }
-    if (sr.status==='fulfilled'&&sr.value.ok) {
-      const sd = await sr.value.json();
-      const raw = [];
-      for (const [id,p] of Object.entries(sd)) {
-        if (!['QB','RB','WR','TE','K','DST'].includes(p.position)) continue;
-        const weeks = Object.values(p.stats||{});
-        const pts = weeks.reduce((s,w)=>s+(w.fpts||0),0);
-        const gp = weeks.filter(w=>w.fpts>0).length;
-        const ppg = gp>0 ? Math.round(pts/gp*10)/10 : 0;
-        S.weeklyStats[id] = p.stats || {};
-        raw.push({id,name:p.name,pos:p.position,team:p.nfl_team||'',totalPts:Math.round(pts*10)/10,gp,ppg});
-      }
-      S.players = computeVOR(raw);
-      S.available = new Set(S.players.map(p=>p.id));
-      S.loaded = true;
-    }
-  } catch(e){ console.error(e); }
+    const mr = await fetch(LEAGUE.metaUrl);
+    if(mr.ok){const md=await mr.json();if(md.team_logos)S.teamLogos=md.team_logos;const src=md.players&&typeof md.players==='object'?md.players:md;for(const [name,m] of Object.entries(src)){if(typeof m==='object'&&m&&m.photo_url)S.meta[name]=m;}}
+  } catch(e){ /* photos/logos optional */ }
   render();
 }
 
@@ -292,6 +323,60 @@ function pickToTeam(idx) {
   const r=Math.floor(idx/N), pos=idx%N;
   return r%2===0?pos:N-1-pos;
 }
+function fl(name,sz=20){
+  const logo=LEAGUE.franchiseLogos[name];
+  if(!logo)return'';
+  return`<img src="team-logo/${logo}" onerror="this.style.display='none'" style="height:${sz}px;width:auto;max-width:${Math.round(sz*1.6)}px;object-fit:contain;border-radius:3px;flex-shrink:0">`;
+}
+
+/* ===== QUEUE DRAG-AND-DROP ===== */
+let _qDragId=null;
+function qDragStart(e,id){_qDragId=id;e.dataTransfer.effectAllowed='move';}
+function qDragOver(e,id){e.preventDefault();const el=document.getElementById('qi-'+id);if(el&&_qDragId!==id)el.classList.add('drag-over');}
+function qDragLeave(id){const el=document.getElementById('qi-'+id);if(el)el.classList.remove('drag-over');}
+function qDrop(e,id){
+  e.preventDefault();
+  document.querySelectorAll('.q-item').forEach(el=>el.classList.remove('drag-over'));
+  if(_qDragId&&_qDragId!==id){
+    const from=S.queue.indexOf(_qDragId),to=S.queue.indexOf(id);
+    if(from>=0&&to>=0){S.queue.splice(from,1);S.queue.splice(to,0,_qDragId);}
+  }
+  _qDragId=null;
+  refreshQueuePanel();
+}
+function toggleQueue(pid){
+  if(S.queue.includes(pid))S.queue=S.queue.filter(x=>x!==pid);
+  else S.queue.push(pid);
+  updatePlayerList();
+  refreshQueuePanel();
+}
+function removeFromQueue(pid){
+  S.queue=S.queue.filter(x=>x!==pid);
+  refreshQueuePanel();
+}
+function refreshQueuePanel(){
+  const sb=document.getElementById('sidebar');
+  if(sb)sb.innerHTML=buildRosterSidebar(S.draftSpot-1)+buildPickSchedule()+buildQueue();
+}
+
+/* ===== DRAFT ORDER DRAG-AND-DROP ===== */
+let _oDragIdx=null;
+function orderDragStart(e,i){_oDragIdx=i;e.dataTransfer.effectAllowed='move';document.getElementById('oi-'+i).classList.add('dragging');}
+function orderDragOver(e,i){e.preventDefault();const el=document.getElementById('oi-'+i);if(el&&_oDragIdx!==i)el.classList.add('drag-over');}
+function orderDragLeave(i){const el=document.getElementById('oi-'+i);if(el)el.classList.remove('drag-over');}
+function orderDrop(e,i){
+  e.preventDefault();
+  document.querySelectorAll('.order-item').forEach(el=>{el.classList.remove('drag-over');el.classList.remove('dragging');});
+  if(_oDragIdx!==null&&_oDragIdx!==i){
+    const myName=S.teamOrder[S.draftSpot-1];
+    const moved=S.teamOrder.splice(_oDragIdx,1)[0];
+    S.teamOrder.splice(i,0,moved);
+    S.draftSpot=S.teamOrder.indexOf(myName)+1;
+    _oDragIdx=null;
+    render();
+  } else {_oDragIdx=null;}
+}
+function orderDragEnd(i){document.querySelectorAll('.order-item').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});}
 function myPicks() {
   const me=S.draftSpot-1,picks=[];
   for(let i=0;i<TOTAL;i++) if(pickToTeam(i)===me) picks.push(i);
@@ -304,6 +389,7 @@ function draftPlayer(player) {
   const rnd=Math.floor(S.currentPick/N)+1;
   S.rosters[ti].push({...player,round:rnd,pick:S.currentPick+1,isKeeper:false});
   S.available.delete(player.id);
+  S.queue=S.queue.filter(id=>id!==player.id);
   S.currentPick++;
 }
 
@@ -474,8 +560,8 @@ function render() {
 
 /* ===== SETUP ===== */
 function renderSetup() {
-  const posOpts=Array.from({length:N},(_,i)=>`<option value="${i+1}" ${S.draftSpot===i+1?'selected':''}>${i+1} — ${LEAGUE.teamNames[i]}</option>`).join('');
-  const keeperRows=LEAGUE.teamNames.map((name,i)=>{
+  const posOpts=S.teamOrder.map((name,i)=>`<option value="${i+1}" ${S.draftSpot===i+1?'selected':''}>${i+1} — ${name}</option>`).join('');
+  const keeperRows=S.teamOrder.map((name,i)=>{
     const isMe=i===S.draftSpot-1;
     const chips=S.keepers[i].map(k=>`
       <span class="chip">
@@ -485,7 +571,7 @@ function renderSetup() {
       </span>`).join('');
     return `
       <div class="keeper-row">
-        <div class="keeper-team-name">${name}${isMe?`<span class="keeper-you">★ YOU</span>`:''}</div>
+        <div class="keeper-team-name" style="display:flex;align-items:center;gap:7px">${fl(name,22)}${name}${isMe?`<span class="keeper-you">★ YOU</span>`:''}</div>
         <div>
           <div class="chips-wrap" id="chips-${i}">${chips}</div>
           <div class="ki-wrap">
@@ -501,6 +587,19 @@ function renderSetup() {
       </div>`;
   }).join('');
 
+  const orderRows=S.teamOrder.map((name,i)=>{
+    const isMe=i===S.draftSpot-1;
+    return `<div class="order-item ${isMe?'is-mine':''}" id="oi-${i}" draggable="true"
+      ondragstart="orderDragStart(event,${i})" ondragover="orderDragOver(event,${i})"
+      ondragleave="orderDragLeave(${i})" ondrop="orderDrop(event,${i})" ondragend="orderDragEnd(${i})">
+      <span class="order-drag-handle">⋮⋮</span>
+      <span class="order-slot" style="color:${isMe?'#10b981':'#475569'}">${i+1}</span>
+      ${fl(name,22)}
+      <span style="font-size:12px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isMe?'#10b981':'#e2e8f0'}">${name}</span>
+      ${isMe?`<span style="font-size:9px;font-weight:700;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:4px;padding:2px 6px">YOU</span>`:''}
+    </div>`;
+  }).join('');
+
   return `
     <div class="sec-title">MOCK DRAFT <em>SETUP</em></div>
     <div class="setup-grid">
@@ -508,7 +607,7 @@ function renderSetup() {
         <div class="panel">
           <div class="panel-title">Settings</div>
           <div class="field">
-            <div class="field-label">Your Draft Position</div>
+            <div class="field-label">Your Team</div>
             <select class="sel" onchange="S.draftSpot=+this.value;render()">${posOpts}</select>
           </div>
           <div class="field">
@@ -523,6 +622,10 @@ function renderSetup() {
             <b>Format:</b> PPR Snake Draft
           </div>
           <button class="start-btn" onclick="startDraft()">START DRAFT</button>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-title">Draft Order <span style="font-weight:400;font-family:'DM Sans',sans-serif;font-size:11px;color:#475569;text-transform:none;letter-spacing:0">— drag to reorder</span></div>
+          <div class="order-list">${orderRows}</div>
         </div>
       </div>
       <div>
@@ -556,25 +659,24 @@ function renderDraft() {
           <button class="speed-btn ${S.autoPick?'on':''}" style="flex:none;padding:5px 10px" onclick="toggleAuto()">${S.autoPick?'🤖 Auto':'👤 Me'}</button>
         </div>
         <div class="d-clock-label">${complete?'DRAFT COMPLETE':(isMyTurn?'⭐ YOUR PICK':'ON THE CLOCK')}</div>
-        <div class="d-clock-team ${isMyTurn?'my-turn':''}">${complete?'':LEAGUE.teamNames[ti]}</div>
+        <div class="d-clock-team ${isMyTurn?'my-turn':''}" style="display:flex;align-items:center;gap:7px">${complete?'':`${fl(S.teamOrder[ti],24)}${S.teamOrder[ti]}`}</div>
       </div>
     </div>
     <div class="draft-layout">
       <div>
-        <input id="search-inp" class="search-inp" type="text" placeholder="Search players..." value="${S.search.replace(/"/g,'&quot;')}" oninput="S.search=this.value;updatePlayerList()">
-        <div class="pos-btns">
-          ${['ALL','QB','RB','WR','TE','K','DST'].map(pos=>`<button class="pos-btn ${S.filterPos===pos?'on':''}" onclick="S.filterPos='${pos}';updatePlayerList()">${pos}</button>`).join('')}
+        <div class="main-tabs">
+          <button class="main-tab ${S.mainTab==='players'?'on':''}" onclick="S.mainTab='players';updatePlayerList()">Players</button>
+          <button class="main-tab ${S.mainTab==='board'?'on':''}" onclick="S.mainTab='board';document.getElementById('main-content').innerHTML=buildVisualBoard()">Draft Board</button>
         </div>
-        <div id="plist-wrap">${buildPlayerList(isMyTurn)}</div>
-        <button class="board-toggle" onclick="S.showBoard=!S.showBoard;updateBoard()">
-          ${S.showBoard?'▲ Hide Draft Board':'▼ Show Draft Board'}
-        </button>
-        <div id="board-area">${S.showBoard?buildBoard():''}</div>
+        <div id="main-content">
+          ${S.mainTab==='players'?`<input id="search-inp" class="search-inp" type="text" placeholder="Search players..." value="${S.search.replace(/"/g,'&quot;')}" oninput="S.search=this.value;updatePlayerList()"><div class="pos-btns">${['ALL','QB','RB','WR','TE','K','DST'].map(pos=>`<button class="pos-btn ${S.filterPos===pos?'on':''}" onclick="S.filterPos='${pos}';updatePlayerList()">${pos}</button>`).join('')}</div><div id="plist-wrap">${buildPlayerList(isMyTurn)}</div>`:buildVisualBoard()}
+        </div>
         ${complete?`<div style="text-align:center;margin-top:20px"><button class="start-btn" style="max-width:280px" onclick="S.screen='results';render()">VIEW RESULTS & GRADES →</button></div>`:''}
       </div>
       <div id="sidebar">
         ${buildRosterSidebar(me)}
         ${buildPickSchedule()}
+        ${buildQueue()}
       </div>
     </div>`;
 }
@@ -596,22 +698,26 @@ function buildPlayerList(isMyTurn) {
     const teamLine=p.team?`<div class="p-team" style="display:flex;align-items:center;gap:3px">${logoUrl?`<img src="${logoUrl}" class="team-logo" alt="${p.team}" onerror="this.style.display='none'">`:''} ${p.team}</div>`:'';
     const adpRound=Math.ceil(p.rank/N);
     const adpPick=((p.rank-1)%N)+1;
+    const queued=S.queue.includes(p.id);
     const btn=isMyTurn
       ?`<button class="draft-btn" onclick="userDraft('${p.id}')">DRAFT</button>`
       :`<span class="cpu-badge">#${p.rank}</span>`;
-    return `<div class="pitem">
+    return `<div class="pitem" style="${queued?'background:rgba(250,204,21,0.04)':''}">
       <div class="p-rank">${p.rank}</div>
       <div onclick="showPlayerModal('${p.id}')" style="cursor:pointer" title="View ${p.name} stats">${img}</div>
       <div onclick="showPlayerModal('${p.id}')" style="cursor:pointer" title="View ${p.name} stats"><div class="p-name" style="color:#e2e8f0;transition:color .15s" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#e2e8f0'">${p.name}</div>${teamLine}</div>
       <div><span class="pos-badge pos-${p.pos}">${p.pos}</span></div>
       <div><div class="p-stat">${p.totalPts}</div><div class="p-stat-sub">${p.ppg}/gm · ${p.gp}gp</div></div>
       <div class="p-adp">Rd ${adpRound}.${adpPick}</div>
-      ${btn}
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="star-btn ${queued?'on':''}" onclick="toggleQueue('${p.id}')" title="${queued?'Remove from queue':'Add to queue'}">★</button>
+        ${btn}
+      </div>
     </div>`;
   }).join('');
 
   return `<div class="plist">
-    <div class="plist-hdr"><div>RK</div><div>—</div><div>PLAYER</div><div>POS</div><div>2025 PTS</div><div>ADP</div><div>${isMyTurn?'PICK':'—'}</div></div>
+    <div class="plist-hdr"><div>RK</div><div>—</div><div>PLAYER</div><div>POS</div><div>2025 PTS</div><div>ADP</div><div style="display:flex;align-items:center;gap:4px"><span style="font-size:10px">★</span>${isMyTurn?'PICK':'—'}</div></div>
     ${rows||'<div style="padding:20px;text-align:center;color:#475569;font-size:12px">No players found</div>'}
   </div>`;
 }
@@ -634,7 +740,7 @@ function buildRosterSidebar(me) {
     <div class="r-empty">—</div>
   </div>`).join('');
   return `<div class="r-panel">
-    <div class="r-title">YOUR ROSTER — ${LEAGUE.teamNames[me]}</div>
+    <div class="r-title" style="display:flex;align-items:center;gap:6px">${fl(S.teamOrder[me],16)}YOUR ROSTER</div>
     ${kRows}${pRows}${empty}
   </div>`;
 }
@@ -651,9 +757,89 @@ function buildPickSchedule() {
   </div>`;
 }
 
+function buildQueue() {
+  const qAvail=S.queue.filter(id=>S.available.has(id));
+  if(!qAvail.length) return `<div class="r-panel"><div class="r-title">★ QUEUE</div><div style="font-size:11px;color:#2d4060;text-align:center;padding:10px 0">Star players to add to queue</div></div>`;
+  let html=`<div class="r-panel"><div class="r-title" style="display:flex;justify-content:space-between;align-items:center"><span>★ QUEUE</span><span style="font-size:10px;color:#475569;font-weight:400">${qAvail.length}</span></div>`;
+  qAvail.forEach((id,idx)=>{
+    const p=S.players.find(x=>x.id===id);if(!p)return;
+    const m=S.meta[p.name];const photo=m&&m.photo_url?m.photo_url:'';
+    html+=`<div class="q-item" id="qi-${id}" draggable="true" ondragstart="qDragStart(event,'${id}')" ondragover="qDragOver(event,'${id}')" ondragleave="qDragLeave('${id}')" ondrop="qDrop(event,'${id}')">`;
+    html+=`<span class="q-drag">⋮⋮</span><span class="q-num">${idx+1}</span>`;
+    if(photo)html+=`<img src="${photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+    html+=`<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div><span class="pos-badge pos-${p.pos}" style="font-size:9px;padding:1px 5px">${p.pos}</span></div>`;
+    html+=`<button class="q-remove" onclick="removeFromQueue('${id}')">×</button></div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function buildVisualBoard() {
+  const me=S.draftSpot-1;
+  const pc={QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#22c55e'};
+  const pickGrid={};
+  S.rosters.forEach((roster,t)=>roster.forEach(p=>{if(!pickGrid[p.round])pickGrid[p.round]={};pickGrid[p.round][t]=p;}));
+  S.keepers.forEach((ks,t)=>ks.forEach((k,ki)=>{const r=ki+1;if(!pickGrid[r])pickGrid[r]={};if(!pickGrid[r][t])pickGrid[r][t]={...k,isKeeper:true,round:r};}));
+  function abbrev(n){const p=n.trim().split(' ');return p.length>=2?p[0][0]+'. '+p.slice(1).join(' '):n;}
+  let html='<div class="vboard-wrap"><table class="vboard-tbl"><thead><tr>';
+  html+=`<td style="width:30px;min-width:30px;background:#0d1526;border:1px solid rgba(255,255,255,0.06)"></td>`;
+  for(let t=0;t<N;t++){
+    const name=S.teamOrder[t];const logo=fl(name,26);
+    const disp=name.length>11?name.substring(0,10)+'…':name;
+    html+=`<th class="vboard-th" ${t===me?'style="border-bottom:2px solid #10b981;color:#10b981"':''} title="${name}">`;
+    html+=logo?`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${logo}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px;display:block">${disp}</span></div>`:disp;
+    html+=`</th>`;
+  }
+  html+=`</tr></thead><tbody>`;
+  for(let rd=1;rd<=LEAGUE.rounds;rd++){
+    const bg=rd%2===0?'rgba(255,255,255,0.018)':'rgba(255,255,255,0.008)';
+    html+=`<tr style="background:${bg}"><td class="vboard-rnd-td">R${rd}</td>`;
+    for(let t=0;t<N;t++){
+      const overallPick=(rd-1)*N+(rd%2===1?t:N-1-t);
+      const isCur=overallPick===S.currentPick&&!done();
+      const isMine=t===me;
+      const isQueued=S.queue.some(id=>{const p=S.players.find(x=>x.id===id);return p&&!S.available.has(id)&&S.rosters[t].some(r=>r.id===id&&r.round===rd);});
+      const pick=pickGrid[rd]&&pickGrid[rd][t];
+      html+=`<td class="vboard-cell${isMine?' v-mine':''}${isCur?' v-cur':''}">`;
+      if(pick){
+        const pos=pick.pos||pick.position||'';const pcolor=pc[pos]||'#64748b';
+        const m=S.meta[pick.name]||{};const photo=m.photo_url||'';
+        const nflTeam=(m.nfl_team)||pick.team||'';const nflLogo=S.teamLogos[nflTeam]||'';
+        html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative">`;
+        html+=`<div style="position:absolute;top:0;left:0;font-size:7px;color:#334155;font-weight:700;line-height:1">#${overallPick+1}</div>`;
+        if(pos==='DST'&&nflLogo){
+          html+=`<div style="width:38px;height:38px;border-radius:50%;background:${pcolor}18;border:2px solid ${pcolor};display:flex;align-items:center;justify-content:center;margin-top:2px"><img src="${nflLogo}" style="width:26px;height:26px;object-fit:contain" onerror="this.style.display='none'"></div>`;
+        } else if(photo){
+          html+=`<img src="${photo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid ${pcolor};margin-top:2px" onerror="this.src='';this.style.display='none';this.nextElementSibling.style.display='flex'">`;
+          html+=`<div style="display:none;width:38px;height:38px;border-radius:50%;background:${pcolor}22;border:2px solid ${pcolor};align-items:center;justify-content:center;font-size:13px;font-weight:900;color:${pcolor};margin-top:2px">${pick.name[0]}</div>`;
+        } else {
+          html+=`<div style="width:38px;height:38px;border-radius:50%;background:${pcolor}22;border:2px solid ${pcolor};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:${pcolor};margin-top:2px">${pick.name[0]}</div>`;
+        }
+        html+=`<div style="font-size:9px;font-weight:700;color:#e2e8f0;text-align:center;line-height:1.2;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${pick.name}">${abbrev(pick.name)}</div>`;
+        if(pick.isKeeper){
+          html+=`<div style="font-size:7px;background:rgba(250,204,21,0.15);color:#facc15;border-radius:3px;padding:1px 3px;font-weight:700">KEEP</div>`;
+        } else {
+          html+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:2px"><span style="font-size:8px;font-weight:800;color:${pcolor};background:${pcolor}25;padding:1px 4px;border-radius:3px;line-height:1.4">${pos||'—'}</span>`;
+          if(nflLogo)html+=`<img src="${nflLogo}" style="height:11px;width:auto;max-width:13px;object-fit:contain" onerror="this.style.display='none'">`;
+          html+=`</div>`;
+        }
+        html+=`</div>`;
+      } else if(isCur){
+        html+=`<div style="display:flex;align-items:center;justify-content:center;height:58px;font-size:20px">⏰</div>`;
+      } else {
+        html+=`<div style="font-size:8px;color:#1e3655;padding:4px;text-align:center;line-height:3.5">#${overallPick+1}</div>`;
+      }
+      html+=`</td>`;
+    }
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table></div>`;
+  return html;
+}
+
 function buildBoard() {
   const me=S.draftSpot-1;
-  const hdr='<th class="rnd-th">RND</th>'+LEAGUE.teamNames.map((n,t)=>`<th style="${t===me?'color:#10b981':''}" title="${n}">${n.replace(/ .*/,'')}</th>`).join('');
+  const hdr='<th class="rnd-th">RND</th>'+S.teamOrder.map((n,t)=>{const logo=fl(n,22);return`<th style="${t===me?'color:#10b981':''}" title="${n}">${logo?`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${logo}<span style="display:block">${n.replace(/ .*/,'')}</span></div>`:n.replace(/ .*/,'')}</th>`;}).join('');
   const rows=Array.from({length:LEAGUE.rounds},(_,r)=>{
     const cells=Array.from({length:N},(_,t)=>{
       const overallPick=r*N+(r%2===0?t:N-1-t);
@@ -668,9 +854,20 @@ function buildBoard() {
 
 /* ===== PARTIAL UPDATES ===== */
 function updatePlayerList() {
+  if(S.mainTab==='board'){
+    const mc=document.getElementById('main-content');
+    if(mc) mc.innerHTML=buildVisualBoard();
+    return;
+  }
   const me=S.draftSpot-1;
   const ti=done()?-1:pickToTeam(S.currentPick);
   const isMyTurn=!done()&&ti===me&&!S.autoPick;
+  // Ensure search/filter controls exist
+  const mc=document.getElementById('main-content');
+  if(mc&&!document.getElementById('plist-wrap')){
+    mc.innerHTML=`<input id="search-inp" class="search-inp" type="text" placeholder="Search players..." value="${S.search.replace(/"/g,'&quot;')}" oninput="S.search=this.value;updatePlayerList()"><div class="pos-btns">${['ALL','QB','RB','WR','TE','K','DST'].map(pos=>`<button class="pos-btn ${S.filterPos===pos?'on':''}" onclick="S.filterPos='${pos}';updatePlayerList()">${pos}</button>`).join('')}</div><div id="plist-wrap">${buildPlayerList(isMyTurn)}</div>`;
+    return;
+  }
   const el=document.getElementById('plist-wrap');
   if(el) el.innerHTML=buildPlayerList(isMyTurn);
 }
@@ -697,16 +894,20 @@ function updateDraftUI() {
     bar.querySelector('.d-pick-info').textContent=`Pick ${S.currentPick+1} overall · Pick ${pickInRnd} of ${N}`;
     bar.querySelector('.d-clock-label').textContent=isMyTurn?'⭐ YOUR PICK':'ON THE CLOCK';
     const ct=bar.querySelector('.d-clock-team');
-    ct.textContent=LEAGUE.teamNames[ti];
+    ct.innerHTML=fl(S.teamOrder[ti],24)+S.teamOrder[ti];
     ct.className='d-clock-team'+(isMyTurn?' my-turn':'');
+    ct.style.cssText='display:flex;align-items:center;gap:7px';
   }
   // Update sidebar
   const sb=document.getElementById('sidebar');
-  if(sb) sb.innerHTML=buildRosterSidebar(me)+buildPickSchedule();
-  // Update player list
-  updatePlayerList();
-  // Update board
-  if(S.showBoard) updateBoard();
+  if(sb) sb.innerHTML=buildRosterSidebar(me)+buildPickSchedule()+buildQueue();
+  // Update main content area
+  if(S.mainTab==='board'){
+    const mc=document.getElementById('main-content');
+    if(mc) mc.innerHTML=buildVisualBoard();
+  } else {
+    updatePlayerList();
+  }
 }
 
 /* ===== RESULTS ===== */
@@ -720,18 +921,18 @@ function renderResults() {
     const top=[...all].sort((a,b)=>b.totalPts-a.totalPts)[0];
     return `<div class="grade-card ${i===me?'mine':''}">
       <div class="g-letter" style="color:${GRADE_COLOR[g]||'#94a3b8'}">${g}</div>
-      <div class="g-team">${i===me?'⭐ ':''} ${LEAGUE.teamNames[i]}</div>
+      <div class="g-team" style="display:flex;align-items:center;justify-content:center;gap:6px">${fl(S.teamOrder[i],24)}${i===me?'⭐ ':''} ${S.teamOrder[i]}</div>
       <div class="g-pts">${pts} proj pts/wk</div>
       <div class="g-best">Top pick: <b>${top?top.name:'—'}</b></div>
     </div>`;
   }).join('');
 
-  const rosterCards=LEAGUE.teamNames.map((name,i)=>{
+  const rosterCards=S.teamOrder.map((name,i)=>{
     const all=[...S.keepers[i].map(k=>({...k,isKeeper:true})),...S.rosters[i]].sort((a,b)=>(a.round||0)-(b.round||0));
     const g=grade(i);
     return `<div class="rc ${i===me?'mine':''}">
       <div class="rc-hdr">
-        <div class="rc-name">${i===me?'⭐ ':''}${name}</div>
+        <div class="rc-name" style="display:flex;align-items:center;gap:7px">${fl(name,26)}${i===me?'⭐ ':''}${name}</div>
         <span style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:${GRADE_COLOR[g]||'#94a3b8'}">${g}</span>
       </div>
       ${all.map(p=>`<div class="rc-pick">
@@ -782,6 +983,9 @@ function newDraft() {
   S.keepers=Array.from({length:N},()=>[]);
   S.currentPick=0;
   S.autoPick=false;
+  S.queue=[];
+  S.mainTab='players';
+  S.teamOrder=[...LEAGUE.teamNames];
   render();
 }
 
