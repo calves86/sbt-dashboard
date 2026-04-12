@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025 Season — SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+a{color:#10b981;text-decoration:none}
+.accent{color:#10b981}
+
+/* Topbar */
+#ln-topbar{display:none;background:#080f1e;border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 16px;align-items:center;gap:12px}
+#ln-mobile-btn{background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:2px 6px}
+.ln-topbar-title{font-size:13px;font-weight:700;color:#94a3b8}
+@media(max-width:700px){#ln-topbar{display:flex}}
+
+/* Page wrapper */
+.dash-wrap{padding:24px;max-width:1400px;margin:0 auto}
+
+/* Season header */
+.season-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;padding:20px 24px;background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.02));border:1px solid rgba(16,185,129,0.15);border-radius:16px}
+.season-title{font-size:36px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.season-sub{font-size:12px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.season-badge{padding:6px 16px;border-radius:20px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981;font-size:12px;font-weight:800;letter-spacing:1px}
+
+/* Stat cards */
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#10b981,transparent)}
+.stat-label{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:8px}
+.stat-value{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#e2e8f0;line-height:1}
+.stat-sub{font-size:11px;color:#64748b;margin-top:4px}
+
+/* Main 2-col grid */
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+
+/* Panels */
+.panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;margin-bottom:16px}
+.panel:last-child{margin-bottom:0}
+.panel-hdr{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0}
+.panel-badge{font-size:10px;font-weight:700;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);padding:2px 8px;border-radius:10px;letter-spacing:.5px}
+.panel-body{padding:14px 16px}
+
+/* Week nav */
+.week-nav{display:flex;align-items:center;gap:8px}
+.week-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.week-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981}
+.week-label{font-size:13px;font-weight:700;color:#e2e8f0}
+
+/* Matchup cards */
+.matchup-card{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);margin-bottom:8px;transition:border-color .15s}
+.matchup-card:last-child{margin-bottom:0}
+.matchup-card:hover{border-color:rgba(16,185,129,0.2)}
+.matchup-team{font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.matchup-score{font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.matchup-score.win{color:#10b981}
+.matchup-score.loss{color:#475569}
+.matchup-score.tie{color:#f59e0b}
+.matchup-vs{font-size:10px;font-weight:700;color:#334155;text-align:center}
+.matchup-type{font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.team-right{text-align:right}
+.score-block{text-align:center}
+
+/* Standings */
+.standings-tabs{display:flex;gap:4px;padding:10px 12px 0;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15)}
+.st-tab{padding:6px 14px;border-radius:6px 6px 0 0;border:none;background:transparent;color:#64748b;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .15s}
+.st-tab.on{background:rgba(16,185,129,0.12);color:#10b981;border-bottom:2px solid #10b981}
+.stand-row{display:grid;grid-template-columns:22px 1fr 60px 52px;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;gap:6px}
+.stand-row:last-child{border-bottom:none}
+.stand-row:hover{background:rgba(255,255,255,0.02)}
+.stand-rank{font-weight:800;color:#475569;font-size:11px;text-align:center}
+.stand-team{font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stand-owner{font-size:10px;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stand-record{font-weight:700;color:#94a3b8;text-align:center;font-size:11px}
+.stand-pts{font-weight:700;color:#10b981;text-align:right;font-size:11px}
+.stand-hdr{background:rgba(0,0,0,0.2)!important;color:#475569!important;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.stand-hdr .stand-team{color:#475569}
+.stand-hdr .stand-rank,.stand-hdr .stand-record,.stand-hdr .stand-pts{color:#475569}
+.div-label{padding:6px 12px;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.04)}
+.playoff-tag{font-size:9px;font-weight:700;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);padding:1px 5px;border-radius:4px;margin-left:4px}
+
+/* Activity feed */
+.feed-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:10px;align-items:flex-start}
+.feed-item:last-child{border-bottom:none}
+.feed-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.feed-icon.add{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2)}
+.feed-icon.drop{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)}
+.feed-icon.trade{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2)}
+.feed-icon.waiver{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.feed-body{flex:1;min-width:0}
+.feed-team{font-size:12px;font-weight:700;color:#e2e8f0}
+.feed-detail{font-size:11px;color:#64748b;margin-top:3px;line-height:1.5}
+.feed-time{font-size:10px;color:#334155;margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}
+.pill-add{background:rgba(16,185,129,0.1);color:#10b981}
+.pill-drop{background:rgba(239,68,68,0.1);color:#ef4444}
+.pill-trade{background:rgba(167,139,250,0.1);color:#a78bfa}
+.pill-waiver{background:rgba(245,158,11,0.1);color:#f59e0b}
+
+/* News grid */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:20px}
+.news-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;transition:border-color .15s}
+.news-card:hover{border-color:rgba(16,185,129,0.25)}
+.news-player{font-size:11px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.news-pos{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700}
+.news-headline{font-size:13px;font-weight:700;color:#e2e8f0;line-height:1.45;margin-bottom:6px}
+.news-body{font-size:11px;color:#64748b;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{font-size:10px;color:#334155;margin-top:8px;display:flex;justify-content:space-between}
+.sec-heading{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;margin:24px 0 4px}
+.sec-sub{font-size:11px;color:#475569;margin-bottom:0}
+
+/* Pos colors */
+.pos-QB{color:#f472b6}.pos-RB{color:#22d3ee}.pos-WR{color:#34d399}.pos-TE{color:#fb923c}.pos-K{color:#facc15}.pos-DST{color:#a78bfa}
+.bg-QB{background:rgba(244,114,182,0.12)}.bg-RB{background:rgba(34,211,238,0.12)}.bg-WR{background:rgba(52,211,153,0.12)}.bg-TE{background:rgba(251,146,60,0.12)}.bg-K{background:rgba(250,204,21,0.12)}.bg-DST{background:rgba(167,139,250,0.12)}
+
+/* Loading */
+.loading-state{padding:60px;text-align:center;color:#475569}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(16,185,129,0.2);border-top-color:#10b981;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:1000px){.dash-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.stat-cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="shell">
+<nav id="leftnav"></nav>
+<div id="main">
+<div id="ln-topbar">
+  <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+  <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
+</div>
+<div class="dash-wrap">
+  <div class="season-header">
+    <div>
+      <div class="season-title">2025 Season</div>
+      <div class="season-sub">Sigma Beta Tau Fantasy Football &nbsp;·&nbsp; 14th Season</div>
+    </div>
+    <span class="season-badge">&#127942; SEASON COMPLETE</span>
+  </div>
+  <div id="app"><div class="loading-state"><span class="spinner"></span>Loading season data...</div></div>
+</div>
+</div><!-- /#main -->
+</div><!-- /#shell -->
+
+<script>
+const SEASON = 2025;
+const ACCENT = '#10b981';
+const PLAYOFF_SPOTS = 6;
+let D = {};
+let stView = 'overall'; // 'overall' | division name
+let selWeek = null;
+
+const posColor = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc15',DST:'#a78bfa'};
+const posClass = {QB:'QB',RB:'RB',WR:'WR',TE:'TE',K:'K',DST:'DST'};
+
+async function loadAll() {
+  try {
+    const [standings, matchups, transactions, divisions, newsRaw] = await Promise.all([
+      fetch('data/standings.json').then(r=>r.json()),
+      fetch('data/matchups.json').then(r=>r.json()),
+      fetch('data/transactions.json').then(r=>r.json()),
+      fetch('data/divisions.json').then(r=>r.json()).catch(()=>[]),
+      fetch('data/player_news_2025.json').then(r=>r.json()).catch(()=>({}))
+    ]);
+    D.standings   = standings.filter(s=>s.season===SEASON).sort((a,b)=>a.rank-b.rank);
+    D.matchups    = matchups.filter(m=>m.season===SEASON);
+    D.transactions= transactions.filter(t=>t.season===SEASON);
+    D.divisions   = divisions.filter(d=>d.season===SEASON);
+    D.news        = newsRaw.teams || newsRaw || {};
+    const weeks   = [...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+    selWeek       = weeks[weeks.length-1] || 1;
+    render();
+  } catch(e) {
+    document.getElementById('app').innerHTML = `<div class="loading-state">Error loading data: ${e.message}</div>`;
+  }
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = renderStatCards() + `
+    <div class="dash-grid">
+      <div class="dash-left">${renderMatchups()}${renderFeed()}</div>
+      <div class="dash-right">${renderStandings()}</div>
+    </div>
+    ${renderNews()}`;
+}
+
+/* ── Stat Cards ── */
+function renderStatCards() {
+  const leader = D.standings[0] || {};
+  const topScorer = [...D.standings].sort((a,b)=>b.points_for-a.points_for)[0] || {};
+  const avgScore = D.standings.length ? (D.standings.reduce((s,r)=>s+r.points_for,0)/D.standings.length).toFixed(1) : '—';
+  const weeks = [...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  return `<div class="stat-cards">
+    <div class="stat-card"><div class="stat-label">League Leader</div><div class="stat-value">${leader.team_name||'—'}</div><div class="stat-sub">${leader.wins||0}–${leader.losses||0} &nbsp;·&nbsp; ${(leader.points_for||0).toFixed(1)} PF</div></div>
+    <div class="stat-card"><div class="stat-label">Top Scorer</div><div class="stat-value">${topScorer.team_name||'—'}</div><div class="stat-sub">${(topScorer.points_for||0).toFixed(1)} total points</div></div>
+    <div class="stat-card"><div class="stat-label">Season Weeks</div><div class="stat-value">${weeks.length}</div><div class="stat-sub">Weeks played this season</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Team Score</div><div class="stat-value">${avgScore}</div><div class="stat-sub">Points for, per team</div></div>
+  </div>`;
+}
+
+/* ── Matchups ── */
+function renderMatchups() {
+  const weeks = [...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  const wkMatches = D.matchups.filter(m=>m.week===selWeek);
+  const typeLabel = {regular:'Regular Season',playoff:'Playoff',consolation:'Consolation'};
+
+  const cards = wkMatches.map(m=>{
+    const t1win = m.team1_score > m.team2_score;
+    const t2win = m.team2_score > m.team1_score;
+    const type = typeLabel[m.matchup_type] || m.matchup_type || '';
+    return `<div class="matchup-card">
+      <div>
+        <div class="matchup-team">${m.team1_name}</div>
+        <div class="matchup-type">${type}</div>
+      </div>
+      <div class="score-block">
+        <div style="display:flex;gap:6px;align-items:center;justify-content:center">
+          <span class="matchup-score ${t1win?'win':t2win?'loss':''}">${m.team1_score??'—'}</span>
+          <span class="matchup-vs">VS</span>
+          <span class="matchup-score ${t2win?'win':t1win?'loss':''}">${m.team2_score??'—'}</span>
+        </div>
+      </div>
+      <div class="team-right">
+        <div class="matchup-team" style="text-align:right">${m.team2_name}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const prevWk = weeks[weeks.indexOf(selWeek)-1];
+  const nextWk = weeks[weeks.indexOf(selWeek)+1];
+
+  return `<div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">Matchups</span>
+      <div class="week-nav">
+        <button class="week-btn" onclick="selWeek=${prevWk||selWeek};document.querySelector('.dash-left').innerHTML=renderMatchups()+renderFeed()" ${!prevWk?'disabled':''}>‹</button>
+        <span class="week-label">Week ${selWeek}</span>
+        <button class="week-btn" onclick="selWeek=${nextWk||selWeek};document.querySelector('.dash-left').innerHTML=renderMatchups()+renderFeed()" ${!nextWk?'disabled':''}>›</button>
+      </div>
+    </div>
+    <div class="panel-body">${cards||'<div style="padding:20px;text-align:center;color:#475569">No matchups for this week</div>'}</div>
+  </div>`;
+}
+
+/* ── Standings ── */
+function renderStandings() {
+  const divNames = [...new Set(D.divisions.map(d=>d.division))].sort();
+  const teamDiv  = {};
+  D.divisions.forEach(d=>{ teamDiv[d.team_name] = d.division; });
+
+  const hasDivs = divNames.length > 0;
+  const tabs = hasDivs
+    ? `<div class="standings-tabs">
+        <button class="st-tab ${stView==='overall'?'on':''}" onclick="stView='overall';reStand()">Overall</button>
+        ${divNames.map(d=>`<button class="st-tab ${stView===d?'on':''}" onclick="stView='${d}';reStand()">${d}</button>`).join('')}
+      </div>`
+    : '';
+
+  const rows = stView==='overall'
+    ? D.standings
+    : D.standings.filter(s=>teamDiv[s.team_name]===stView);
+
+  const rowsHtml = rows.map((s,i)=>{
+    const rank = stView==='overall' ? s.rank : i+1;
+    const playoff = stView==='overall' && rank<=PLAYOFF_SPOTS;
+    const tag = playoff ? `<span class="playoff-tag">PO</span>` : '';
+    return `<div class="stand-row">
+      <div class="stand-rank">${rank}</div>
+      <div><div class="stand-team">${s.team_name}${tag}</div><div class="stand-owner">${s.owner||''}</div></div>
+      <div class="stand-record">${s.wins}–${s.losses}</div>
+      <div class="stand-pts">${(s.points_for||0).toFixed(1)}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="panel">
+    ${tabs}
+    <div class="stand-row stand-hdr">
+      <div class="stand-rank">#</div>
+      <div class="stand-team">Team</div>
+      <div class="stand-record">W–L</div>
+      <div class="stand-pts">PF</div>
+    </div>
+    ${rowsHtml||'<div style="padding:20px;text-align:center;color:#475569">No standings data</div>'}
+  </div>`;
+}
+
+function reStand() {
+  document.querySelector('.dash-right').innerHTML = renderStandings();
+}
+
+/* ── Activity Feed ── */
+function renderFeed() {
+  const recent = [...D.transactions].sort((a,b)=>{
+    const wDiff = (b.week||0)-(a.week||0);
+    if(wDiff!==0) return wDiff;
+    return (b.timestamp||'').localeCompare(a.timestamp||'');
+  }).slice(0,20);
+
+  const iconMap = {trade:'⇄',waiver:'📋',add_drop:'🔄',add:'✚',drop:'✖'};
+  const iconClass = {trade:'trade',waiver:'waiver',add_drop:'add',add:'add',drop:'drop'};
+
+  const items = recent.map(tx=>{
+    let detail = '';
+    if(tx.type==='trade'){
+      const sides = (tx.sides||[]).map(s=>`<span style="font-weight:700;color:#c4b5fd">${s.team}</span> gets ${(s.receives||[]).map(p=>`<span class="pill pill-trade">${p.pos} ${p.name}</span>`).join(' ')}`).join(' &nbsp;·&nbsp; ');
+      detail = sides;
+    } else {
+      const adds = (tx.adds||[]).map(p=>`<span class="pill pill-${tx.type==='waiver'?'waiver':'add'}">+${p.pos} ${p.name}</span>`).join(' ');
+      const drops = (tx.drops||[]).map(p=>`<span class="pill pill-drop">−${p.pos} ${p.name}</span>`).join(' ');
+      detail = [adds,drops].filter(Boolean).join(' ');
+    }
+    const iClass = iconClass[tx.type]||'add';
+    return `<div class="feed-item">
+      <div class="feed-icon ${iClass}">${iconMap[tx.type]||'🔄'}</div>
+      <div class="feed-body">
+        <div class="feed-team">${tx.type==='trade'?'Trade':''+tx.team}</div>
+        <div class="feed-detail">${detail}</div>
+        <div class="feed-time">Week ${tx.week}${tx.timestamp?' &nbsp;·&nbsp; '+tx.timestamp:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">League Activity</span>
+      <span class="panel-badge">${D.transactions.length} moves</span>
+    </div>
+    <div class="panel-body" style="max-height:440px;overflow-y:auto">${items||'<div style="padding:20px;text-align:center;color:#475569">No activity data</div>'}</div>
+  </div>`;
+}
+
+/* ── Player News ── */
+function renderNews() {
+  const cards = [];
+  Object.entries(D.news).forEach(([teamName, players])=>{
+    (players||[]).forEach(player=>{
+      const arts = player.articles||[];
+      if(!arts.length) return;
+      const a = arts[0];
+      if(!a.headline) return;
+      const pc = posColor[player.position]||'#94a3b8';
+      const pcc = posClass[player.position]||'';
+      cards.push({
+        player: player.name,
+        pos: player.position,
+        team: player.nfl_team,
+        fantasyTeam: teamName,
+        headline: a.headline,
+        body: a.story||'',
+        date: a.date||'',
+        pc, pcc
+      });
+    });
+  });
+
+  if(!cards.length) return '';
+
+  // Shuffle to show variety
+  cards.sort(()=>Math.random()-.5);
+  const shown = cards.slice(0,12);
+
+  const cardHtml = shown.map(c=>`<div class="news-card">
+    <div class="news-player">
+      <span class="news-pos pos-${c.pcc} bg-${c.pcc}" style="color:${c.pc}">${c.pos}</span>
+      ${c.player}
+      <span style="color:#334155;font-size:10px;font-weight:600">${c.team}</span>
+    </div>
+    <div class="news-headline">${c.headline}</div>
+    ${c.body?`<div class="news-body">${c.body}</div>`:''}
+    <div class="news-meta">
+      <span>${c.date}</span>
+      <span style="color:#1e3a2f">${c.fantasyTeam}</span>
+    </div>
+  </div>`).join('');
+
+  return `<div style="margin-top:8px">
+    <div class="sec-heading">Player News</div>
+    <div class="sec-sub">Latest updates for players on 2025 rosters</div>
+    <div class="news-grid">${cardHtml}</div>
+  </div>`;
+}
+
+loadAll();
+</script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('dashboard.html');</script>
+</body>
+</html>

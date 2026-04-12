@@ -46,7 +46,7 @@ function _buildNavHTML(activePage, opts) {
 
   // Current-season nav items
   const season = [
-    { href: 'index.html',        icon: '&#127968;', label: 'Dashboard'     },
+    { href: 'dashboard.html',    icon: '&#127968;', label: 'Dashboard'     },
     { href: 'team.html',         icon: '&#128101;', label: 'My Teams'      },
     { href: 'transactions.html', icon: '&#128257;', label: 'Activity'      },
     { href: 'players.html',      icon: '&#10133;',  label: 'Free Agents'   },
