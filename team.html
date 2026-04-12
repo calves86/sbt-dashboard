@@ -203,11 +203,42 @@ a{color:#10b981;text-decoration:none}
 
 /* ===== PLAYER MODAL ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto}
+.modal-box{background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
 .modal-hdr{display:flex;align-items:flex-start;gap:16px;padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .modal-close-btn{margin-left:auto;background:rgba(255,255,255,0.06);border:none;color:#94a3b8;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;transition:all .12s}
 .modal-close-btn:hover{background:rgba(255,255,255,0.1);color:#e2e8f0}
-.modal-body-inner{padding:16px 20px 20px}
+.modal-body-inner{padding:0 20px 24px}
+.modal-section{padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.modal-section:last-child{border-bottom:none}
+.modal-section-title{font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:10px}
+/* Career summary strip */
+.career-strip{display:flex;gap:20px;flex-wrap:wrap}
+.career-stat{text-align:center}
+.career-stat-val{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;line-height:1}
+.career-stat-lbl{font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+/* Bar chart */
+.chart-outer{display:flex;flex-direction:column;gap:6px}
+.chart-bars{display:flex;align-items:flex-end;gap:3px;height:72px}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0}
+.chart-bar-val{font-size:8px;color:#475569;font-weight:700;white-space:nowrap}
+.chart-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:opacity .15s}
+.chart-bar:hover{opacity:.8}
+.chart-bar-yr{font-size:8px;color:#334155;font-weight:700}
+.chart-bar-yr.cur{color:#10b981}
+.chart-footer{display:flex;gap:16px;flex-wrap:wrap}
+.chart-footer-item{font-size:11px;color:#475569}
+.chart-footer-item span{font-weight:800}
+/* Year-by-year table */
+.career-table{width:100%;border-collapse:collapse}
+.career-table th{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:right;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.career-table th:first-child,.career-table th:nth-child(2){text-align:left}
+.career-table td{font-size:12px;color:#64748b;text-align:right;padding:6px 6px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.career-table td:first-child,.career-table td:nth-child(2){text-align:left;color:#94a3b8;font-weight:700}
+.career-table tr:last-child td{border-bottom:none}
+.career-table tr:hover td{background:rgba(255,255,255,0.02)}
+.career-table .accent{color:#10b981;font-weight:700}
+.career-table .yr-cur{color:#e2e8f0;font-weight:800}
+/* Weekly table */
 .modal-week-hdr{display:grid;grid-template-columns:44px 60px 1fr 72px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .modal-week-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
 .modal-week-hdr .mwh-pts{text-align:right}
@@ -1011,6 +1042,31 @@ function injuryBadge(status, notes) {
 }
 
 /* ===== PLAYER MODAL ===== */
+function fmtHeight(inches) {
+  if (!inches) return '';
+  const h = parseInt(inches);
+  return isNaN(h) ? '' : `${Math.floor(h/12)}'${h%12}"`;
+}
+
+function careerColumns(pos) {
+  if (pos === 'QB') return [
+    {k:'pass_comp', lbl:'CMP'},{k:'pass_att', lbl:'ATT'},{k:'pass_yds', lbl:'YDS', hi:true},
+    {k:'pass_td', lbl:'TD', hi:true},{k:'pass_int', lbl:'INT', red:true},
+    {k:'rush_yds', lbl:'RU YD'},{k:'fpts', lbl:'FPTS', hi:true, dec:1}
+  ];
+  if (['RB','FB'].includes(pos)) return [
+    {k:'rush_att', lbl:'ATT'},{k:'rush_yds', lbl:'RU YD', hi:true},{k:'rush_td', lbl:'RU TD', hi:true},
+    {k:'rec_rec', lbl:'REC'},{k:'rec_yds', lbl:'REC YD'},{k:'rec_td', lbl:'REC TD'},
+    {k:'fpts', lbl:'FPTS', hi:true, dec:1}
+  ];
+  if (['WR','TE'].includes(pos)) return [
+    {k:'rec_tar', lbl:'TGT'},{k:'rec_rec', lbl:'REC', hi:true},{k:'rec_yds', lbl:'REC YD', hi:true},
+    {k:'rec_td', lbl:'REC TD', hi:true},{k:'rush_att', lbl:'ATT'},{k:'rush_yds', lbl:'RU YD'},
+    {k:'fpts', lbl:'FPTS', hi:true, dec:1}
+  ];
+  return [{k:'fpts', lbl:'FPTS', hi:true, dec:1}];
+}
+
 function openPlayerModal(sec, idx) {
   const l = lineups[currentIdx];
   const p = sec === 'starters' ? l.starters[idx] : l.bench[idx];
@@ -1019,31 +1075,113 @@ function openPlayerModal(sec, idx) {
   const pc = POS_COLOR[p.position] || '#64748b';
   const photo = p.photo_url || '';
   const logo = nflLogo(p.nfl_team, p.name, p.position);
+  const ACCENT = '#10b981';
 
+  // --- Header ---
   const photoEl = photo
-    ? `<img src="${photo}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" onerror="this.style.display='none'">`
-    : `<div style="width:64px;height:64px;border-radius:50%;background:${pc}18;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:${pc};flex-shrink:0">${(p.name||'?')[0]}</div>`;
-
-  const nflEl = logo
-    ? `<img src="${logo}" style="width:16px;height:16px;border-radius:3px;object-fit:contain;vertical-align:middle">`
-    : '';
-
+    ? `<img src="${photo}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" onerror="this.style.display='none'">`
+    : `<div style="width:72px;height:72px;border-radius:50%;background:${pc}18;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:${pc};flex-shrink:0">${(p.name||'?')[0]}</div>`;
+  const nflEl = logo ? `<img src="${logo}" style="width:18px;height:18px;border-radius:3px;object-fit:contain">` : '';
   const inj = p.injury_status
     ? `<span class="inj-badge ${({Q:'inj-q',D:'inj-d',O:'inj-o',IR:'inj-ir',PUP:'inj-pup',NA:'inj-na'}[p.injury_status]||'inj-pup')}"${p.injury_notes?` title="${p.injury_notes}"`:''}>${p.injury_status}</span>`
     : '';
 
-  // Sort weeks numerically, exclude bye week
-  const weeks = Object.entries(p.weekly || {})
-    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-    .filter(([, w]) => w.opp !== '-');
+  // Physical attributes line
+  const physParts = [];
+  if (p.height) physParts.push(fmtHeight(p.height));
+  if (p.weight) physParts.push(`${p.weight} lbs`);
+  if (p.age) physParts.push(`Age ${p.age}`);
+  if (p.college) physParts.push(p.college);
+  if (p.jersey_number) physParts.push(`#${p.jersey_number}`);
+  const physLine = physParts.length
+    ? `<div style="font-size:11px;color:#475569;margin-bottom:4px">${physParts.join(' · ')}</div>` : '';
+  const draftLine = p.draft_year
+    ? `<div style="font-size:10px;color:#334155;letter-spacing:.5px">Draft Class · ${p.draft_year}</div>` : '';
 
-  const weekRows = weeks.map(([wk, w]) => {
+  // --- Career stats summary ---
+  const career = p.career || [];
+  const careerFpts = career.reduce((s,c) => s + (c.fpts||0), 0);
+  const bestSeason = career.reduce((best,c) => (c.fpts||0) > (best.fpts||0) ? c : best, {});
+  const avgSeason = career.length > 0 ? careerFpts / career.length : 0;
+
+  const careerStrip = `<div class="career-strip">
+    <div class="career-stat"><div class="career-stat-val" style="color:${ACCENT}">${careerFpts > 0 ? careerFpts.toFixed(1) : '—'}</div><div class="career-stat-lbl">Career FPTS</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#e2e8f0">${career.length || '—'}</div><div class="career-stat-lbl">Seasons</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#a78bfa">${bestSeason.fpts ? bestSeason.fpts.toFixed(1) : '—'}</div><div class="career-stat-lbl">Best Season</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#e2e8f0">${avgSeason > 0 ? avgSeason.toFixed(1) : '—'}</div><div class="career-stat-lbl">Avg / Season</div></div>
+  </div>`;
+
+  // --- FPTS bar chart ---
+  let chartHtml = '';
+  if (career.length > 0) {
+    const maxFpts = Math.max(...career.map(c => c.fpts || 0), 0.1);
+    const barMaxH = 56;
+    const bars = career.map(c => {
+      const isCur = c.year === 2025;
+      const h = Math.round(((c.fpts||0) / maxFpts) * barMaxH);
+      const barColor = isCur ? ACCENT : (c.fpts === bestSeason.fpts ? '#a78bfa' : 'rgba(16,185,129,0.3)');
+      const label = (c.fpts||0) > 0 ? c.fpts.toFixed(0) : '';
+      return `<div class="chart-bar-col">
+        <div class="chart-bar-val">${label}</div>
+        <div class="chart-bar" style="height:${h}px;background:${barColor}" title="${c.year}: ${c.fpts ? c.fpts.toFixed(1) : '—'} pts"></div>
+        <div class="chart-bar-yr ${isCur?'cur':''}">'${String(c.year).slice(-2)}</div>
+      </div>`;
+    }).join('');
+
+    const footerItems = [
+      avgSeason > 0 ? `Avg/Season: <span style="color:${ACCENT}">${avgSeason.toFixed(1)}</span>` : null,
+      bestSeason.fpts ? `Best: <span style="color:#a78bfa">${bestSeason.fpts.toFixed(1)}</span> (${bestSeason.year})` : null,
+    ].filter(Boolean);
+
+    chartHtml = `<div class="modal-section">
+      <div class="modal-section-title">FPTS by Season</div>
+      <div class="chart-outer">
+        <div class="chart-bars">${bars}</div>
+        <div class="chart-footer">${footerItems.map(i=>`<span class="chart-footer-item">${i}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }
+
+  // --- Year-by-year table ---
+  let tableHtml = '';
+  if (career.length > 0) {
+    const cols = careerColumns(p.position);
+    const thead = `<tr><th>Year</th><th>Team</th>${cols.map(c=>`<th>${c.lbl}</th>`).join('')}</tr>`;
+    const rows = [...career].reverse().map(c => {
+      const isCur = c.year === 2025;
+      const cells = cols.map(col => {
+        const v = c[col.k];
+        const display = v == null ? '—' : col.dec ? v.toFixed(col.dec) : v;
+        const cls = col.hi ? 'accent' : col.red && v ? 'style="color:#ef4444"' : '';
+        return cls === 'accent'
+          ? `<td class="accent${isCur?' yr-cur':''}">${display}</td>`
+          : `<td${col.red && v ? ' style="color:#ef4444"':''}>${display}</td>`;
+      }).join('');
+      return `<tr>
+        <td class="${isCur?'yr-cur':''}" style="white-space:nowrap">${isCur?'▶ ':''}${c.year}</td>
+        <td style="color:#64748b;font-weight:600">${c.nfl_team||'—'}</td>
+        ${cells}
+      </tr>`;
+    }).join('');
+    tableHtml = `<div class="modal-section">
+      <div class="modal-section-title">Year-by-Year Stats</div>
+      <div style="overflow-x:auto">
+        <table class="career-table"><thead>${thead}</thead><tbody>${rows}</tbody></table>
+      </div>
+    </div>`;
+  }
+
+  // --- 2025 Weekly stats ---
+  const weeks = Object.entries(p.weekly || {})
+    .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
+    .filter(([,w]) => w.opp !== '-');
+  const weekRows = weeks.map(([wk,w]) => {
     const pts = w.fpts || 0;
-    const ptsColor = pts >= 20 ? '#10b981' : pts >= 10 ? '#e2e8f0' : pts > 0 ? '#64748b' : '#334155';
+    const ptsColor = pts >= 20 ? ACCENT : pts >= 10 ? '#e2e8f0' : pts > 0 ? '#64748b' : '#334155';
     return `<div class="modal-week-row">
       <div class="mwr-wk">WK${wk}</div>
-      <div class="mwr-opp">${w.opp || '—'}</div>
-      <div class="mwr-stat">${w.stat_line || '—'}</div>
+      <div class="mwr-opp">${w.opp||'—'}</div>
+      <div class="mwr-stat">${w.stat_line||'—'}</div>
       <div class="mwr-pts" style="color:${ptsColor}">${pts > 0 ? pts.toFixed(1) : '—'}</div>
     </div>`;
   }).join('');
@@ -1053,38 +1191,32 @@ function openPlayerModal(sec, idx) {
       <div class="modal-hdr">
         ${photoEl}
         <div style="flex:1;min-width:0">
-          <div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#f1f5f9;line-height:1;margin-bottom:6px">${p.name}</div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div style="font-size:24px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#f1f5f9;line-height:1">${p.name}</div>
             <span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:5px;background:${pc}22;color:${pc}">${p.position}</span>
-            ${nflEl}<span style="font-size:11px;color:#64748b;font-weight:600">${p.nfl_team || 'FA'}</span>
             ${inj}
           </div>
-          <div style="display:flex;gap:20px;flex-wrap:wrap">
-            <div>
-              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;letter-spacing:1px">${p.season_pts > 0 ? p.season_pts.toFixed(1) : '—'}</div>
-              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Season PTS</div>
-            </div>
-            <div>
-              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;letter-spacing:1px">${p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—'}</div>
-              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Avg / Wk</div>
-            </div>
-            <div>
-              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;letter-spacing:1px">${p.weeks_played || 0}</div>
-              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Games</div>
-            </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+            ${nflEl}<span style="font-size:12px;color:#64748b;font-weight:600">${p.nfl_team || 'Free Agent'}</span>
           </div>
+          ${physLine}${draftLine}
         </div>
         <button class="modal-close-btn" onclick="closePlayerModal()">&#10005;</button>
       </div>
       <div class="modal-body-inner">
-        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:8px">2025 Weekly Stats</div>
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden">
-          <div class="modal-week-hdr">
-            <span>WK</span><span>OPP</span><span>STAT LINE</span><span class="mwh-pts" style="text-align:right">FPTS</span>
+        <div class="modal-section">${careerStrip}</div>
+        ${chartHtml}
+        ${tableHtml}
+        <div class="modal-section">
+          <div class="modal-section-title">2025 Weekly Stats</div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden">
+            <div class="modal-week-hdr">
+              <span>WK</span><span>OPP</span><span>STAT LINE</span><span class="mwh-pts" style="text-align:right">FPTS</span>
+            </div>
+            ${weekRows||'<div style="padding:20px;text-align:center;font-size:12px;color:#334155">No stats recorded yet</div>'}
           </div>
-          ${weekRows || '<div style="padding:20px;text-align:center;font-size:12px;color:#334155">No stats recorded yet</div>'}
+          ${p.bye_week?`<div style="margin-top:8px;font-size:11px;color:#334155;text-align:center">Bye week: Week ${p.bye_week}</div>`:''}
         </div>
-        ${p.bye_week ? `<div style="margin-top:10px;font-size:11px;color:#475569;text-align:center">Bye week: Week ${p.bye_week}</div>` : ''}
       </div>
     </div>
   </div>`;
