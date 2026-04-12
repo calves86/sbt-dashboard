@@ -54,6 +54,12 @@ a{color:#10b981;text-decoration:none}
 .th-logo{width:80px;height:80px;border-radius:16px;object-fit:contain;background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.07)}
 .th-logo-ph{width:80px;height:80px;border-radius:16px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#64748b}
 .th-info{flex:1;min-width:0}
+.th-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;align-self:center}
+.th-action-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:.5px;text-decoration:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;width:140px;justify-content:center}
+.th-action-players{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.22);color:#10b981}
+.th-action-players:hover{background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.4)}
+.th-action-trade{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.22);color:#a78bfa}
+.th-action-trade:hover{background:rgba(167,139,250,0.18);border-color:rgba(167,139,250,0.4)}
 .th-name{font-size:28px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;line-height:1;margin-bottom:4px}
 .th-owner{font-size:13px;color:#64748b;margin-bottom:14px}
 .th-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
@@ -296,8 +302,6 @@ a{color:#10b981;text-decoration:none}
         <a href="index.html" class="nav-link">Dashboard</a>
         <a href="team.html" class="nav-link active">Teams</a>
         <a href="transactions.html" class="nav-link">Activity</a>
-        <a href="players.html" class="nav-link">Players</a>
-        <a href="trade.html" class="nav-link">Trade</a>
         <a href="mock-draft.html" class="nav-link">Mock Draft</a>
       </nav>
     </div>
@@ -510,6 +514,10 @@ function renderHeader(t) {
             <div class="th-stat-lbl">Roster Size</div>
           </div>
         </div>
+      </div>
+      <div class="th-actions">
+        <a href="players.html" class="th-action-btn th-action-players">&#128100; Free Agents</a>
+        <a href="trade.html?team=${encodeURIComponent(t.team_name)}" class="th-action-btn th-action-trade">&#8652; Trade Builder</a>
       </div>
     </div>`;
 }

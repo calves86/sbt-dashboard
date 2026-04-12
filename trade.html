@@ -297,6 +297,17 @@ function populatePickers() {
     renderRosters();
     updateSummary();
   });
+
+  // Pre-select team from URL param (?team=Bear+Exposures)
+  const urlTeam = new URLSearchParams(window.location.search).get('team');
+  if (urlTeam) {
+    const idx = TEAMS.findIndex(t => t.team_name === urlTeam);
+    if (idx !== -1) {
+      myPicker.value = idx;
+      myTeamIdx = idx;
+      renderRosters();
+    }
+  }
 }
 
 /* ===== ROSTER RENDER ===== */
