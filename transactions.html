@@ -192,6 +192,7 @@ function teamLogoEl(name, cls='tx-team-logo', phCls='tx-team-logo-ph') {
 
 /* ===== SIDEBAR ===== */
 function buildSidebar() {
+  if (!document.getElementById('sb-stats')) return;
   const txs = DATA.transactions;
 
   // Count by type

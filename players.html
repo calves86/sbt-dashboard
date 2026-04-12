@@ -232,6 +232,7 @@ async function init() {
 /* ===== SIDEBAR ===== */
 function buildSidebar() {
   const posList = document.getElementById('sb-pos-list');
+  if (!posList) return;
   const positions = ['QB','RB','WR','TE','K','DST'];
   const byPos = {};
   positions.forEach(p => byPos[p] = DATA.filter(pl => pl.position === p));
