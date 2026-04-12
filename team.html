@@ -159,6 +159,22 @@ a{color:#10b981;text-decoration:none}
 #loading p{font-size:14px;color:#475569}
 .empty-state{text-align:center;padding:60px 20px;color:#334155;font-size:14px}
 
+/* ===== DRAG & DROP ===== */
+.p-row[draggable]{cursor:grab}
+.p-row[draggable]:active{cursor:grabbing}
+.p-row.dragging{opacity:.35;background:rgba(16,185,129,0.05)}
+.p-row.drop-valid{background:rgba(16,185,129,0.1);outline:2px dashed rgba(16,185,129,0.5);outline-offset:-2px}
+.p-row.drop-invalid{background:rgba(239,68,68,0.07);outline:2px dashed rgba(239,68,68,0.35);outline-offset:-2px}
+.p-row.touch-selected{background:rgba(16,185,129,0.12);outline:2px solid #10b981;outline-offset:-2px}
+.drag-handle{display:flex;align-items:center;justify-content:center;color:#334155;font-size:14px;cursor:grab;padding:0 4px;flex-shrink:0;user-select:none}
+.drag-handle:hover{color:#64748b}
+.lineup-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.lineup-modified-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:#f59e0b;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:3px 10px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.reset-btn{font-size:11px;font-weight:700;color:#64748b;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.reset-btn:hover{color:#e2e8f0;border-color:rgba(255,255,255,0.15)}
+.touch-hint{font-size:10px;color:#334155;margin-left:auto}
+
 /* ===== MOBILE ===== */
 #sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
 @media(max-width:700px){
@@ -289,6 +305,9 @@ let DATA = null;
 let currentIdx = 0;
 let currentTab = 'roster';
 let benchOpen = true;
+let lineups = {};   // mutable lineup per team index
+let dragSrc = null; // {sec:'starters'|'bench', idx:Number}
+let touchSel = null;// {sec, idx} for mobile tap-select
 
 /* ===== INIT ===== */
 async function init() {
@@ -306,6 +325,7 @@ async function init() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     buildSidebar();
+    initLineup(currentIdx);
     renderTeam(currentIdx);
   } catch(e) {
     document.getElementById('loading').innerHTML =
@@ -342,17 +362,13 @@ function selectTeam(idx) {
   currentIdx = idx;
   currentTab = 'roster';
   benchOpen = true;
-  // Update sidebar active state
-  document.querySelectorAll('.team-item').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-  });
-  // Update URL without reload
+  touchSel = null;
+  document.querySelectorAll('.team-item').forEach((el, i) => el.classList.toggle('active', i === idx));
   const t = DATA.teams[idx];
   history.replaceState(null, '', `?team=${encodeURIComponent(t.team_name)}`);
+  initLineup(idx);
   renderTeam(idx);
-  // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
-  // Reset tabs
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'roster'));
 }
 
@@ -414,39 +430,139 @@ function switchTab(tab) {
 }
 
 function renderTab(t) {
-  if (currentTab === 'roster') renderRoster(t);
+  if (currentTab === 'roster') renderRoster();
   else if (currentTab === 'schedule') renderSchedule(t);
   else renderTransactions(t);
 }
 
+/* ===== LINEUP STATE ===== */
+function slotAccepts(slotStr, playerPos) {
+  const s = (slotStr||'').toUpperCase();
+  if (s === 'RB-WR-TE' || s === 'WR-RB-TE') return ['RB','WR','TE','FB'].includes(playerPos);
+  if (s.includes('-') || s.includes('/')) return ['RB','WR','TE','FB'].includes(playerPos);
+  return s === playerPos || (s === 'RB' && playerPos === 'FB');
+}
+
+function initLineup(idx) {
+  const key = `sbt-lineup-${idx}`;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) { lineups[idx] = JSON.parse(saved); return; }
+  } catch(e) {}
+  const t = DATA.teams[idx];
+  lineups[idx] = {
+    starters: t.starters.map(p => ({...p})),
+    bench: t.bench.map(p => ({...p}))
+  };
+}
+
+function saveLineup(idx) {
+  try { localStorage.setItem(`sbt-lineup-${idx}`, JSON.stringify(lineups[idx])); } catch(e) {}
+}
+
+function resetLineup() {
+  const idx = currentIdx;
+  localStorage.removeItem(`sbt-lineup-${idx}`);
+  const t = DATA.teams[idx];
+  lineups[idx] = {
+    starters: t.starters.map(p => ({...p})),
+    bench: t.bench.map(p => ({...p}))
+  };
+  touchSel = null;
+  renderRoster();
+}
+
+function isModified(idx) {
+  if (!lineups[idx]) return false;
+  const t = DATA.teams[idx];
+  const l = lineups[idx];
+  return JSON.stringify(l.starters.map(p=>p.name)) !== JSON.stringify(t.starters.map(p=>p.name)) ||
+         JSON.stringify(l.bench.map(p=>p.name)) !== JSON.stringify(t.bench.map(p=>p.name));
+}
+
+function canSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
+  const l = lineups[currentIdx];
+  const src = srcSec === 'starters' ? l.starters[srcIdx] : l.bench[srcIdx];
+  const tgt = tgtSec === 'starters' ? l.starters[tgtIdx] : l.bench[tgtIdx];
+  if (!src || !tgt) return false;
+  // Moving to bench: bench accepts any position
+  if (tgtSec === 'bench') return true;
+  // Moving to starter slot: src must fit tgt's slot
+  if (!slotAccepts(tgt.slot, src.position)) return false;
+  // If src is also a starter, tgt must fit src's slot too
+  if (srcSec === 'starters' && !slotAccepts(src.slot, tgt.position)) return false;
+  return true;
+}
+
+function performSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
+  if (!canSwap(srcSec, srcIdx, tgtSec, tgtIdx)) return false;
+  const l = lineups[currentIdx];
+  const srcArr = srcSec === 'starters' ? l.starters : l.bench;
+  const tgtArr = tgtSec === 'starters' ? l.starters : l.bench;
+  const src = {...srcArr[srcIdx]};
+  const tgt = {...tgtArr[tgtIdx]};
+
+  if (srcSec === tgtSec) {
+    // Same section: swap slots if starters, otherwise just reorder
+    if (srcSec === 'starters') {
+      [src.slot, tgt.slot] = [tgt.slot, src.slot];
+    }
+    srcArr[srcIdx] = tgt;
+    tgtArr[tgtIdx] = src;
+  } else if (srcSec === 'bench' && tgtSec === 'starters') {
+    // Bench → starter: src takes tgt's slot, tgt goes to bench
+    src.slot = tgt.slot;
+    l.starters[tgtIdx] = src;
+    l.bench.splice(srcIdx, 1);
+    l.bench.push(tgt);
+  } else {
+    // Starter → bench: tgt takes src's slot, src goes to bench
+    tgt.slot = src.slot;
+    l.starters[srcIdx] = tgt;
+    l.bench.splice(tgtIdx, 1);
+    l.bench.push(src);
+  }
+  return true;
+}
+
 /* ===== ROSTER TAB ===== */
-function renderRoster(t) {
+function renderRoster() {
+  if (!lineups[currentIdx]) initLineup(currentIdx);
+  const l = lineups[currentIdx];
   const el = document.getElementById('tab-content');
-  const hdr = `<div class="roster-hdr">
-    <span>SLOT</span><span></span><span>PLAYER</span>
+  const modified = isModified(currentIdx);
+  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
+  const topBar = `<div class="lineup-bar">
+    ${modified ? `<span class="lineup-modified-badge">LINEUP EDITED</span>
+    <button class="reset-btn" onclick="resetLineup()">Reset to Original</button>` : ''}
+    ${!isTouchDevice ? '<span class="touch-hint" style="font-size:10px;color:#334155">Drag players to swap · Tap to select on touch</span>' : '<span class="touch-hint">Tap a player, then tap another to swap</span>'}
+  </div>`;
+
+  const hdr = `<div class="roster-hdr" style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
+    <span></span><span>SLOT</span><span></span><span>PLAYER</span>
     <span class="r-pts">PTS</span><span class="r-avg">AVG</span><span class="r-bye">BYE</span>
   </div>`;
 
-  const rows = (players, showBench) => {
-    if (!players.length) return '<div class="empty-state">No players</div>';
-    return players.map(p => playerRow(p)).join('');
-  };
+  const makeRows = (players, sec) => players.length
+    ? players.map((p, i) => playerRow(p, sec, i)).join('')
+    : '<div class="empty-state">No players</div>';
 
   const starterSection = `
     <div class="roster-section-label" style="margin-bottom:8px">Starters</div>
-    <div class="roster-table">${hdr}${rows(t.starters)}</div>`;
+    <div class="roster-table">${hdr}${makeRows(l.starters, 'starters')}</div>`;
 
-  const benchRows = rows(t.bench);
-  const benchSection = t.bench.length ? `
+  const benchSection = l.bench.length ? `
     <div class="bench-toggle" onclick="toggleBench()">
       <div class="roster-section-label" style="margin-bottom:0;cursor:pointer">Bench</div>
       <span class="bench-caret ${benchOpen?'open':''}">&#9654;</span>
     </div>
     <div id="bench-body" style="${benchOpen?'':'display:none'}">
-      <div class="roster-table">${hdr}${benchRows}</div>
+      <div class="roster-table">${hdr}${makeRows(l.bench, 'bench')}</div>
     </div>` : '';
 
-  el.innerHTML = starterSection + benchSection;
+  el.innerHTML = topBar + starterSection + benchSection;
+  attachDragListeners();
 }
 
 function toggleBench() {
@@ -456,15 +572,12 @@ function toggleBench() {
   if (caret) caret.classList.toggle('open', benchOpen);
 }
 
-function playerRow(p) {
+function playerRow(p, sec, idx) {
   const pc = POS_COLOR[p.position] || '#64748b';
   const photo = p.photo_url || '';
   const logo = nflLogo(p.nfl_team, p.name, p.position);
   const pts = p.season_pts || 0;
-  const ptsDisplay = pts > 0 ? pts.toFixed(1) : '—';
-  const avgDisplay = p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—';
-  const byeDisplay = p.bye_week ? `Wk ${p.bye_week}` : '—';
-  const slot = slotLabel(p.slot);
+  const isTouchSel = touchSel && touchSel.sec === sec && touchSel.idx === idx;
 
   const photoEl = photo
     ? `<img src="${photo}" class="p-photo" onerror="this.style.display='none';this.nextSibling.style.display='flex'" alt="${p.name}">`
@@ -472,8 +585,12 @@ function playerRow(p) {
   const phEl = `<div class="p-photo-ph" style="${photo?'display:none':'display:flex'};background:${pc}18;color:${pc}">${(p.name||'?')[0]}</div>`;
   const nflEl = logo ? `<img src="${logo}" class="p-nfl-badge" alt="${p.nfl_team}">` : '';
 
-  return `<div class="p-row">
-    <div><span class="slot-badge">${slot}</span></div>
+  return `<div class="p-row ${isTouchSel?'touch-selected':''}"
+    draggable="true"
+    data-sec="${sec}" data-idx="${idx}"
+    style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
+    <div class="drag-handle">&#8942;&#8942;</div>
+    <div><span class="slot-badge">${slotLabel(p.slot)}</span></div>
     <div class="p-photo-col"><div class="p-photo-wrap">${photoEl}${phEl}${nflEl}</div></div>
     <div class="p-info">
       <div class="p-name">${p.name}</div>
@@ -482,10 +599,71 @@ function playerRow(p) {
         <span class="p-nfl">${p.position} · ${p.nfl_team || 'FA'}</span>
       </div>
     </div>
-    <div class="p-pts ${pts===0?'p-pts-zero':''}">${ptsDisplay}</div>
-    <div class="p-avg">${avgDisplay}</div>
-    <div class="p-bye">${byeDisplay}</div>
+    <div class="p-pts ${pts===0?'p-pts-zero':''}">${pts>0?pts.toFixed(1):'—'}</div>
+    <div class="p-avg">${p.avg_pts>0?p.avg_pts.toFixed(1):'—'}</div>
+    <div class="p-bye">${p.bye_week?`Wk ${p.bye_week}`:'—'}</div>
   </div>`;
+}
+
+/* ===== DRAG & DROP ===== */
+function attachDragListeners() {
+  document.querySelectorAll('.p-row[draggable]').forEach(row => {
+    const sec = row.dataset.sec;
+    const idx = parseInt(row.dataset.idx);
+
+    // Desktop drag
+    row.addEventListener('dragstart', e => {
+      dragSrc = {sec, idx};
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => row.classList.add('dragging'), 0);
+    });
+    row.addEventListener('dragend', () => {
+      dragSrc = null;
+      row.classList.remove('dragging');
+      document.querySelectorAll('.p-row').forEach(r => r.classList.remove('drop-valid','drop-invalid'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragSrc || (dragSrc.sec===sec && dragSrc.idx===idx)) return;
+      const valid = canSwap(dragSrc.sec, dragSrc.idx, sec, idx);
+      row.classList.toggle('drop-valid', valid);
+      row.classList.toggle('drop-invalid', !valid);
+      e.dataTransfer.dropEffect = valid ? 'move' : 'none';
+    });
+    row.addEventListener('dragleave', () => {
+      row.classList.remove('drop-valid','drop-invalid');
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc) return;
+      const ok = performSwap(dragSrc.sec, dragSrc.idx, sec, idx);
+      dragSrc = null;
+      if (ok) { saveLineup(currentIdx); renderRoster(); }
+      else {
+        row.classList.remove('drop-valid','drop-invalid');
+        row.classList.add('drop-invalid');
+        setTimeout(() => row.classList.remove('drop-invalid'), 700);
+      }
+    });
+
+    // Touch / click-to-swap
+    row.addEventListener('click', () => {
+      if (!touchSel) {
+        touchSel = {sec, idx};
+        renderRoster();
+        return;
+      }
+      if (touchSel.sec === sec && touchSel.idx === idx) {
+        touchSel = null;
+        renderRoster();
+        return;
+      }
+      const ok = performSwap(touchSel.sec, touchSel.idx, sec, idx);
+      touchSel = null;
+      if (ok) saveLineup(currentIdx);
+      renderRoster();
+    });
+  });
 }
 
 /* ===== SCHEDULE TAB ===== */
