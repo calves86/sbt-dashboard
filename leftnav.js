@@ -17,9 +17,15 @@ function initLeftNav(activePage, opts) {
 
   nav.innerHTML = _buildNavHTML(activePage, opts);
 
-  // Archive expand/collapse
+  // Archive expand/collapse (start collapsed by default in nav)
   const archiveToggle = document.getElementById('ln-archive-toggle');
   if (archiveToggle) archiveToggle.addEventListener('click', lnToggleArchive);
+  // Start archive collapsed
+  const archiveYears = document.getElementById('ln-archive-years');
+  const archiveChev  = document.getElementById('ln-archive-chev');
+  if (archiveYears) archiveYears.style.display = 'none';
+  if (archiveChev)  archiveChev.style.transform = 'rotate(-90deg)';
+  _archiveOpen = false;
 
   // Collapse button
   const colBtn = document.getElementById('ln-collapse-btn');
@@ -32,13 +38,14 @@ function initLeftNav(activePage, opts) {
 }
 
 function _buildNavHTML(activePage, opts) {
-  const logo      = opts.logo       || 'sbt-logo.png';
-  const lName     = opts.leagueName || 'SBT Fantasy';
-  const lSub      = opts.leagueSub  || 'Sigma Beta Tau';
-  const footer    = opts.footerText || 'SBT &middot; 2025';
-  const teamList  = opts.includeTeamList;
+  const logo     = opts.logo       || 'sbt-logo.png';
+  const lName    = opts.leagueName || 'SBT Fantasy';
+  const lSub     = opts.leagueSub  || 'Sigma Beta Tau';
+  const footer   = opts.footerText || 'SBT &middot; 2025';
+  const teamList = opts.includeTeamList;
 
-  const items = [
+  // Current-season nav items
+  const season = [
     { href: 'index.html',        icon: '&#127968;', label: 'Dashboard'     },
     { href: 'team.html',         icon: '&#128101;', label: 'My Teams'      },
     { href: 'transactions.html', icon: '&#128257;', label: 'Activity'      },
@@ -46,6 +53,21 @@ function _buildNavHTML(activePage, opts) {
     { href: 'trade.html',        icon: '&#8652;',   label: 'Trade Builder' },
     { href: 'mock-draft.html',   icon: '&#127919;', label: 'Mock Draft', badge: 'NEW' },
   ];
+
+  // History nav items — all route to index.html with a ?tab= param
+  const history = [
+    { href: 'index.html?tab=Overview',      icon: '&#128200;', label: 'All-Time Stats'  },
+    { href: 'index.html?tab=Champions',     icon: '&#127942;', label: 'Champions'       },
+    { href: 'index.html?tab=Teams',         icon: '&#127939;', label: 'Franchise History'},
+    { href: 'index.html?tab=Record+Book',   icon: '&#128218;', label: 'Record Book'     },
+    { href: 'index.html?tab=Draft+History', icon: '&#128203;', label: 'Draft History'   },
+  ];
+
+  // Archive years — link to index.html with ?year=
+  const years = ['2025','2024','2023','2022','2021','2020','2019'];
+
+  // Determine active — strip any query string for page matching
+  const activePage2 = activePage.split('?')[0];
 
   let html = `
     <div class="ln-brand">
@@ -57,8 +79,8 @@ function _buildNavHTML(activePage, opts) {
     </div>
     <div class="ln-section">2025 Season</div>`;
 
-  items.forEach(item => {
-    const active = activePage === item.href;
+  season.forEach(item => {
+    const active = activePage2 === item.href;
     html += `
     <a href="${item.href}" class="ln-item${active ? ' active' : ''}">
       <span class="ln-icon">${item.icon}</span>
@@ -69,22 +91,31 @@ function _buildNavHTML(activePage, opts) {
 
   html += `
     <div class="ln-divider"></div>
-    <div class="ln-section">History</div>
+    <div class="ln-section">History</div>`;
+
+  history.forEach(item => {
+    const active = activePage === item.href;
+    html += `
+    <a href="${item.href}" class="ln-item hist${active ? ' active' : ''}">
+      <span class="ln-icon">${item.icon}</span>
+      <span>${item.label}</span>
+    </a>`;
+  });
+
+  // Season Archive expandable
+  html += `
     <button class="ln-item hist" id="ln-archive-toggle" type="button">
-      <span class="ln-icon">&#127942;</span>
+      <span class="ln-icon">&#128197;</span>
       <span>Season Archive</span>
       <span class="ln-chev" id="ln-archive-chev">&#9660;</span>
     </button>
     <div id="ln-archive-years">`;
 
-  ['2025','2024','2023','2022','2021','2020','2019'].forEach(y => {
-    html += `<div class="ln-sub">${y} Season</div>`;
+  years.forEach(y => {
+    html += `<a href="index.html?year=${y}" class="ln-sub">${y} Season</a>`;
   });
 
-  html += `
-    </div>
-    <a href="#" class="ln-item hist"><span class="ln-icon">&#128200;</span><span>All-Time Stats</span></a>
-    <a href="#" class="ln-item hist"><span class="ln-icon">&#128081;</span><span>Champions</span></a>`;
+  html += `</div>`;
 
   if (teamList) {
     html += `
@@ -104,12 +135,12 @@ function _buildNavHTML(activePage, opts) {
   return html;
 }
 
-let _archiveOpen = true;
+let _archiveOpen = false;
 function lnToggleArchive() {
   _archiveOpen = !_archiveOpen;
-  const el = document.getElementById('ln-archive-years');
+  const el   = document.getElementById('ln-archive-years');
   const chev = document.getElementById('ln-archive-chev');
-  if (el) el.style.display = _archiveOpen ? '' : 'none';
+  if (el)   el.style.display     = _archiveOpen ? '' : 'none';
   if (chev) chev.style.transform = _archiveOpen ? '' : 'rotate(-90deg)';
 }
 
