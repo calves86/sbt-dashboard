@@ -99,6 +99,14 @@ select.sel option{background:#1e293b}
 .sched-item{display:flex;justify-content:space-between;padding:4px 8px;border-radius:5px;font-size:11px;background:rgba(255,255,255,0.02);margin-bottom:3px}
 .sched-item.next{background:rgba(16,185,129,0.08);color:#10b981}
 .sched-item.done{color:#475569}
+.hist-panel{padding-bottom:8px}
+.hist-scroll{max-height:280px;overflow-y:auto;margin-top:2px}
+.hist-scroll::-webkit-scrollbar{width:4px}.hist-scroll::-webkit-scrollbar-track{background:transparent}.hist-scroll::-webkit-scrollbar-thumb{background:#1e293b;border-radius:2px}
+.hist-round-hdr{font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;padding:6px 0 3px;border-top:1px solid rgba(255,255,255,0.04);margin-top:2px}
+.hist-round-hdr:first-child{border-top:none;margin-top:0}
+.hist-row{display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.025)}
+.hist-row:last-child{border-bottom:none}
+.hist-pick{font-size:9px;color:#334155;font-weight:700;min-width:22px;flex-shrink:0}
 /* Board */
 .board-toggle{width:100%;padding:9px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);color:#64748b;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:7px}
 .board-wrap{margin-top:10px;overflow-x:auto}
@@ -358,7 +366,7 @@ function removeFromQueue(pid){
 }
 function refreshQueuePanel(){
   const sb=document.getElementById('sidebar');
-  if(sb)sb.innerHTML=buildRosterSidebar(S.draftSpot-1)+buildPickSchedule()+buildQueue();
+  if(sb)sb.innerHTML=buildRosterSidebar(S.draftSpot-1)+buildDraftHistory()+buildQueue();
 }
 
 /* ===== DRAFT ORDER DRAG-AND-DROP ===== */
@@ -678,7 +686,7 @@ function renderDraft() {
       </div>
       <div id="sidebar">
         ${buildRosterSidebar(me)}
-        ${buildPickSchedule()}
+        ${buildDraftHistory()}
         ${buildQueue()}
       </div>
     </div>`;
@@ -779,16 +787,39 @@ function buildLastPick() {
   </div>`;
 }
 
-function buildPickSchedule() {
-  const me=S.draftSpot-1;
-  const upcoming=myPicks().filter(i=>i>=S.currentPick).slice(0,5);
-  if(!upcoming.length) return '';
-  return `<div class="r-panel">
-    <div class="r-title">UPCOMING PICKS</div>
-    ${upcoming.map((i,idx)=>`<div class="sched-item ${idx===0?'next':''}">
-      <span>Round ${Math.floor(i/N)+1}</span><span>Pick #${i+1}</span>
-    </div>`).join('')}
-  </div>`;
+function buildDraftHistory() {
+  if(S.currentPick===0) return '';
+  // Gather all picks across all rosters, sorted by pick number
+  const allPicks=[];
+  S.rosters.forEach((roster,t)=>roster.forEach(p=>allPicks.push({...p,teamIdx:t})));
+  allPicks.sort((a,b)=>a.pick-b.pick);
+  if(!allPicks.length) return '';
+  // Group by round
+  const byRound={};
+  allPicks.forEach(p=>{if(!byRound[p.round])byRound[p.round]=[];byRound[p.round].push(p);});
+  const rounds=Object.keys(byRound).map(Number).sort((a,b)=>b-a); // newest round first
+  const rows=rounds.map(rnd=>{
+    const picks=byRound[rnd].slice().reverse(); // most recent pick first within round
+    const pickRows=picks.map(p=>{
+      const teamName=S.teamOrder[p.teamIdx];
+      const nflLogo=S.teamLogos[p.team]||'';
+      const pc={QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4'}[p.pos]||'#64748b';
+      return `<div class="hist-row">
+        <span class="hist-pick">#${p.pick}</span>
+        <span class="pos-badge pos-${p.pos}" style="font-size:8px;padding:1px 4px">${p.pos}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:1px">
+            ${nflLogo?`<img src="${nflLogo}" style="height:11px;width:auto;max-width:13px;object-fit:contain" onerror="this.style.display='none'">`:``}
+            ${fl(teamName,11)}
+            <span style="font-size:9px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="hist-round-hdr">ROUND ${rnd}</div>${pickRows}`;
+  }).join('');
+  return `<div class="r-panel hist-panel"><div class="r-title">DRAFT HISTORY</div><div class="hist-scroll">${rows}</div></div>`;
 }
 
 function buildQueue() {
@@ -936,7 +967,7 @@ function updateDraftUI() {
   }
   // Update sidebar
   const sb=document.getElementById('sidebar');
-  if(sb) sb.innerHTML=buildRosterSidebar(me)+buildPickSchedule()+buildQueue();
+  if(sb) sb.innerHTML=buildRosterSidebar(me)+buildDraftHistory()+buildQueue();
   // Update main content area
   if(S.mainTab==='board'){
     const mc=document.getElementById('main-content');
