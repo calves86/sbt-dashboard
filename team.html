@@ -185,6 +185,40 @@ a{color:#10b981;text-decoration:none}
 .lineup-error-list li{font-size:12px;color:#fca5a5;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
 .lineup-error-list li::before{content:'•';color:#ef4444;flex-shrink:0;margin-top:1px}
 
+/* ===== SUBMIT BUTTON ===== */
+.submit-btn{font-size:11px;font-weight:800;color:#10b981;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:7px;padding:5px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:.5px}
+.submit-btn:hover{background:rgba(16,185,129,0.22);border-color:#10b981}
+.submit-flash{font-size:11px;font-weight:800;color:#10b981;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px}
+
+/* ===== PLAYER NAME LINK ===== */
+.p-name-btn{cursor:pointer;background:none;border:none;color:#e2e8f0;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;padding:0;text-align:left;transition:color .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;line-height:1.3}
+.p-name-btn:hover{color:#10b981;text-decoration:underline}
+
+/* ===== INJURY BADGES ===== */
+.inj-badge{font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 6px;border-radius:4px;flex-shrink:0;cursor:default}
+.inj-q{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.inj-d{background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3)}
+.inj-o,.inj-ir{background:rgba(239,68,68,0.13);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.inj-pup,.inj-na{background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)}
+
+/* ===== PLAYER MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto}
+.modal-hdr{display:flex;align-items:flex-start;gap:16px;padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.modal-close-btn{margin-left:auto;background:rgba(255,255,255,0.06);border:none;color:#94a3b8;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;transition:all .12s}
+.modal-close-btn:hover{background:rgba(255,255,255,0.1);color:#e2e8f0}
+.modal-body-inner{padding:16px 20px 20px}
+.modal-week-hdr{display:grid;grid-template-columns:44px 60px 1fr 72px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.modal-week-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
+.modal-week-hdr .mwh-pts{text-align:right}
+.modal-week-row{display:grid;grid-template-columns:44px 60px 1fr 72px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);align-items:center}
+.modal-week-row:last-child{border-bottom:none}
+.modal-week-row:hover{background:rgba(255,255,255,0.025)}
+.mwr-wk{font-size:12px;font-weight:800;color:#475569;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.mwr-opp{font-size:11px;color:#94a3b8;font-weight:600}
+.mwr-stat{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mwr-pts{text-align:right;font-size:14px;font-weight:800;font-family:'Bebas Neue',sans-serif}
+
 /* ===== MOBILE ===== */
 #sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
 @media(max-width:700px){
@@ -328,9 +362,10 @@ let DATA = null;
 let currentIdx = 0;
 let currentTab = 'roster';
 let benchOpen = true;
-let lineups = {};   // mutable lineup per team index
-let dragSrc = null; // {sec:'starters'|'bench', idx:Number}
-let touchSel = null;// {sec, idx} for mobile tap-select
+let lineups = {};      // mutable lineup per team index
+let pendingByIdx = {}; // unsaved changes (modified but not yet submitted)
+let dragSrc = null;    // {sec:'starters'|'bench', idx:Number}
+let touchSel = null;   // {sec, idx} for mobile tap-select
 
 /* ===== INIT ===== */
 async function init() {
@@ -491,8 +526,29 @@ function resetLineup() {
     starters: t.starters.map(p => ({...p})),
     bench: t.bench.map(p => ({...p}))
   };
+  delete pendingByIdx[idx];
   touchSel = null;
   renderRoster();
+}
+
+function submitLineup() {
+  const errors = validateLineup(currentIdx);
+  if (errors.length) {
+    renderRoster(); // re-render to surface the error banner
+    return;
+  }
+  saveLineup(currentIdx);
+  delete pendingByIdx[currentIdx];
+  renderRoster();
+  // brief success flash
+  const bar = document.querySelector('.lineup-bar');
+  if (bar) {
+    const flash = document.createElement('span');
+    flash.className = 'submit-flash';
+    flash.textContent = '✓ Lineup submitted!';
+    bar.appendChild(flash);
+    setTimeout(() => flash.remove(), 2500);
+  }
 }
 
 function isModified(idx) {
@@ -622,22 +678,26 @@ function renderRoster() {
   const errors = validateLineup(currentIdx);
   const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
+  const pending = !!pendingByIdx[currentIdx];
+
   // Validation banner
   let validationBanner = '';
-  if (errors.length) {
+  if (errors.length && (pending || modified)) {
     const items = errors.map(e => `<li>${e}</li>`).join('');
     validationBanner = `<div class="lineup-error-banner">
       <div class="lineup-error-title">&#9888;&#65039; Illegal Lineup — ${errors.length} violation${errors.length>1?'s':''}</div>
       <ul class="lineup-error-list">${items}</ul>
     </div>`;
-  } else if (modified) {
-    validationBanner = `<div class="lineup-valid-banner">&#10003; Lineup is valid</div>`;
+  } else if (modified && !pending) {
+    validationBanner = `<div class="lineup-valid-banner">&#10003; Lineup submitted</div>`;
   }
 
   const topBar = `<div class="lineup-bar">
-    ${modified ? `<span class="lineup-modified-badge">LINEUP EDITED</span>
-    <button class="reset-btn" onclick="resetLineup()">Reset to Original</button>` : ''}
-    ${!isTouchDevice ? '<span class="touch-hint" style="font-size:10px;color:#334155">Drag players to swap · Tap to select on touch</span>' : '<span class="touch-hint">Tap a player, then tap another to swap</span>'}
+    ${pending ? `<span class="lineup-modified-badge">LINEUP EDITED</span>
+    <button class="submit-btn" onclick="submitLineup()">Submit Lineup</button>
+    <button class="reset-btn" onclick="resetLineup()">Reset</button>` :
+    modified ? `<button class="reset-btn" onclick="resetLineup()">Reset to Original</button>` : ''}
+    ${!isTouchDevice ? '<span class="touch-hint" style="font-size:10px;color:#334155;margin-left:auto">Drag to swap · Tap to select on touch</span>' : '<span class="touch-hint" style="margin-left:auto">Tap a player, then tap another to swap</span>'}
   </div>${validationBanner}`;
 
   const hdr = `<div class="roster-hdr" style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
@@ -703,6 +763,8 @@ function playerRow(p, sec, idx) {
   const phEl = `<div class="p-photo-ph" style="${photo?'display:none':'display:flex'};background:${pc}18;color:${pc}">${(p.name||'?')[0]}</div>`;
   const nflEl = logo ? `<img src="${logo}" class="p-nfl-badge" alt="${p.nfl_team}">` : '';
 
+  const inj = injuryBadge(p.injury_status, p.injury_notes);
+
   return `<div class="p-row ${isTouchSel?'touch-selected':''}"
     draggable="true" data-sec="${sec}" data-idx="${idx}"
     style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
@@ -710,7 +772,10 @@ function playerRow(p, sec, idx) {
     <div><span class="slot-badge">${slotLabel(p.slot)}</span></div>
     <div class="p-photo-col"><div class="p-photo-wrap">${photoEl}${phEl}${nflEl}</div></div>
     <div class="p-info">
-      <div class="p-name">${p.name}</div>
+      <div class="p-name" style="display:flex;align-items:center;gap:4px">
+        <button class="p-name-btn" onclick="event.stopPropagation();openPlayerModal('${sec}',${idx})">${p.name}</button>
+        ${inj}
+      </div>
       <div class="p-sub">
         <div class="pos-dot" style="background:${pc}"></div>
         <span class="p-nfl">${p.position} · ${p.nfl_team || 'FA'}</span>
@@ -741,14 +806,14 @@ function attachDragListeners() {
       if (!dragSrc) return;
       const ok = performSwap(dragSrc.sec, dragSrc.idx, sec, idx);
       dragSrc = null;
-      if (ok) { saveLineup(currentIdx); renderRoster(); }
+      if (ok) { pendingByIdx[currentIdx] = true; renderRoster(); }
     });
     // Touch tap on empty slot to fill from selected player
     row.addEventListener('click', () => {
       if (!touchSel || touchSel.sec === sec) return;
       const ok = performSwap(touchSel.sec, touchSel.idx, sec, idx);
       touchSel = null;
-      if (ok) saveLineup(currentIdx);
+      if (ok) pendingByIdx[currentIdx] = true;
       renderRoster();
     });
   });
@@ -784,7 +849,7 @@ function attachDragListeners() {
       if (!dragSrc) return;
       const ok = performSwap(dragSrc.sec, dragSrc.idx, sec, idx);
       dragSrc = null;
-      if (ok) { saveLineup(currentIdx); renderRoster(); }
+      if (ok) { pendingByIdx[currentIdx] = true; renderRoster(); }
       else {
         row.classList.remove('drop-valid','drop-invalid');
         row.classList.add('drop-invalid');
@@ -806,7 +871,7 @@ function attachDragListeners() {
       }
       const ok = performSwap(touchSel.sec, touchSel.idx, sec, idx);
       touchSel = null;
-      if (ok) saveLineup(currentIdx);
+      if (ok) pendingByIdx[currentIdx] = true;
       renderRoster();
     });
   });
@@ -933,6 +998,102 @@ function renderTransactions(t) {
   }).join('');
 
   el.innerHTML = `<div style="margin-bottom:10px;font-size:12px;color:#475569">${t.transactions.length} transactions this season</div>${items}`;
+}
+
+/* ===== INJURY BADGE ===== */
+function injuryBadge(status, notes) {
+  if (!status) return '';
+  const clsMap = {Q:'inj-q',D:'inj-d',O:'inj-o',IR:'inj-ir',PUP:'inj-pup',NA:'inj-na'};
+  const cls = clsMap[status] || 'inj-pup';
+  const tip = notes ? ` title="${notes}"` : '';
+  return `<span class="inj-badge ${cls}"${tip}>${status}</span>`;
+}
+
+/* ===== PLAYER MODAL ===== */
+function openPlayerModal(sec, idx) {
+  const l = lineups[currentIdx];
+  const p = sec === 'starters' ? l.starters[idx] : l.bench[idx];
+  if (!p || p.empty) return;
+
+  const pc = POS_COLOR[p.position] || '#64748b';
+  const photo = p.photo_url || '';
+  const logo = nflLogo(p.nfl_team, p.name, p.position);
+
+  const photoEl = photo
+    ? `<img src="${photo}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" onerror="this.style.display='none'">`
+    : `<div style="width:64px;height:64px;border-radius:50%;background:${pc}18;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:${pc};flex-shrink:0">${(p.name||'?')[0]}</div>`;
+
+  const nflEl = logo
+    ? `<img src="${logo}" style="width:16px;height:16px;border-radius:3px;object-fit:contain;vertical-align:middle">`
+    : '';
+
+  const inj = p.injury_status
+    ? `<span class="inj-badge ${({Q:'inj-q',D:'inj-d',O:'inj-o',IR:'inj-ir',PUP:'inj-pup',NA:'inj-na'}[p.injury_status]||'inj-pup')}"${p.injury_notes?` title="${p.injury_notes}"`:''}>${p.injury_status}</span>`
+    : '';
+
+  // Sort weeks numerically, exclude bye week
+  const weeks = Object.entries(p.weekly || {})
+    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+    .filter(([, w]) => w.opp !== '-');
+
+  const weekRows = weeks.map(([wk, w]) => {
+    const pts = w.fpts || 0;
+    const ptsColor = pts >= 20 ? '#10b981' : pts >= 10 ? '#e2e8f0' : pts > 0 ? '#64748b' : '#334155';
+    return `<div class="modal-week-row">
+      <div class="mwr-wk">WK${wk}</div>
+      <div class="mwr-opp">${w.opp || '—'}</div>
+      <div class="mwr-stat">${w.stat_line || '—'}</div>
+      <div class="mwr-pts" style="color:${ptsColor}">${pts > 0 ? pts.toFixed(1) : '—'}</div>
+    </div>`;
+  }).join('');
+
+  const html = `<div class="modal-overlay" id="player-modal" onclick="if(event.target.id==='player-modal')closePlayerModal()">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        ${photoEl}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#f1f5f9;line-height:1;margin-bottom:6px">${p.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:5px;background:${pc}22;color:${pc}">${p.position}</span>
+            ${nflEl}<span style="font-size:11px;color:#64748b;font-weight:600">${p.nfl_team || 'FA'}</span>
+            ${inj}
+          </div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;letter-spacing:1px">${p.season_pts > 0 ? p.season_pts.toFixed(1) : '—'}</div>
+              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Season PTS</div>
+            </div>
+            <div>
+              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;letter-spacing:1px">${p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—'}</div>
+              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Avg / Wk</div>
+            </div>
+            <div>
+              <div style="font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;letter-spacing:1px">${p.weeks_played || 0}</div>
+              <div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px">Games</div>
+            </div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closePlayerModal()">&#10005;</button>
+      </div>
+      <div class="modal-body-inner">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:8px">2025 Weekly Stats</div>
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden">
+          <div class="modal-week-hdr">
+            <span>WK</span><span>OPP</span><span>STAT LINE</span><span class="mwh-pts" style="text-align:right">FPTS</span>
+          </div>
+          ${weekRows || '<div style="padding:20px;text-align:center;font-size:12px;color:#334155">No stats recorded yet</div>'}
+        </div>
+        ${p.bye_week ? `<div style="margin-top:10px;font-size:11px;color:#475569;text-align:center">Bye week: Week ${p.bye_week}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closePlayerModal() {
+  const m = document.getElementById('player-modal');
+  if (m) m.remove();
 }
 
 init();
