@@ -256,6 +256,28 @@ a{color:#10b981;text-decoration:none}
 .mwr-stat{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mwr-pts{text-align:right;font-size:14px;font-weight:800;font-family:'Bebas Neue',sans-serif}
 
+/* ===== NEWS TAB ===== */
+.news-player-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;margin-bottom:18px;overflow:hidden}
+.news-player-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;user-select:none}
+.news-player-header:hover{background:rgba(255,255,255,0.02)}
+.news-ph-photo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.08);flex-shrink:0}
+.news-ph-photo-ph{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid rgba(255,255,255,0.06);flex-shrink:0}
+.news-ph-info{flex:1;min-width:0}
+.news-ph-name{font-size:14px;font-weight:800;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.news-ph-meta{font-size:11px;color:#475569;margin-top:2px}
+.news-ph-pos{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:800;letter-spacing:.5px;margin-right:6px}
+.news-ph-count{font-size:11px;color:#475569;flex-shrink:0}
+.news-ph-chevron{font-size:11px;color:#334155;margin-left:4px;transition:transform .2s}
+.news-ph-chevron.open{transform:rotate(180deg)}
+.news-articles{padding:0 16px 12px}
+.news-article{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.news-article:last-child{border-bottom:none}
+.news-headline{font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;line-height:1.35}
+.news-meta{font-size:10px;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.news-story{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:4px}
+.news-analysis{font-size:11px;color:#475569;line-height:1.5;font-style:italic;border-left:2px solid rgba(16,185,129,0.3);padding-left:8px;margin-top:4px}
+.news-empty{text-align:center;padding:40px 20px;color:#334155;font-size:13px}
+
 /* ===== MOBILE ===== */
 #sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
 @media(max-width:700px){
@@ -312,6 +334,7 @@ a{color:#10b981;text-decoration:none}
       <button class="tab-btn active" data-tab="roster" onclick="switchTab('roster')">Roster</button>
       <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">Schedule</button>
       <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">Transactions</button>
+      <button class="tab-btn" data-tab="news" onclick="switchTab('news')">News</button>
     </div>
 
     <div id="tab-content"></div>
@@ -399,6 +422,7 @@ function slotLabel(slot) {
 let DATA = null;
 let currentIdx = 0;
 let currentTab = 'roster';
+let NEWS_DATA = {};
 let benchOpen = true;
 let lineups = {};      // mutable lineup per team index
 let pendingByIdx = {}; // unsaved changes (modified but not yet submitted)
@@ -408,9 +432,13 @@ let touchSel = null;   // {sec, idx} for mobile tap-select
 /* ===== INIT ===== */
 async function init() {
   try {
-    const r = await fetch('data/team_data_2025.json');
+    const [r, rn] = await Promise.all([
+      fetch('data/team_data_2025.json'),
+      fetch('data/player_news_2025.json'),
+    ]);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     DATA = await r.json();
+    if (rn.ok) { const nd = await rn.json(); NEWS_DATA = nd.teams || {}; }
     // Read ?team= param
     const params = new URLSearchParams(location.search);
     const teamParam = params.get('team');
@@ -532,6 +560,7 @@ function switchTab(tab) {
 function renderTab(t) {
   if (currentTab === 'roster') renderRoster();
   else if (currentTab === 'schedule') renderSchedule(t);
+  else if (currentTab === 'news') renderNews(t);
   else renderTransactions(t);
 }
 
@@ -1040,6 +1069,65 @@ function renderTransactions(t) {
   }).join('');
 
   el.innerHTML = `<div style="margin-bottom:10px;font-size:12px;color:#475569">${t.transactions.length} transactions this season</div>${items}`;
+}
+
+/* ===== NEWS TAB ===== */
+function renderNews(t) {
+  const el = document.getElementById('tab-content');
+  const teamNews = NEWS_DATA[t.team_name];
+
+  if (!teamNews || !teamNews.length) {
+    el.innerHTML = '<div class="news-empty">No news available for this roster.</div>';
+    return;
+  }
+
+  const POS_COLOR_MAP = {QB:'#f59e0b',RB:'#10b981',WR:'#3b82f6',TE:'#8b5cf6',K:'#6b7280',DST:'#ef4444'};
+
+  const cards = teamNews.map((player, pi) => {
+    const posColor = POS_COLOR_MAP[player.position] || '#64748b';
+    const photoEl = player.photo_url
+      ? `<img src="${player.photo_url}" class="news-ph-photo" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+      : '';
+    const phPh = `<div class="news-ph-photo-ph" style="background:${posColor}22;color:${posColor};${player.photo_url?'display:none':''}">${player.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>`;
+
+    const articles = (player.articles || []).map(a => `
+      <div class="news-article">
+        <div class="news-headline">${a.headline}</div>
+        <div class="news-meta">${a.source || 'Rotowire'} &nbsp;·&nbsp; ${a.date || ''}</div>
+        ${a.story ? `<div class="news-story">${a.story}</div>` : ''}
+        ${a.analysis ? `<div class="news-analysis">${a.analysis}</div>` : ''}
+      </div>`).join('');
+
+    const cardId = `news-card-${pi}`;
+    const artCount = (player.articles || []).length;
+    const slotLabel = player.slot ? ` · ${player.slot}` : '';
+
+    return `<div class="news-player-card" id="${cardId}">
+      <div class="news-player-header" onclick="toggleNewsCard('${cardId}')">
+        ${photoEl}${phPh}
+        <div class="news-ph-info">
+          <div class="news-ph-name">${player.name}</div>
+          <div class="news-ph-meta">
+            <span class="news-ph-pos" style="background:${posColor}22;color:${posColor}">${player.position}</span>
+            ${player.nfl_team || ''}${slotLabel}
+          </div>
+        </div>
+        <span class="news-ph-count">${artCount} article${artCount!==1?'s':''}</span>
+        <span class="news-ph-chevron open" id="${cardId}-chev">&#9660;</span>
+      </div>
+      <div class="news-articles" id="${cardId}-body">${articles}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div style="margin-bottom:10px;font-size:12px;color:#475569">${teamNews.length} players with news</div>${cards}`;
+}
+
+function toggleNewsCard(id) {
+  const body = document.getElementById(id + '-body');
+  const chev = document.getElementById(id + '-chev');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  chev.classList.toggle('open', hidden);
 }
 
 /* ===== INJURY BADGE ===== */
