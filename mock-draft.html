@@ -10,6 +10,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
 #main{flex:1;min-width:0;overflow-y:auto}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 a{color:#10b981;text-decoration:none}
@@ -227,7 +228,7 @@ select.sel option{background:#1e293b}
 </style>
 </head>
 <body>
-<div id="app">
+<div id="shell">
 <nav id="leftnav"></nav>
 <div id="main">
 <div id="ln-topbar">
@@ -1309,6 +1310,6 @@ loadData();
 <script src="leftnav.js"></script>
 <script>initLeftNav('mock-draft.html');</script>
 </div><!-- /#main -->
-</div><!-- /#app -->
+</div><!-- /#shell -->
 </body>
 </html>
