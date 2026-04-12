@@ -166,6 +166,10 @@ a{color:#10b981;text-decoration:none}
 .p-row.drop-valid{background:rgba(16,185,129,0.1);outline:2px dashed rgba(16,185,129,0.5);outline-offset:-2px}
 .p-row.drop-invalid{background:rgba(239,68,68,0.07);outline:2px dashed rgba(239,68,68,0.35);outline-offset:-2px}
 .p-row.touch-selected{background:rgba(16,185,129,0.12);outline:2px solid #10b981;outline-offset:-2px}
+.p-row.empty-slot{border:2px dashed rgba(16,185,129,0.15);background:transparent;cursor:default}
+.p-row.empty-slot:hover{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.04)}
+.p-row.empty-slot.drop-valid{border-color:#10b981;background:rgba(16,185,129,0.1)}
+.empty-label{font-size:12px;color:#334155;font-style:italic}
 .drag-handle{display:flex;align-items:center;justify-content:center;color:#334155;font-size:14px;cursor:grab;padding:0 4px;flex-shrink:0;user-select:none}
 .drag-handle:hover{color:#64748b}
 .lineup-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
@@ -506,6 +510,12 @@ function validateLineup(idx) {
 
   // Check each starter is eligible for their assigned slot
   l.starters.forEach(p => {
+    if (p.empty) {
+      const label = p.slot === 'RB-WR-TE' ? 'FLEX' : p.slot;
+      const eligible = (SLOT_ELIGIBLE[p.slot] || []).join(', ');
+      errors.push(`${label} slot is empty — drag a bench ${eligible} here to fill it`);
+      return;
+    }
     const eligible = SLOT_ELIGIBLE[p.slot] || [];
     if (!eligible.includes(p.position)) {
       const slotName = p.slot === 'RB-WR-TE' ? 'FLEX' : p.slot;
@@ -536,16 +546,22 @@ function validateLineup(idx) {
   return errors;
 }
 
+function mkEmpty(slot) {
+  return {name:null, position:null, slot, empty:true, season_pts:0, avg_pts:0, photo_url:'', nfl_team:'', bye_week:null};
+}
+
 function canSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
   const l = lineups[currentIdx];
   const src = srcSec === 'starters' ? l.starters[srcIdx] : l.bench[srcIdx];
   const tgt = tgtSec === 'starters' ? l.starters[tgtIdx] : l.bench[tgtIdx];
   if (!src || !tgt) return false;
-  // Moving to bench: bench accepts any position
-  if (tgtSec === 'bench') return true;
-  // Moving to starter slot: src must fit tgt's slot
-  if (!slotAccepts(tgt.slot, src.position)) return false;
-  // If src is also a starter, tgt must fit src's slot too
+  if (src.empty) return false;                       // can't pick up empty slot
+  if (tgtSec === 'bench') return true;               // anything can go to bench
+  if (tgt.empty) return slotAccepts(tgt.slot, src.position); // filling empty slot
+  if (!slotAccepts(tgt.slot, src.position)) return false;    // src must fit tgt's slot
+  // Starter moving into FLEX: always allowed if src is RB/WR/TE; FLEX player goes to bench if needed
+  if (srcSec === 'starters' && tgt.slot === 'RB-WR-TE') return true;
+  // Normal starter ↔ starter: tgt must also fit src's slot
   if (srcSec === 'starters' && !slotAccepts(src.slot, tgt.position)) return false;
   return true;
 }
@@ -553,18 +569,34 @@ function canSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
 function performSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
   if (!canSwap(srcSec, srcIdx, tgtSec, tgtIdx)) return false;
   const l = lineups[currentIdx];
-  const srcArr = srcSec === 'starters' ? l.starters : l.bench;
-  const tgtArr = tgtSec === 'starters' ? l.starters : l.bench;
-  const src = {...srcArr[srcIdx]};
-  const tgt = {...tgtArr[tgtIdx]};
+  const src = {...(srcSec === 'starters' ? l.starters[srcIdx] : l.bench[srcIdx])};
+  const tgt = {...(tgtSec === 'starters' ? l.starters[tgtIdx] : l.bench[tgtIdx])};
 
-  if (srcSec === tgtSec) {
-    // Same section: swap slots if starters, otherwise just reorder
-    if (srcSec === 'starters') {
-      [src.slot, tgt.slot] = [tgt.slot, src.slot];
+  if (tgt.empty) {
+    // Fill empty starter slot
+    src.slot = tgt.slot;
+    l.starters[tgtIdx] = src;
+    if (srcSec === 'bench') l.bench.splice(srcIdx, 1);
+    else l.starters[srcIdx] = mkEmpty(src.slot); // shouldn't happen but guard
+  } else if (srcSec === 'starters' && tgtSec === 'starters') {
+    const srcCanTakeTgtSlot = slotAccepts(tgt.slot, src.position); // already confirmed true
+    const tgtCanTakeSrcSlot = slotAccepts(src.slot, tgt.position);
+    if (tgt.slot === 'RB-WR-TE' && !tgtCanTakeSrcSlot) {
+      // Starter → FLEX where FLEX player can't take the vacated slot:
+      // src moves to FLEX, FLEX player goes to bench, src's old slot becomes empty
+      const vacatedSlot = src.slot;
+      src.slot = tgt.slot;
+      l.starters[tgtIdx] = src;
+      l.starters[srcIdx] = mkEmpty(vacatedSlot);
+      l.bench.push(tgt);
+    } else {
+      // Normal starter ↔ starter swap (slot labels trade hands)
+      const tmpSlot = src.slot;
+      src.slot = tgt.slot;
+      tgt.slot = tmpSlot;
+      l.starters[srcIdx] = tgt;
+      l.starters[tgtIdx] = src;
     }
-    srcArr[srcIdx] = tgt;
-    tgtArr[tgtIdx] = src;
   } else if (srcSec === 'bench' && tgtSec === 'starters') {
     // Bench → starter: src takes tgt's slot, tgt goes to bench
     src.slot = tgt.slot;
@@ -642,6 +674,23 @@ function toggleBench() {
 }
 
 function playerRow(p, sec, idx) {
+  // Empty slot placeholder — drop target only
+  if (p.empty) {
+    const label = slotLabel(p.slot);
+    const eligible = (SLOT_ELIGIBLE[p.slot] || []).join(', ');
+    return `<div class="p-row empty-slot"
+      data-sec="${sec}" data-idx="${idx}"
+      style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
+      <div></div>
+      <div><span class="slot-badge" style="opacity:.35">${label}</span></div>
+      <div class="p-photo-col">
+        <div style="width:40px;height:40px;border-radius:50%;border:2px dashed rgba(16,185,129,0.25)"></div>
+      </div>
+      <div class="p-info"><span class="empty-label">Empty — drag a ${eligible} here</span></div>
+      <div></div><div></div><div></div>
+    </div>`;
+  }
+
   const pc = POS_COLOR[p.position] || '#64748b';
   const photo = p.photo_url || '';
   const logo = nflLogo(p.nfl_team, p.name, p.position);
@@ -655,8 +704,7 @@ function playerRow(p, sec, idx) {
   const nflEl = logo ? `<img src="${logo}" class="p-nfl-badge" alt="${p.nfl_team}">` : '';
 
   return `<div class="p-row ${isTouchSel?'touch-selected':''}"
-    draggable="true"
-    data-sec="${sec}" data-idx="${idx}"
+    draggable="true" data-sec="${sec}" data-idx="${idx}"
     style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
     <div class="drag-handle">&#8942;&#8942;</div>
     <div><span class="slot-badge">${slotLabel(p.slot)}</span></div>
@@ -676,6 +724,35 @@ function playerRow(p, sec, idx) {
 
 /* ===== DRAG & DROP ===== */
 function attachDragListeners() {
+  // Empty slot rows: drop targets only (no drag)
+  document.querySelectorAll('.p-row.empty-slot').forEach(row => {
+    const sec = row.dataset.sec;
+    const idx = parseInt(row.dataset.idx);
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragSrc) return;
+      const valid = canSwap(dragSrc.sec, dragSrc.idx, sec, idx);
+      row.classList.toggle('drop-valid', valid);
+      row.classList.toggle('drop-invalid', !valid);
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drop-valid','drop-invalid'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc) return;
+      const ok = performSwap(dragSrc.sec, dragSrc.idx, sec, idx);
+      dragSrc = null;
+      if (ok) { saveLineup(currentIdx); renderRoster(); }
+    });
+    // Touch tap on empty slot to fill from selected player
+    row.addEventListener('click', () => {
+      if (!touchSel || touchSel.sec === sec) return;
+      const ok = performSwap(touchSel.sec, touchSel.idx, sec, idx);
+      touchSel = null;
+      if (ok) saveLineup(currentIdx);
+      renderRoster();
+    });
+  });
+
   document.querySelectorAll('.p-row[draggable]').forEach(row => {
     const sec = row.dataset.sec;
     const idx = parseInt(row.dataset.idx);
