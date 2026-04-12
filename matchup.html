@@ -31,22 +31,28 @@ a{color:#10b981;text-decoration:none}
 .banner-sub{font-size:11px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase}
 
 /* Week + Matchup picker */
-.picker-bar{background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap}
+.picker-bar{background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;overflow-x:auto}
+.picker-bar::-webkit-scrollbar{height:3px}
 .week-nav{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.wn-btn{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#94a3b8;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
+.wn-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#94a3b8;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
 .wn-btn:hover:not(:disabled){background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981}
 .wn-btn:disabled{opacity:.3;cursor:default}
-.wn-lbl{font-size:13px;font-weight:800;color:#e2e8f0;min-width:60px;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
-.mu-tabs{display:flex;gap:6px;overflow-x:auto;flex:1;padding-bottom:2px}
+.wn-lbl{font-size:16px;font-weight:800;color:#e2e8f0;min-width:72px;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px}
+.mu-tabs{display:flex;gap:8px;overflow-x:auto;flex:1;padding-bottom:2px}
 .mu-tabs::-webkit-scrollbar{height:3px}
-.mu-tab{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
-.mu-tab:hover{border-color:rgba(16,185,129,0.2);background:rgba(16,185,129,0.04)}
-.mu-tab.active{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)}
-.mu-tab-logo{width:22px;height:22px;border-radius:5px;object-fit:contain;background:#0f172a}
-.mu-tab-score{font-size:11px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0}
-.mu-tab-vs{font-size:10px;color:#475569;font-weight:700}
+.mu-tab{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.mu-tab:hover{border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05)}
+.mu-tab.active{border-color:rgba(16,185,129,0.45);background:rgba(16,185,129,0.09)}
+.mu-tab-team{display:flex;align-items:center;gap:7px}
+.mu-tab-logo{width:28px;height:28px;border-radius:7px;object-fit:contain;background:#0f172a;flex-shrink:0}
+.mu-tab-name{font-size:12px;font-weight:800;color:#e2e8f0;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mu-tab-scores{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 4px}
+.mu-tab-score{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;line-height:1;letter-spacing:.5px}
+.mu-tab-score.win{color:#10b981}
+.mu-tab-score.loss{color:#64748b}
+.mu-tab-vs{font-size:9px;color:#334155;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .mu-tab.playoff-tab{border-color:rgba(250,204,21,0.2);background:rgba(250,204,21,0.04)}
-.mu-tab.playoff-tab.active{border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.08)}
+.mu-tab.playoff-tab.active{border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.09)}
 
 /* Main layout */
 #mu-app{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -319,13 +325,24 @@ function render(){
   const tabs=weekMatchups.map((m,i)=>{
     const isPO=m.matchup_type==='playoff';
     const t1l=tLogo(m.team1_name),t2l=tLogo(m.team2_name);
+    const t1w=(m.team1_score??0)>(m.team2_score??0), t2w=(m.team2_score??0)>(m.team1_score??0);
     const active=i===selIdx?'active':'';
+    // Shorten team name for display
+    const shortName = n => n&&n.length>12 ? n.split(' ').map((w,i)=>i===0?w:w[0]).join(' ') : (n||'—');
     return`<div class="mu-tab ${isPO?'playoff-tab':''} ${active}" onclick="selMatchup(${i})">
-      ${t1l?`<img src="${t1l}" class="mu-tab-logo" onerror="this.style.display='none'">`:''}
-      <span class="mu-tab-score">${m.team1_score??'—'}</span>
-      <span class="mu-tab-vs">vs</span>
-      <span class="mu-tab-score">${m.team2_score??'—'}</span>
-      ${t2l?`<img src="${t2l}" class="mu-tab-logo" onerror="this.style.display='none'">`:''}
+      <div class="mu-tab-team">
+        ${t1l?`<img src="${t1l}" class="mu-tab-logo" onerror="this.style.display='none'">`:`<div class="mu-tab-logo" style="background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#10b981">${(m.team1_name||'?')[0]}</div>`}
+        <span class="mu-tab-name">${shortName(m.team1_name)}</span>
+      </div>
+      <div class="mu-tab-scores">
+        <span class="mu-tab-score ${t1w?'win':t2w?'loss':''}">${m.team1_score??'—'}</span>
+        <span class="mu-tab-vs">vs</span>
+        <span class="mu-tab-score ${t2w?'win':t1w?'loss':''}">${m.team2_score??'—'}</span>
+      </div>
+      <div class="mu-tab-team">
+        ${t2l?`<img src="${t2l}" class="mu-tab-logo" onerror="this.style.display='none'">`:`<div class="mu-tab-logo" style="background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#10b981">${(m.team2_name||'?')[0]}</div>`}
+        <span class="mu-tab-name">${shortName(m.team2_name)}</span>
+      </div>
     </div>`;
   }).join('');
   document.getElementById('mu-tabs').innerHTML=tabs;
