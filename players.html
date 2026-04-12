@@ -28,7 +28,9 @@ a{color:#10b981;text-decoration:none}
 .sb-title{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sb-season{font-size:11px;color:#475569;letter-spacing:1px}
 .sb-section-label{padding:14px 14px 6px;font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase}
-.sb-pos-card{margin:0 12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.sb-pos-card{margin:0 12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s}
+.sb-pos-card:hover{background:rgba(255,255,255,0.04)}
+.sb-pos-card.active{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05)}
 .sb-pos-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .sb-pos-info{flex:1;min-width:0}
 .sb-pos-name{font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:.5px}
@@ -72,11 +74,13 @@ a{color:#10b981;text-decoration:none}
 #table-wrap{padding:0 28px 60px;flex:1;overflow-y:auto}
 .players-table{width:100%;border-collapse:collapse}
 .players-table thead tr{border-bottom:2px solid rgba(255,255,255,0.06)}
-.players-table th{padding:8px 10px;font-size:10px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:#0b1120}
+.players-table th{padding:8px 10px;font-size:10px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:#0b1120;z-index:1}
 .players-table th:hover{color:#64748b}
 .players-table th.sort-asc::after{content:' ↑';color:#10b981}
 .players-table th.sort-desc::after{content:' ↓';color:#10b981}
 .players-table th.num{text-align:right}
+.players-table th.nosort{cursor:default}
+.players-table th.nosort:hover{color:#334155}
 .players-table td{padding:8px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
 .players-table tbody tr:hover{background:rgba(255,255,255,0.025)}
 .players-table td.num{text-align:right;font-variant-numeric:tabular-nums}
@@ -85,7 +89,8 @@ a{color:#10b981;text-decoration:none}
 .pl-cell{display:flex;align-items:center;gap:10px}
 .pl-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.07);flex-shrink:0;background:rgba(255,255,255,0.04)}
 .pl-photo-ph{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
-.pl-name{font-size:13px;font-weight:700;color:#e2e8f0;line-height:1.2}
+.pl-name-btn{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#e2e8f0;padding:0;text-align:left;line-height:1.2;transition:color .12s}
+.pl-name-btn:hover{color:#10b981;text-decoration:underline}
 .pl-meta{font-size:11px;color:#475569;font-weight:600}
 
 /* Position badge */
@@ -93,19 +98,88 @@ a{color:#10b981;text-decoration:none}
 
 /* Injury badge */
 .inj-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:4px;margin-left:5px;vertical-align:middle}
-.inj-Q{background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.25)}
-.inj-D{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.25)}
-.inj-O{background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
-.inj-IR{background:rgba(239,68,68,0.25);color:#fca5a5;border:1px solid rgba(239,68,68,0.35)}
+.inj-q{background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.25)}
+.inj-d{background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3)}
+.inj-o,.inj-ir{background:rgba(239,68,68,0.13);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.inj-pup,.inj-na{background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)}
 
 /* Stat cells */
 .pts-val{font-size:14px;font-weight:800;color:#e2e8f0}
 .avg-val{font-size:13px;font-weight:700;color:#94a3b8}
 .wks-val{font-size:13px;color:#475569}
 .nfl-team{font-size:12px;font-weight:700;color:#64748b}
-
-/* Rank number */
 .rank-num{font-size:11px;color:#334155;font-weight:700;width:24px;text-align:right}
+
+/* Action buttons */
+.action-btns{display:flex;gap:6px;justify-content:flex-end}
+.btn-add{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#10b981;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;white-space:nowrap}
+.btn-add:hover{background:rgba(16,185,129,0.22);border-color:rgba(16,185,129,0.45)}
+.btn-trade{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.22);color:#a78bfa;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;white-space:nowrap}
+.btn-trade:hover{background:rgba(167,139,250,0.2);border-color:rgba(167,139,250,0.4)}
+
+/* ===== PLAYER MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
+.modal-hdr{display:flex;align-items:flex-start;gap:16px;padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.modal-close-btn{margin-left:auto;background:rgba(255,255,255,0.06);border:none;color:#94a3b8;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;transition:all .12s}
+.modal-close-btn:hover{background:rgba(255,255,255,0.1);color:#e2e8f0}
+.modal-body-inner{padding:0 20px 24px}
+.modal-section{padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.modal-section:last-child{border-bottom:none}
+.modal-section-title{font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:10px}
+.career-strip{display:flex;gap:20px;flex-wrap:wrap}
+.career-stat{text-align:center}
+.career-stat-val{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;line-height:1}
+.career-stat-lbl{font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+.chart-outer{display:flex;flex-direction:column;gap:6px}
+.chart-bars{display:flex;align-items:flex-end;gap:3px;height:72px}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0}
+.chart-bar-val{font-size:8px;color:#475569;font-weight:700;white-space:nowrap}
+.chart-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:opacity .15s}
+.chart-bar:hover{opacity:.8}
+.chart-bar-yr{font-size:8px;color:#334155;font-weight:700}
+.chart-bar-yr.cur{color:#10b981}
+.chart-footer{display:flex;gap:16px;flex-wrap:wrap}
+.chart-footer-item{font-size:11px;color:#475569}
+.chart-footer-item span{font-weight:800}
+.career-table{width:100%;border-collapse:collapse}
+.career-table th{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:right;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.career-table th:first-child,.career-table th:nth-child(2){text-align:left}
+.career-table td{font-size:12px;color:#64748b;text-align:right;padding:6px 6px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.career-table td:first-child,.career-table td:nth-child(2){text-align:left;color:#94a3b8;font-weight:700}
+.career-table tr:last-child td{border-bottom:none}
+.career-table tr:hover td{background:rgba(255,255,255,0.02)}
+.career-table .accent{color:#10b981;font-weight:700}
+.career-table .yr-cur{color:#e2e8f0;font-weight:800}
+.modal-week-hdr{display:grid;grid-template-columns:44px 60px 1fr 72px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.modal-week-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
+.modal-week-hdr .mwh-pts{text-align:right}
+.modal-week-row{display:grid;grid-template-columns:44px 60px 1fr 72px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);align-items:center}
+.modal-week-row:last-child{border-bottom:none}
+.modal-week-row:hover{background:rgba(255,255,255,0.025)}
+.mwr-wk{font-size:12px;font-weight:800;color:#475569;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.mwr-opp{font-size:11px;color:#94a3b8;font-weight:600}
+.mwr-stat{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mwr-pts{text-align:right;font-size:14px;font-weight:800;font-family:'Bebas Neue',sans-serif}
+
+/* Action modal */
+.action-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px}
+.action-modal-box{background:#0d1526;border:1px solid rgba(255,255,255,0.1);border-radius:18px;width:100%;max-width:400px;padding:28px 24px}
+.action-modal-title{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#f1f5f9;margin-bottom:8px}
+.action-modal-sub{font-size:13px;color:#475569;margin-bottom:20px;line-height:1.5}
+.action-modal-player{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 14px;margin-bottom:20px}
+.action-modal-photo{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.07);flex-shrink:0}
+.action-modal-photo-ph{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0}
+.action-modal-pname{font-size:16px;font-weight:800;color:#e2e8f0}
+.action-modal-pmeta{font-size:11px;color:#475569;font-weight:600;margin-top:2px}
+.action-modal-note{font-size:12px;color:#475569;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
+.action-modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.action-modal-cancel{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#64748b;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.action-modal-cancel:hover{background:rgba(255,255,255,0.08);color:#94a3b8}
+.action-modal-confirm-add{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.action-modal-confirm-add:hover{background:rgba(16,185,129,0.25)}
+.action-modal-confirm-trade{background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.action-modal-confirm-trade:hover{background:rgba(167,139,250,0.25)}
 
 /* ===== LOADING ===== */
 #loading{position:fixed;inset:0;background:#0b1120;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
@@ -127,6 +201,8 @@ a{color:#10b981;text-decoration:none}
   #table-wrap{padding:0 16px 60px}
   .pl-meta{display:none}
   .search-wrap{max-width:none}
+  .action-btns{gap:4px}
+  .btn-add,.btn-trade{padding:5px 8px;font-size:10px}
 }
 </style>
 </head>
@@ -176,6 +252,7 @@ a{color:#10b981;text-decoration:none}
 
 <script>
 /* ===== CONFIG ===== */
+const ACCENT = '#10b981';
 const POS_COLOR = {QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#ec4899'};
 const POSITIONS = ['ALL','QB','RB','WR','TE','K','DST'];
 
@@ -215,7 +292,7 @@ function buildSidebar() {
     const players = byPos[pos] || [];
     const top = players[0];
     const color = POS_COLOR[pos] || '#64748b';
-    return `<div class="sb-pos-card">
+    return `<div class="sb-pos-card" onclick="setPos('${pos}')">
       <div class="sb-pos-dot" style="background:${color}"></div>
       <div class="sb-pos-info">
         <div style="display:flex;align-items:baseline;gap:6px">
@@ -228,10 +305,18 @@ function buildSidebar() {
   }).join('');
 }
 
+function setPos(pos) {
+  filterPos = pos;
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === pos));
+  document.querySelectorAll('.sb-pos-card').forEach(c => {
+    c.classList.toggle('active', c.querySelector('.sb-pos-name')?.textContent === pos);
+  });
+  renderTable();
+}
+
 /* ===== SUMMARY STRIP ===== */
 function buildSummary() {
   const strip = document.getElementById('summary-strip');
-  const total = DATA.length;
   const topFa = DATA[0];
   const rbCount = DATA.filter(p => p.position === 'RB').length;
   const wrCount = DATA.filter(p => p.position === 'WR').length;
@@ -239,7 +324,7 @@ function buildSummary() {
 
   strip.innerHTML = `
     <div class="sum-card">
-      <div class="sum-val">${total}</div>
+      <div class="sum-val">${DATA.length}</div>
       <div class="sum-lbl">Free Agents</div>
     </div>
     <div class="sum-card">
@@ -255,8 +340,8 @@ function buildSummary() {
       <div class="sum-lbl">WRs Available</div>
     </div>
     <div class="sum-card" style="flex:2">
-      <div class="sum-val" style="font-size:16px;color:#10b981">${topFa ? topFa.name : '—'}</div>
-      <div class="sum-lbl">Top Available Player · ${topFa ? topFa.season_pts + ' pts' : ''}</div>
+      <div class="sum-val" style="font-size:16px">${topFa ? topFa.name : '—'}</div>
+      <div class="sum-lbl">Top Available · ${topFa ? topFa.season_pts + ' pts' : ''}</div>
     </div>`;
 }
 
@@ -281,26 +366,15 @@ function buildFilters() {
     </select>
     <span class="result-count" id="result-count"></span>`;
 
-  // Position buttons
   bar.querySelectorAll('.pos-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterPos = btn.dataset.pos;
-      bar.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderTable();
-    });
+    btn.addEventListener('click', () => setPos(btn.dataset.pos));
   });
-
-  // Search
   document.getElementById('search-input').addEventListener('input', e => {
     searchQuery = e.target.value.toLowerCase();
     renderTable();
   });
-
-  // Sort select
   document.getElementById('sort-select').addEventListener('change', e => {
-    const val = e.target.value;
-    const parts = val.split('_');
+    const parts = e.target.value.split('_');
     sortDir = parts.pop();
     sortCol = parts.join('_');
     renderTable();
@@ -308,12 +382,12 @@ function buildFilters() {
 }
 
 /* ===== HELPERS ===== */
-function injuryBadge(status) {
+function injuryBadge(status, notes) {
   if (!status) return '';
   const s = status.toUpperCase();
-  if (!['Q','D','O','IR','PUP','NA'].includes(s)) return '';
-  const cls = ['Q','D','O'].includes(s) ? `inj-${s}` : 'inj-IR';
-  return `<span class="inj-badge ${cls}">${s}</span>`;
+  const cls = {Q:'inj-q',D:'inj-d',O:'inj-o',IR:'inj-ir',PUP:'inj-pup',NA:'inj-na'}[s];
+  if (!cls) return '';
+  return `<span class="inj-badge ${cls}"${notes?` title="${notes}"`:''}>${s}</span>`;
 }
 
 function posBg(pos) {
@@ -321,58 +395,95 @@ function posBg(pos) {
   return `background:${c}20;color:${c};border:1px solid ${c}40`;
 }
 
-function photoEl(p) {
+function photoEl(p, size=34) {
+  const color = POS_COLOR[p.position] || '#64748b';
   if (p.photo_url) {
-    return `<img class="pl-photo" src="${p.photo_url}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-            <div class="pl-photo-ph" style="background:${(POS_COLOR[p.position]||'#64748b')}22;color:${POS_COLOR[p.position]||'#64748b'};display:none">${p.position}</div>`;
+    return `<img class="pl-photo" style="width:${size}px;height:${size}px" src="${p.photo_url}" alt="${p.name}" loading="lazy"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+            <div class="pl-photo-ph" style="width:${size}px;height:${size}px;background:${color}22;color:${color};display:none">${p.position}</div>`;
   }
-  return `<div class="pl-photo-ph" style="background:${(POS_COLOR[p.position]||'#64748b')}22;color:${POS_COLOR[p.position]||'#64748b'}">${p.position}</div>`;
+  return `<div class="pl-photo-ph" style="width:${size}px;height:${size}px;background:${color}22;color:${color}">${p.position}</div>`;
+}
+
+function fmtHeight(inches) {
+  if (!inches) return '';
+  const h = parseInt(inches);
+  return isNaN(h) ? '' : `${Math.floor(h/12)}'${h%12}"`;
+}
+
+function careerColumns(pos) {
+  if (pos === 'QB') return [
+    {k:'pass_comp',lbl:'CMP'},{k:'pass_att',lbl:'ATT'},{k:'pass_yds',lbl:'YDS',hi:true},
+    {k:'pass_td',lbl:'TD',hi:true},{k:'pass_int',lbl:'INT',red:true},
+    {k:'rush_yds',lbl:'RU YD'},{k:'fpts',lbl:'FPTS',hi:true,dec:1}
+  ];
+  if (['RB','FB'].includes(pos)) return [
+    {k:'rush_att',lbl:'ATT'},{k:'rush_yds',lbl:'RU YD',hi:true},{k:'rush_td',lbl:'RU TD',hi:true},
+    {k:'rec_rec',lbl:'REC'},{k:'rec_yds',lbl:'REC YD'},{k:'rec_td',lbl:'REC TD'},
+    {k:'fpts',lbl:'FPTS',hi:true,dec:1}
+  ];
+  if (['WR','TE'].includes(pos)) return [
+    {k:'rec_tar',lbl:'TGT'},{k:'rec_rec',lbl:'REC',hi:true},{k:'rec_yds',lbl:'REC YD',hi:true},
+    {k:'rec_td',lbl:'REC TD',hi:true},{k:'rush_att',lbl:'ATT'},{k:'rush_yds',lbl:'RU YD'},
+    {k:'fpts',lbl:'FPTS',hi:true,dec:1}
+  ];
+  return [{k:'fpts',lbl:'FPTS',hi:true,dec:1}];
 }
 
 /* ===== RENDER TABLE ===== */
-function renderTable() {
-  const wrap = document.getElementById('table-wrap');
-
-  // Filter
-  let players = DATA.filter(p => {
+function getFiltered() {
+  return DATA.filter(p => {
     if (filterPos !== 'ALL' && p.position !== filterPos) return false;
     if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return false;
     return true;
   });
+}
 
-  // Sort
-  players.sort((a, b) => {
+function getSorted(players) {
+  return [...players].sort((a, b) => {
     let av = a[sortCol], bv = b[sortCol];
-    if (sortCol === 'name') { av = av||''; bv = bv||''; return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av); }
+    if (sortCol === 'name') {
+      av = av || ''; bv = bv || '';
+      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
     av = av || 0; bv = bv || 0;
     return sortDir === 'asc' ? av - bv : bv - av;
   });
+}
 
-  document.getElementById('result-count').textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
+function renderTable() {
+  const wrap = document.getElementById('table-wrap');
+  const filtered = getSorted(getFiltered());
 
-  if (!players.length) {
+  document.getElementById('result-count').textContent = `${filtered.length} player${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
     wrap.innerHTML = '<div class="empty-state">No players match your filters.</div>';
     return;
   }
 
   const colDefs = [
-    {key:'rank', label:'#', cls:'num', sortable:false},
-    {key:'name', label:'Player', cls:'', sortable:true},
-    {key:'position', label:'Pos', cls:'', sortable:true},
-    {key:'nfl_team', label:'NFL Team', cls:'', sortable:true},
-    {key:'season_pts', label:'Season PTS', cls:'num', sortable:true},
-    {key:'avg_pts', label:'Avg/Wk', cls:'num', sortable:true},
-    {key:'weeks_played', label:'Weeks', cls:'num', sortable:true},
+    {key:'rank',   label:'#',          cls:'num nosort', sortable:false},
+    {key:'name',   label:'Player',     cls:'',           sortable:true},
+    {key:'position',label:'Pos',       cls:'',           sortable:true},
+    {key:'nfl_team',label:'NFL Team',  cls:'',           sortable:true},
+    {key:'season_pts',label:'Season PTS',cls:'num',      sortable:true},
+    {key:'avg_pts',label:'Avg/Wk',     cls:'num',        sortable:true},
+    {key:'weeks_played',label:'Weeks', cls:'num',        sortable:true},
+    {key:'actions',label:'',           cls:'nosort',     sortable:false},
   ];
 
   const thead = colDefs.map(c => {
     if (!c.sortable) return `<th class="${c.cls}">${c.label}</th>`;
     const isActive = c.key === sortCol;
     const dir = isActive ? sortDir : '';
-    return `<th class="${c.cls}${isActive ? ' sort-'+dir : ''}" onclick="sortBy('${c.key}')">${c.label}</th>`;
+    return `<th class="${c.cls}${isActive?' sort-'+dir:''}" onclick="sortBy('${c.key}')">${c.label}</th>`;
   }).join('');
 
-  const rows = players.map((p, i) => {
+  // Store the filtered+sorted list so modal can look up by row index
+  window._displayedPlayers = filtered;
+
+  const rows = filtered.map((p, i) => {
     const posStyle = posBg(p.position);
     return `<tr>
       <td class="num"><span class="rank-num">${i+1}</span></td>
@@ -380,7 +491,7 @@ function renderTable() {
         <div class="pl-cell">
           ${photoEl(p)}
           <div>
-            <div class="pl-name">${p.name}${injuryBadge(p.injury_status)}</div>
+            <button class="pl-name-btn" onclick="openPlayerModal(${i})">${p.name}${injuryBadge(p.injury_status, p.injury_notes)}</button>
             <div class="pl-meta">${p.nfl_team || '—'}</div>
           </div>
         </div>
@@ -390,6 +501,12 @@ function renderTable() {
       <td class="num"><span class="pts-val">${p.season_pts > 0 ? p.season_pts.toFixed(1) : '—'}</span></td>
       <td class="num"><span class="avg-val">${p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—'}</span></td>
       <td class="num"><span class="wks-val">${p.weeks_played || 0}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-add" onclick="openAddModal(${i})">+ Add</button>
+          <button class="btn-trade" onclick="openTradeModal(${i})">&#8652; Trade</button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
@@ -406,13 +523,229 @@ function sortBy(col) {
     sortCol = col;
     sortDir = col === 'name' ? 'asc' : 'desc';
   }
-  // Sync the select
   const sel = document.getElementById('sort-select');
   if (sel) {
     const opt = `${sortCol}_${sortDir}`;
     if ([...sel.options].some(o => o.value === opt)) sel.value = opt;
   }
   renderTable();
+}
+
+/* ===== PLAYER STAT MODAL ===== */
+function openPlayerModal(idx) {
+  const p = window._displayedPlayers[idx];
+  if (!p) return;
+
+  const pc = POS_COLOR[p.position] || '#64748b';
+  const photo = p.photo_url || '';
+
+  const photoHtml = photo
+    ? `<img src="${photo}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" onerror="this.style.display='none'">`
+    : `<div style="width:72px;height:72px;border-radius:50%;background:${pc}18;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:${pc};flex-shrink:0">${(p.name||'?')[0]}</div>`;
+
+  const inj = injuryBadge(p.injury_status, p.injury_notes);
+
+  const physParts = [];
+  if (p.height) physParts.push(fmtHeight(p.height));
+  if (p.weight) physParts.push(`${p.weight} lbs`);
+  if (p.age) physParts.push(`Age ${p.age}`);
+  if (p.college) physParts.push(p.college);
+  if (p.jersey_number) physParts.push(`#${p.jersey_number}`);
+  const physLine = physParts.length ? `<div style="font-size:11px;color:#475569;margin-bottom:4px">${physParts.join(' · ')}</div>` : '';
+  const draftLine = p.draft_year ? `<div style="font-size:10px;color:#334155;letter-spacing:.5px">Draft Class · ${p.draft_year}</div>` : '';
+
+  const career = p.career || [];
+  const careerFpts = career.reduce((s,c) => s + (c.fpts||0), 0);
+  const bestSeason = career.reduce((best,c) => (c.fpts||0) > (best.fpts||0) ? c : best, {});
+  const avgSeason = career.length > 0 ? careerFpts / career.length : 0;
+
+  const careerStrip = `<div class="career-strip">
+    <div class="career-stat"><div class="career-stat-val" style="color:${ACCENT}">${careerFpts > 0 ? careerFpts.toFixed(1) : '—'}</div><div class="career-stat-lbl">Career FPTS</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#e2e8f0">${career.length || '—'}</div><div class="career-stat-lbl">Seasons</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#a78bfa">${bestSeason.fpts ? bestSeason.fpts.toFixed(1) : '—'}</div><div class="career-stat-lbl">Best Season</div></div>
+    <div class="career-stat"><div class="career-stat-val" style="color:#e2e8f0">${avgSeason > 0 ? avgSeason.toFixed(1) : '—'}</div><div class="career-stat-lbl">Avg / Season</div></div>
+  </div>`;
+
+  let chartHtml = '';
+  if (career.length > 0) {
+    const maxFpts = Math.max(...career.map(c => c.fpts || 0), 0.1);
+    const barMaxH = 56;
+    const bars = career.map(c => {
+      const isCur = c.year === 2025;
+      const h = Math.round(((c.fpts||0) / maxFpts) * barMaxH);
+      const barColor = isCur ? ACCENT : (c.fpts === bestSeason.fpts ? '#a78bfa' : 'rgba(16,185,129,0.3)');
+      return `<div class="chart-bar-col">
+        <div class="chart-bar-val">${(c.fpts||0) > 0 ? c.fpts.toFixed(0) : ''}</div>
+        <div class="chart-bar" style="height:${h}px;background:${barColor}" title="${c.year}: ${c.fpts ? c.fpts.toFixed(1) : '—'} pts"></div>
+        <div class="chart-bar-yr ${isCur?'cur':''}">'${String(c.year).slice(-2)}</div>
+      </div>`;
+    }).join('');
+    const footerItems = [
+      avgSeason > 0 ? `Avg/Season: <span style="color:${ACCENT}">${avgSeason.toFixed(1)}</span>` : null,
+      bestSeason.fpts ? `Best: <span style="color:#a78bfa">${bestSeason.fpts.toFixed(1)}</span> (${bestSeason.year})` : null,
+    ].filter(Boolean);
+    chartHtml = `<div class="modal-section">
+      <div class="modal-section-title">FPTS by Season</div>
+      <div class="chart-outer">
+        <div class="chart-bars">${bars}</div>
+        <div class="chart-footer">${footerItems.map(i=>`<span class="chart-footer-item">${i}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }
+
+  let tableHtml = '';
+  if (career.length > 0) {
+    const cols = careerColumns(p.position);
+    const thead = `<tr><th>Year</th><th>Team</th>${cols.map(c=>`<th>${c.lbl}</th>`).join('')}</tr>`;
+    const rows = [...career].reverse().map(c => {
+      const isCur = c.year === 2025;
+      const cells = cols.map(col => {
+        const v = c[col.k];
+        const display = v == null ? '—' : col.dec ? v.toFixed(col.dec) : v;
+        return col.hi
+          ? `<td class="accent${isCur?' yr-cur':''}">${display}</td>`
+          : `<td${col.red && v ? ' style="color:#ef4444"':''}>${display}</td>`;
+      }).join('');
+      return `<tr>
+        <td class="${isCur?'yr-cur':''}" style="white-space:nowrap">${isCur?'▶ ':''}${c.year}</td>
+        <td style="color:#64748b;font-weight:600">${c.nfl_team||'—'}</td>
+        ${cells}
+      </tr>`;
+    }).join('');
+    tableHtml = `<div class="modal-section">
+      <div class="modal-section-title">Year-by-Year Stats</div>
+      <div style="overflow-x:auto"><table class="career-table"><thead>${thead}</thead><tbody>${rows}</tbody></table></div>
+    </div>`;
+  }
+
+  const weeks = Object.entries(p.weekly || {})
+    .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
+    .filter(([,w]) => w.opp !== '-');
+  const weekRows = weeks.map(([wk,w]) => {
+    const pts = w.fpts || 0;
+    const ptsColor = pts >= 20 ? ACCENT : pts >= 10 ? '#e2e8f0' : pts > 0 ? '#64748b' : '#334155';
+    return `<div class="modal-week-row">
+      <div class="mwr-wk">WK${wk}</div>
+      <div class="mwr-opp">${w.opp||'—'}</div>
+      <div class="mwr-stat">${w.stat_line||'—'}</div>
+      <div class="mwr-pts" style="color:${ptsColor}">${pts > 0 ? pts.toFixed(1) : '—'}</div>
+    </div>`;
+  }).join('');
+
+  const html = `<div class="modal-overlay" id="player-modal" onclick="if(event.target.id==='player-modal')closePlayerModal()">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        ${photoHtml}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div style="font-size:24px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#f1f5f9;line-height:1">${p.name}</div>
+            <span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:5px;background:${pc}22;color:${pc}">${p.position}</span>
+            ${inj}
+          </div>
+          <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:8px">${p.nfl_team || 'Free Agent'}</div>
+          ${physLine}${draftLine}
+        </div>
+        <button class="modal-close-btn" onclick="closePlayerModal()">&#10005;</button>
+      </div>
+      <div class="modal-body-inner">
+        <div class="modal-section">${careerStrip}</div>
+        ${chartHtml}
+        ${tableHtml}
+        <div class="modal-section">
+          <div class="modal-section-title">2025 Weekly Stats</div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden">
+            <div class="modal-week-hdr">
+              <span>WK</span><span>OPP</span><span>STAT LINE</span><span class="mwh-pts" style="text-align:right">FPTS</span>
+            </div>
+            ${weekRows || '<div style="padding:16px;color:#334155;font-size:13px">No stats recorded yet.</div>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayerModal() {
+  const m = document.getElementById('player-modal');
+  if (m) m.remove();
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePlayerModal(); closeActionModal(); }
+});
+
+/* ===== ADD / TRADE MODALS ===== */
+function actionPlayerCard(p) {
+  const color = POS_COLOR[p.position] || '#64748b';
+  const photo = p.photo_url
+    ? `<img class="action-modal-photo" src="${p.photo_url}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+       <div class="action-modal-photo-ph" style="background:${color}22;color:${color};display:none">${p.position}</div>`
+    : `<div class="action-modal-photo-ph" style="background:${color}22;color:${color}">${p.position}</div>`;
+  return `<div class="action-modal-player">
+    ${photo}
+    <div>
+      <div class="action-modal-pname">${p.name}</div>
+      <div class="action-modal-pmeta">${p.position} · ${p.nfl_team || 'FA'} · ${p.season_pts > 0 ? p.season_pts.toFixed(1)+' pts' : 'No stats'}</div>
+    </div>
+  </div>`;
+}
+
+function openAddModal(idx) {
+  const p = window._displayedPlayers[idx];
+  if (!p) return;
+  const html = `<div class="action-modal-overlay" id="action-modal" onclick="if(event.target.id==='action-modal')closeActionModal()">
+    <div class="action-modal-box">
+      <div class="action-modal-title">Add Player</div>
+      <div class="action-modal-sub">You are adding this player to your roster.</div>
+      ${actionPlayerCard(p)}
+      <div class="action-modal-note">
+        &#9432;&nbsp; Waiver wire claims are processed by the commissioner.
+        Screenshot this page or message your commissioner to submit your request.
+        <br><br>
+        <strong style="color:#94a3b8">Player:</strong> ${p.name} &nbsp;·&nbsp; <strong style="color:#94a3b8">Action:</strong> Add to Roster
+      </div>
+      <div class="action-modal-btns">
+        <button class="action-modal-cancel" onclick="closeActionModal()">Cancel</button>
+        <button class="action-modal-confirm-add" onclick="closeActionModal()">Got It</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  document.body.style.overflow = 'hidden';
+}
+
+function openTradeModal(idx) {
+  const p = window._displayedPlayers[idx];
+  if (!p) return;
+  const html = `<div class="action-modal-overlay" id="action-modal" onclick="if(event.target.id==='action-modal')closeActionModal()">
+    <div class="action-modal-box">
+      <div class="action-modal-title" style="color:#a78bfa">Propose Trade</div>
+      <div class="action-modal-sub">You want to trade for this player.</div>
+      ${actionPlayerCard(p)}
+      <div class="action-modal-note">
+        &#9432;&nbsp; Trades are processed by the commissioner.
+        Contact the player's current team or your commissioner to propose a trade offer.
+        <br><br>
+        <strong style="color:#94a3b8">Player:</strong> ${p.name} &nbsp;·&nbsp; <strong style="color:#94a3b8">Action:</strong> Trade Request
+      </div>
+      <div class="action-modal-btns">
+        <button class="action-modal-cancel" onclick="closeActionModal()">Cancel</button>
+        <button class="action-modal-confirm-trade" onclick="closeActionModal()">Got It</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  document.body.style.overflow = 'hidden';
+}
+
+function closeActionModal() {
+  const m = document.getElementById('action-modal');
+  if (m) m.remove();
+  document.body.style.overflow = '';
 }
 
 init();
