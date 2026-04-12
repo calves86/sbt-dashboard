@@ -60,7 +60,7 @@ select.sel option{background:#1e293b}
 .d-round{font-size:30px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#10b981}
 .d-pick-info{font-size:12px;color:#64748b;margin-top:2px}
 .d-clock-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;text-align:right}
-.d-clock-team{font-size:17px;font-weight:800;color:#e2e8f0;text-align:right}
+.d-clock-team{font-size:12px;font-weight:800;color:#e2e8f0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
 .d-clock-team.my-turn{color:#10b981;animation:pgn 1.2s ease-in-out infinite}
 @keyframes pgn{0%,100%{color:#10b981}50%{color:#4ade80}}
 .draft-layout{display:grid;grid-template-columns:1fr 310px;gap:14px}
@@ -670,7 +670,7 @@ function renderDraft() {
           <button class="speed-btn ${S.autoPick?'on':''}" style="flex:none;padding:5px 10px" onclick="toggleAuto()">${S.autoPick?'🤖 Auto':'👤 Me'}</button>
         </div>
         <div class="d-clock-label">${complete?'DRAFT COMPLETE':(isMyTurn?'⭐ YOUR PICK':'ON THE CLOCK')}</div>
-        <div class="d-clock-team ${isMyTurn?'my-turn':''}" style="display:flex;align-items:center;gap:7px">${complete?'':`${fl(S.teamOrder[ti],24)}${S.teamOrder[ti]}`}</div>
+        <div class="d-clock-team ${isMyTurn?'my-turn':''}">${complete?'':`${fl(S.teamOrder[ti],44)}<span>${S.teamOrder[ti]}</span>`}</div>
       </div>
     </div>
     <div class="draft-layout">
@@ -959,9 +959,9 @@ function updateDraftUI() {
     bar.querySelector('.d-pick-info').textContent=`Pick ${S.currentPick+1} overall · Pick ${pickInRnd} of ${N}`;
     bar.querySelector('.d-clock-label').textContent=isMyTurn?'⭐ YOUR PICK':'ON THE CLOCK';
     const ct=bar.querySelector('.d-clock-team');
-    ct.innerHTML=fl(S.teamOrder[ti],24)+S.teamOrder[ti];
+    ct.innerHTML=fl(S.teamOrder[ti],44)+`<span>${S.teamOrder[ti]}</span>`;
     ct.className='d-clock-team'+(isMyTurn?' my-turn':'');
-    ct.style.cssText='display:flex;align-items:center;gap:7px';
+    ct.style.cssText='';
     const lp=document.getElementById('last-pick-wrap');
     if(lp) lp.innerHTML=buildLastPick();
   }
