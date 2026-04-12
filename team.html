@@ -1216,6 +1216,21 @@ function openPlayerModal(sec, idx) {
     </div>`;
   }
 
+  // --- Recent News ---
+  const newsMap = {};
+  Object.values(NEWS_DATA).forEach(players => {
+    (players||[]).forEach(np => { if(np.name) newsMap[np.name.toLowerCase()] = np.articles||[]; });
+  });
+  const playerArticles = newsMap[p.name.toLowerCase()] || [];
+  const newsHtml = playerArticles.length
+    ? playerArticles.slice(0,4).map(a=>`<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.45;margin-bottom:4px">${a.headline||''}</div>
+        <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${a.source||'Rotowire'} &nbsp;·&nbsp; ${a.date||''}</div>
+        ${a.story?`<div style="font-size:11px;color:#94a3b8;line-height:1.55;margin-bottom:4px">${a.story}</div>`:''}
+        ${a.analysis?`<div style="font-size:11px;color:#64748b;line-height:1.5;font-style:italic;border-left:2px solid rgba(16,185,129,0.3);padding-left:8px">${a.analysis}</div>`:''}
+      </div>`).join('')
+    : '<div style="padding:16px;text-align:center;font-size:12px;color:#475569">No recent news available.</div>';
+
   // --- 2025 Weekly stats ---
   const weeks = Object.entries(p.weekly || {})
     .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
@@ -1261,6 +1276,12 @@ function openPlayerModal(sec, idx) {
             ${weekRows||'<div style="padding:20px;text-align:center;font-size:12px;color:#334155">No stats recorded yet</div>'}
           </div>
           ${p.bye_week?`<div style="margin-top:8px;font-size:11px;color:#334155;text-align:center">Bye week: Week ${p.bye_week}</div>`:''}
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">Recent News</div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden;padding:0 12px">
+            ${newsHtml}
+          </div>
         </div>
       </div>
     </div>

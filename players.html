@@ -206,6 +206,7 @@ const POSITIONS = ['ALL','QB','RB','WR','TE','K','DST'];
 
 /* ===== STATE ===== */
 let DATA = [];
+let NEWS_MAP = {};
 let filterPos = 'ALL';
 let searchQuery = '';
 let sortCol = 'season_pts';
@@ -214,10 +215,19 @@ let sortDir = 'desc';
 /* ===== INIT ===== */
 async function init() {
   try {
-    const r = await fetch('data/free_agents_2025.json');
+    const [r, rn] = await Promise.all([
+      fetch('data/free_agents_2025.json'),
+      fetch('data/player_news_2025.json').catch(()=>null)
+    ]);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const json = await r.json();
     DATA = json.players || [];
+    if (rn && rn.ok) {
+      const nd = await rn.json();
+      Object.values(nd.teams||nd||{}).forEach(players=>{
+        (players||[]).forEach(p=>{ if(p.name) NEWS_MAP[p.name.toLowerCase()]=p.articles||[]; });
+      });
+    }
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     buildSidebar();
@@ -605,7 +615,22 @@ function openPlayerModal(idx) {
             <div class="modal-week-hdr">
               <span>WK</span><span>OPP</span><span>STAT LINE</span><span class="mwh-pts" style="text-align:right">FPTS</span>
             </div>
-            ${weekRows || '<div style="padding:16px;color:#334155;font-size:13px">No stats recorded yet.</div>'}
+            ${weekRows || '<div style="padding:16px;color:#475569;font-size:13px">No stats recorded yet.</div>'}
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">Recent News</div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden;padding:0 12px">
+            ${(()=>{
+              const articles = NEWS_MAP[p.name.toLowerCase()]||[];
+              if(!articles.length) return '<div style="padding:16px;text-align:center;font-size:12px;color:#475569">No recent news available.</div>';
+              return articles.slice(0,4).map(a=>`<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+                <div style="font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.45;margin-bottom:4px">${a.headline||''}</div>
+                <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${a.source||'Rotowire'} &nbsp;·&nbsp; ${a.date||''}</div>
+                ${a.story?`<div style="font-size:11px;color:#94a3b8;line-height:1.55;margin-bottom:4px">${a.story}</div>`:''}
+                ${a.analysis?`<div style="font-size:11px;color:#64748b;line-height:1.5;font-style:italic;border-left:2px solid rgba(16,185,129,0.3);padding-left:8px">${a.analysis}</div>`:''}
+              </div>`).join('');
+            })()}
           </div>
         </div>
       </div>
