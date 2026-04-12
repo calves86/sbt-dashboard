@@ -6,6 +6,7 @@
 <title>Free Agents · SBT Fantasy Football</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
@@ -15,35 +16,7 @@ a{color:#10b981;text-decoration:none}
 ::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 
 /* ===== LAYOUT ===== */
-#app{display:flex;min-height:100vh}
-#sidebar{width:230px;min-width:230px;background:#060d1b;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 #main{flex:1;min-width:0;display:flex;flex-direction:column}
-
-/* ===== SIDEBAR ===== */
-.sb-header{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
-.sb-back{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b;margin-bottom:12px;cursor:pointer;text-decoration:none}
-.sb-back:hover{color:#10b981}
-.sb-logo-row{display:flex;align-items:center;gap:10px}
-.sb-logo{width:36px;height:36px;border-radius:8px;object-fit:contain}
-.sb-title{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sb-season{font-size:11px;color:#475569;letter-spacing:1px}
-.sb-section-label{padding:14px 14px 6px;font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase}
-.sb-pos-card{margin:0 12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s}
-.sb-pos-card:hover{background:rgba(255,255,255,0.04)}
-.sb-pos-card.active{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05)}
-.sb-pos-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sb-pos-info{flex:1;min-width:0}
-.sb-pos-name{font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:.5px}
-.sb-pos-count{font-size:10px;color:#475569}
-.sb-pos-top{font-size:11px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-
-/* ===== TOP NAV ===== */
-#topnav{background:linear-gradient(135deg,#0d1526,#111f38);border-bottom:1px solid rgba(16,185,129,0.1);padding:12px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;flex-shrink:0}
-.nav-league{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;flex:1}
-.nav-links{display:flex;gap:4px}
-.nav-link{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:#64748b;text-decoration:none;transition:all .15s;letter-spacing:.5px}
-.nav-link:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
-.nav-link.active{color:#10b981;background:rgba(16,185,129,0.1)}
 
 /* ===== PAGE HEADER ===== */
 #page-header{padding:24px 28px 0;flex-shrink:0}
@@ -189,12 +162,7 @@ a{color:#10b981;text-decoration:none}
 .empty-state{text-align:center;padding:40px 20px;color:#334155;font-size:14px}
 
 /* ===== MOBILE ===== */
-#sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
 @media(max-width:700px){
-  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s}
-  #sidebar.open{transform:translateX(0)}
-  #sidebar-toggle{display:block}
-  #topnav{padding:10px 16px}
   #page-header{padding:14px 16px 0}
   #summary-strip{padding:12px 16px}
   #filter-bar{padding:0 16px 12px}
@@ -211,32 +179,12 @@ a{color:#10b981;text-decoration:none}
 <div id="loading"><div class="spin"></div><p>Loading players...</p></div>
 
 <div id="app" style="display:none">
-  <aside id="sidebar">
-    <div class="sb-header">
-      <a href="index.html" class="sb-back">&#8592; Dashboard</a>
-      <div class="sb-logo-row">
-        <img src="sbt-logo.png" class="sb-logo" alt="SBT" onerror="this.style.display='none'">
-        <div>
-          <div class="sb-title">SBT</div>
-          <div class="sb-season">2025 Season</div>
-        </div>
-      </div>
-    </div>
-    <div class="sb-section-label">By Position</div>
-    <div id="sb-pos-list"></div>
-  </aside>
+  <nav id="leftnav"></nav>
 
   <div id="main">
-    <div id="topnav">
-      <button id="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776; Menu</button>
-      <div class="nav-league">Sigma Beta Tau Fantasy Football</div>
-      <nav class="nav-links">
-        <a href="index.html" class="nav-link">Dashboard</a>
-        <a href="team.html" class="nav-link">Teams</a>
-        <a href="transactions.html" class="nav-link">Activity</a>
-        <a href="players.html" class="nav-link active">Players</a>
-        <a href="mock-draft.html" class="nav-link">Mock Draft</a>
-      </nav>
+    <div id="ln-topbar">
+      <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+      <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
     </div>
 
     <div id="page-header">
@@ -749,5 +697,7 @@ function closeActionModal() {
 
 init();
 </script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('players.html');</script>
 </body>
 </html>

@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mock Draft — SBT Fantasy Football</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
 <script src="data/player_stats_2025.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 a{color:#10b981;text-decoration:none}
 .header{background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);border-bottom:1px solid rgba(16,185,129,0.15);padding:20px 24px}
@@ -225,6 +227,13 @@ select.sel option{background:#1e293b}
 </style>
 </head>
 <body>
+<div id="app">
+<nav id="leftnav"></nav>
+<div id="main">
+<div id="ln-topbar">
+  <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+  <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
+</div>
 <div id="p-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closePlayerModal()">
   <div class="modal-card">
     <div class="modal-topbar">
@@ -1297,5 +1306,9 @@ function renderNews(el, articles, playerName) {
 /* ===== INIT ===== */
 loadData();
 </script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('mock-draft.html');</script>
+</div><!-- /#main -->
+</div><!-- /#app -->
 </body>
 </html>

@@ -6,6 +6,7 @@
 <title>Trade Builder · SBT Fantasy Football</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
@@ -15,15 +16,7 @@ a{color:#10b981;text-decoration:none}
 ::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 
 /* ===== LAYOUT ===== */
-#app{display:flex;flex-direction:column;min-height:100vh}
-
-/* ===== TOP NAV ===== */
-#topnav{background:linear-gradient(135deg,#0d1526,#111f38);border-bottom:1px solid rgba(167,139,250,0.15);padding:12px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;flex-shrink:0}
-.nav-league{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;flex:1}
-.nav-links{display:flex;gap:4px}
-.nav-link{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:#64748b;text-decoration:none;transition:all .15s;letter-spacing:.5px}
-.nav-link:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
-.nav-link.active{color:#a78bfa;background:rgba(167,139,250,0.1)}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow-y:auto}
 
 /* ===== PAGE HEADER ===== */
 #page-header{padding:24px 28px 0;flex-shrink:0}
@@ -145,7 +138,6 @@ a{color:#10b981;text-decoration:none}
 #loading p{font-size:14px;color:#475569}
 
 /* ===== MOBILE ===== */
-#sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
 @media(max-width:750px){
   #roster-area{grid-template-columns:1fr;gap:12px;padding:0 16px}
   #team-select-bar{flex-direction:column;gap:12px;padding:16px}
@@ -154,7 +146,6 @@ a{color:#10b981;text-decoration:none}
   #trade-summary{padding:12px 16px}
   .ts-inner{grid-template-columns:1fr;gap:8px}
   .ts-middle{flex-direction:row;padding-top:0}
-  #topnav{padding:10px 16px}
   .trade-sides-grid{grid-template-columns:1fr;gap:8px}
   .trade-arrow-mid{padding-top:0;transform:rotate(90deg)}
 }
@@ -164,18 +155,13 @@ a{color:#10b981;text-decoration:none}
 
 <div id="loading"><div class="spin"></div><p>Loading rosters...</p></div>
 
-<div id="app" style="display:none;flex-direction:column">
+<div id="app" style="display:none">
+  <nav id="leftnav"></nav>
 
-  <div id="topnav">
-    <div class="nav-league">Sigma Beta Tau Fantasy Football</div>
-    <nav class="nav-links">
-      <a href="index.html" class="nav-link">Dashboard</a>
-      <a href="team.html" class="nav-link">Teams</a>
-      <a href="transactions.html" class="nav-link">Activity</a>
-      <a href="players.html" class="nav-link">Players</a>
-      <a href="trade.html" class="nav-link active">Trade</a>
-      <a href="mock-draft.html" class="nav-link">Mock Draft</a>
-    </nav>
+  <div id="main">
+  <div id="ln-topbar">
+    <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+    <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
   </div>
 
   <div id="page-header">
@@ -215,8 +201,9 @@ a{color:#10b981;text-decoration:none}
       <button class="btn-submit" id="btn-submit" onclick="openSubmitModal()">&#8652; Send Trade Offer</button>
     </div>
   </div>
+  </div><!-- /#main -->
 
-</div>
+</div><!-- /#app -->
 
 <script>
 /* ===== CONFIG ===== */
@@ -597,5 +584,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubmitM
 
 init();
 </script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('trade.html');</script>
 </body>
 </html>
