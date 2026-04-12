@@ -174,6 +174,12 @@ a{color:#10b981;text-decoration:none}
 .reset-btn{font-size:11px;font-weight:700;color:#64748b;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .reset-btn:hover{color:#e2e8f0;border-color:rgba(255,255,255,0.15)}
 .touch-hint{font-size:10px;color:#334155;margin-left:auto}
+.lineup-valid-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);font-size:12px;font-weight:700;color:#10b981;margin-bottom:14px}
+.lineup-error-banner{padding:12px 14px;border-radius:10px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);margin-bottom:14px}
+.lineup-error-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#ef4444;margin-bottom:8px}
+.lineup-error-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.lineup-error-list li{font-size:12px;color:#fca5a5;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.lineup-error-list li::before{content:'•';color:#ef4444;flex-shrink:0;margin-top:1px}
 
 /* ===== MOBILE ===== */
 #sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
@@ -255,6 +261,19 @@ const FRANCHISE_LOGOS = {
 };
 
 const POS_COLOR = {QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#ec4899'};
+
+// Required starter slots for SBT — 1 QB, 1 RB, 2 WR, 1 TE, 2 FLEX, 1 K, 1 DST
+const LEAGUE_SLOTS = {'QB':1,'RB':1,'WR':2,'TE':1,'RB-WR-TE':2,'K':1,'DST':1};
+// Positions eligible for each slot type
+const SLOT_ELIGIBLE = {
+  'QB':['QB'],
+  'RB':['RB','FB'],
+  'WR':['WR'],
+  'TE':['TE'],
+  'RB-WR-TE':['RB','WR','TE','FB'],
+  'K':['K'],
+  'DST':['DST']
+};
 
 const DST_NFL = {
   'Bears':'chi','Bengals':'cin','Bills':'buf','Broncos':'den','Browns':'cle',
@@ -480,6 +499,43 @@ function isModified(idx) {
          JSON.stringify(l.bench.map(p=>p.name)) !== JSON.stringify(t.bench.map(p=>p.name));
 }
 
+function validateLineup(idx) {
+  const l = lineups[idx];
+  if (!l) return [];
+  const errors = [];
+
+  // Check each starter is eligible for their assigned slot
+  l.starters.forEach(p => {
+    const eligible = SLOT_ELIGIBLE[p.slot] || [];
+    if (!eligible.includes(p.position)) {
+      const slotName = p.slot === 'RB-WR-TE' ? 'FLEX' : p.slot;
+      const allowed = eligible.join(', ');
+      errors.push(`${p.name} (${p.position}) is in the ${slotName} slot — ${slotName} requires: ${allowed}`);
+    }
+  });
+
+  // Check slot counts match league rules
+  const slotCounts = {};
+  l.starters.forEach(p => { slotCounts[p.slot] = (slotCounts[p.slot] || 0) + 1; });
+
+  Object.entries(LEAGUE_SLOTS).forEach(([slot, required]) => {
+    const actual = slotCounts[slot] || 0;
+    if (actual !== required) {
+      const label = slot === 'RB-WR-TE' ? 'FLEX' : slot;
+      errors.push(`${label}: need ${required} starter${required>1?'s':''}, currently have ${actual}`);
+    }
+  });
+
+  // Check no extra slots exist that aren't in league rules
+  Object.entries(slotCounts).forEach(([slot, count]) => {
+    if (!(slot in LEAGUE_SLOTS)) {
+      errors.push(`Unknown slot "${slot}" found in starters`);
+    }
+  });
+
+  return errors;
+}
+
 function canSwap(srcSec, srcIdx, tgtSec, tgtIdx) {
   const l = lineups[currentIdx];
   const src = srcSec === 'starters' ? l.starters[srcIdx] : l.bench[srcIdx];
@@ -531,13 +587,26 @@ function renderRoster() {
   const l = lineups[currentIdx];
   const el = document.getElementById('tab-content');
   const modified = isModified(currentIdx);
+  const errors = validateLineup(currentIdx);
   const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
+  // Validation banner
+  let validationBanner = '';
+  if (errors.length) {
+    const items = errors.map(e => `<li>${e}</li>`).join('');
+    validationBanner = `<div class="lineup-error-banner">
+      <div class="lineup-error-title">&#9888;&#65039; Illegal Lineup — ${errors.length} violation${errors.length>1?'s':''}</div>
+      <ul class="lineup-error-list">${items}</ul>
+    </div>`;
+  } else if (modified) {
+    validationBanner = `<div class="lineup-valid-banner">&#10003; Lineup is valid</div>`;
+  }
 
   const topBar = `<div class="lineup-bar">
     ${modified ? `<span class="lineup-modified-badge">LINEUP EDITED</span>
     <button class="reset-btn" onclick="resetLineup()">Reset to Original</button>` : ''}
     ${!isTouchDevice ? '<span class="touch-hint" style="font-size:10px;color:#334155">Drag players to swap · Tap to select on touch</span>' : '<span class="touch-hint">Tap a player, then tap another to swap</span>'}
-  </div>`;
+  </div>${validationBanner}`;
 
   const hdr = `<div class="roster-hdr" style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
     <span></span><span>SLOT</span><span></span><span>PLAYER</span>
