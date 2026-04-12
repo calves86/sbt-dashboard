@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Agents · SBT Fantasy Football</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:#10b981;text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+
+/* ===== LAYOUT ===== */
+#app{display:flex;min-height:100vh}
+#sidebar{width:230px;min-width:230px;background:#060d1b;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+#main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ===== SIDEBAR ===== */
+.sb-header{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sb-back{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b;margin-bottom:12px;cursor:pointer;text-decoration:none}
+.sb-back:hover{color:#10b981}
+.sb-logo-row{display:flex;align-items:center;gap:10px}
+.sb-logo{width:36px;height:36px;border-radius:8px;object-fit:contain}
+.sb-title{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-season{font-size:11px;color:#475569;letter-spacing:1px}
+.sb-section-label{padding:14px 14px 6px;font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase}
+.sb-pos-card{margin:0 12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.sb-pos-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-pos-info{flex:1;min-width:0}
+.sb-pos-name{font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:.5px}
+.sb-pos-count{font-size:10px;color:#475569}
+.sb-pos-top{font-size:11px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+/* ===== TOP NAV ===== */
+#topnav{background:linear-gradient(135deg,#0d1526,#111f38);border-bottom:1px solid rgba(16,185,129,0.1);padding:12px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;flex-shrink:0}
+.nav-league{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#e2e8f0;flex:1}
+.nav-links{display:flex;gap:4px}
+.nav-link{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:#64748b;text-decoration:none;transition:all .15s;letter-spacing:.5px}
+.nav-link:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#10b981;background:rgba(16,185,129,0.1)}
+
+/* ===== PAGE HEADER ===== */
+#page-header{padding:24px 28px 0;flex-shrink:0}
+.page-title{font-size:32px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;line-height:1;margin-bottom:4px}
+.page-sub{font-size:13px;color:#475569;margin-bottom:0}
+
+/* ===== SUMMARY STRIP ===== */
+#summary-strip{display:flex;gap:12px;padding:16px 28px;flex-wrap:wrap;flex-shrink:0}
+.sum-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px 18px;min-width:110px;flex:1}
+.sum-val{font-size:24px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;line-height:1;color:#10b981}
+.sum-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+/* ===== FILTER BAR ===== */
+#filter-bar{display:flex;align-items:center;gap:8px;padding:0 28px 16px;flex-wrap:wrap;flex-shrink:0}
+.pos-btn-group{display:flex;gap:4px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:4px}
+.pos-btn{padding:5px 14px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:transparent;color:#475569;font-family:'DM Sans',sans-serif;transition:all .15s}
+.pos-btn:hover{color:#94a3b8}
+.pos-btn.active{background:#10b981;color:#0b1120}
+.search-wrap{display:flex;align-items:center;gap:6px;background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:5px 12px;flex:1;max-width:260px}
+.search-wrap input{background:transparent;border:none;outline:none;color:#e2e8f0;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;width:100%}
+.search-wrap input::placeholder{color:#334155}
+.search-icon{color:#334155;font-size:12px;flex-shrink:0}
+.sort-select{background:#0d1526;border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none}
+.sort-select option{background:#0d1526}
+.result-count{font-size:11px;color:#334155;margin-left:auto}
+
+/* ===== PLAYER TABLE ===== */
+#table-wrap{padding:0 28px 60px;flex:1;overflow-y:auto}
+.players-table{width:100%;border-collapse:collapse}
+.players-table thead tr{border-bottom:2px solid rgba(255,255,255,0.06)}
+.players-table th{padding:8px 10px;font-size:10px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:#0b1120}
+.players-table th:hover{color:#64748b}
+.players-table th.sort-asc::after{content:' ↑';color:#10b981}
+.players-table th.sort-desc::after{content:' ↓';color:#10b981}
+.players-table th.num{text-align:right}
+.players-table td{padding:8px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+.players-table tbody tr:hover{background:rgba(255,255,255,0.025)}
+.players-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Player name cell */
+.pl-cell{display:flex;align-items:center;gap:10px}
+.pl-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.07);flex-shrink:0;background:rgba(255,255,255,0.04)}
+.pl-photo-ph{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.pl-name{font-size:13px;font-weight:700;color:#e2e8f0;line-height:1.2}
+.pl-meta{font-size:11px;color:#475569;font-weight:600}
+
+/* Position badge */
+.pos-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:20px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.5px}
+
+/* Injury badge */
+.inj-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:4px;margin-left:5px;vertical-align:middle}
+.inj-Q{background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.25)}
+.inj-D{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.25)}
+.inj-O{background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+.inj-IR{background:rgba(239,68,68,0.25);color:#fca5a5;border:1px solid rgba(239,68,68,0.35)}
+
+/* Stat cells */
+.pts-val{font-size:14px;font-weight:800;color:#e2e8f0}
+.avg-val{font-size:13px;font-weight:700;color:#94a3b8}
+.wks-val{font-size:13px;color:#475569}
+.nfl-team{font-size:12px;font-weight:700;color:#64748b}
+
+/* Rank number */
+.rank-num{font-size:11px;color:#334155;font-weight:700;width:24px;text-align:right}
+
+/* ===== LOADING ===== */
+#loading{position:fixed;inset:0;background:#0b1120;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
+.spin{width:36px;height:36px;border:3px solid rgba(16,185,129,0.15);border-top-color:#10b981;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:14px;color:#475569}
+.empty-state{text-align:center;padding:40px 20px;color:#334155;font-size:14px}
+
+/* ===== MOBILE ===== */
+#sidebar-toggle{display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif}
+@media(max-width:700px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-toggle{display:block}
+  #topnav{padding:10px 16px}
+  #page-header{padding:14px 16px 0}
+  #summary-strip{padding:12px 16px}
+  #filter-bar{padding:0 16px 12px}
+  #table-wrap{padding:0 16px 60px}
+  .pl-meta{display:none}
+  .search-wrap{max-width:none}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><p>Loading players...</p></div>
+
+<div id="app" style="display:none">
+  <aside id="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-back">&#8592; Dashboard</a>
+      <div class="sb-logo-row">
+        <img src="sbt-logo.png" class="sb-logo" alt="SBT" onerror="this.style.display='none'">
+        <div>
+          <div class="sb-title">SBT</div>
+          <div class="sb-season">2025 Season</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-section-label">By Position</div>
+    <div id="sb-pos-list"></div>
+  </aside>
+
+  <div id="main">
+    <div id="topnav">
+      <button id="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776; Menu</button>
+      <div class="nav-league">Sigma Beta Tau Fantasy Football</div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="team.html" class="nav-link">Teams</a>
+        <a href="transactions.html" class="nav-link">Activity</a>
+        <a href="players.html" class="nav-link active">Players</a>
+        <a href="mock-draft.html" class="nav-link">Mock Draft</a>
+      </nav>
+    </div>
+
+    <div id="page-header">
+      <div class="page-title">Free Agents</div>
+      <div class="page-sub">2025 Season · Players available on the waiver wire</div>
+    </div>
+
+    <div id="summary-strip"></div>
+    <div id="filter-bar"></div>
+    <div id="table-wrap"></div>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const POS_COLOR = {QB:'#ef4444',RB:'#22c55e',WR:'#3b82f6',TE:'#f59e0b',K:'#8b5cf6',DST:'#06b6d4',FB:'#ec4899'};
+const POSITIONS = ['ALL','QB','RB','WR','TE','K','DST'];
+
+/* ===== STATE ===== */
+let DATA = [];
+let filterPos = 'ALL';
+let searchQuery = '';
+let sortCol = 'season_pts';
+let sortDir = 'desc';
+
+/* ===== INIT ===== */
+async function init() {
+  try {
+    const r = await fetch('data/free_agents_2025.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+    DATA = json.players || [];
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    buildSidebar();
+    buildSummary();
+    buildFilters();
+    renderTable();
+  } catch(e) {
+    document.getElementById('loading').innerHTML = `<p style="color:#ef4444">Failed to load: ${e.message}</p>`;
+  }
+}
+
+/* ===== SIDEBAR ===== */
+function buildSidebar() {
+  const posList = document.getElementById('sb-pos-list');
+  const positions = ['QB','RB','WR','TE','K','DST'];
+  const byPos = {};
+  positions.forEach(p => byPos[p] = DATA.filter(pl => pl.position === p));
+
+  posList.innerHTML = positions.map(pos => {
+    const players = byPos[pos] || [];
+    const top = players[0];
+    const color = POS_COLOR[pos] || '#64748b';
+    return `<div class="sb-pos-card">
+      <div class="sb-pos-dot" style="background:${color}"></div>
+      <div class="sb-pos-info">
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span class="sb-pos-name">${pos}</span>
+          <span class="sb-pos-count">${players.length} available</span>
+        </div>
+        ${top ? `<div class="sb-pos-top">${top.name}</div>` : '<div class="sb-pos-top" style="color:#334155">—</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== SUMMARY STRIP ===== */
+function buildSummary() {
+  const strip = document.getElementById('summary-strip');
+  const total = DATA.length;
+  const topFa = DATA[0];
+  const rbCount = DATA.filter(p => p.position === 'RB').length;
+  const wrCount = DATA.filter(p => p.position === 'WR').length;
+  const qbCount = DATA.filter(p => p.position === 'QB').length;
+
+  strip.innerHTML = `
+    <div class="sum-card">
+      <div class="sum-val">${total}</div>
+      <div class="sum-lbl">Free Agents</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val">${qbCount}</div>
+      <div class="sum-lbl">QBs Available</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val">${rbCount}</div>
+      <div class="sum-lbl">RBs Available</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val">${wrCount}</div>
+      <div class="sum-lbl">WRs Available</div>
+    </div>
+    <div class="sum-card" style="flex:2">
+      <div class="sum-val" style="font-size:16px;color:#10b981">${topFa ? topFa.name : '—'}</div>
+      <div class="sum-lbl">Top Available Player · ${topFa ? topFa.season_pts + ' pts' : ''}</div>
+    </div>`;
+}
+
+/* ===== FILTERS ===== */
+function buildFilters() {
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = `
+    <div class="pos-btn-group" id="pos-btns">
+      ${POSITIONS.map(p => `<button class="pos-btn${p==='ALL'?' active':''}" data-pos="${p}">${p}</button>`).join('')}
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" placeholder="Search players..." id="search-input">
+    </div>
+    <select class="sort-select" id="sort-select">
+      <option value="season_pts_desc">Season PTS ↓</option>
+      <option value="season_pts_asc">Season PTS ↑</option>
+      <option value="avg_pts_desc">Avg/Wk ↓</option>
+      <option value="avg_pts_asc">Avg/Wk ↑</option>
+      <option value="name_asc">Name A→Z</option>
+      <option value="name_desc">Name Z→A</option>
+    </select>
+    <span class="result-count" id="result-count"></span>`;
+
+  // Position buttons
+  bar.querySelectorAll('.pos-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterPos = btn.dataset.pos;
+      bar.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    });
+  });
+
+  // Search
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase();
+    renderTable();
+  });
+
+  // Sort select
+  document.getElementById('sort-select').addEventListener('change', e => {
+    const val = e.target.value;
+    const parts = val.split('_');
+    sortDir = parts.pop();
+    sortCol = parts.join('_');
+    renderTable();
+  });
+}
+
+/* ===== HELPERS ===== */
+function injuryBadge(status) {
+  if (!status) return '';
+  const s = status.toUpperCase();
+  if (!['Q','D','O','IR','PUP','NA'].includes(s)) return '';
+  const cls = ['Q','D','O'].includes(s) ? `inj-${s}` : 'inj-IR';
+  return `<span class="inj-badge ${cls}">${s}</span>`;
+}
+
+function posBg(pos) {
+  const c = POS_COLOR[pos] || '#64748b';
+  return `background:${c}20;color:${c};border:1px solid ${c}40`;
+}
+
+function photoEl(p) {
+  if (p.photo_url) {
+    return `<img class="pl-photo" src="${p.photo_url}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+            <div class="pl-photo-ph" style="background:${(POS_COLOR[p.position]||'#64748b')}22;color:${POS_COLOR[p.position]||'#64748b'};display:none">${p.position}</div>`;
+  }
+  return `<div class="pl-photo-ph" style="background:${(POS_COLOR[p.position]||'#64748b')}22;color:${POS_COLOR[p.position]||'#64748b'}">${p.position}</div>`;
+}
+
+/* ===== RENDER TABLE ===== */
+function renderTable() {
+  const wrap = document.getElementById('table-wrap');
+
+  // Filter
+  let players = DATA.filter(p => {
+    if (filterPos !== 'ALL' && p.position !== filterPos) return false;
+    if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return false;
+    return true;
+  });
+
+  // Sort
+  players.sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (sortCol === 'name') { av = av||''; bv = bv||''; return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av); }
+    av = av || 0; bv = bv || 0;
+    return sortDir === 'asc' ? av - bv : bv - av;
+  });
+
+  document.getElementById('result-count').textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
+
+  if (!players.length) {
+    wrap.innerHTML = '<div class="empty-state">No players match your filters.</div>';
+    return;
+  }
+
+  const colDefs = [
+    {key:'rank', label:'#', cls:'num', sortable:false},
+    {key:'name', label:'Player', cls:'', sortable:true},
+    {key:'position', label:'Pos', cls:'', sortable:true},
+    {key:'nfl_team', label:'NFL Team', cls:'', sortable:true},
+    {key:'season_pts', label:'Season PTS', cls:'num', sortable:true},
+    {key:'avg_pts', label:'Avg/Wk', cls:'num', sortable:true},
+    {key:'weeks_played', label:'Weeks', cls:'num', sortable:true},
+  ];
+
+  const thead = colDefs.map(c => {
+    if (!c.sortable) return `<th class="${c.cls}">${c.label}</th>`;
+    const isActive = c.key === sortCol;
+    const dir = isActive ? sortDir : '';
+    return `<th class="${c.cls}${isActive ? ' sort-'+dir : ''}" onclick="sortBy('${c.key}')">${c.label}</th>`;
+  }).join('');
+
+  const rows = players.map((p, i) => {
+    const posStyle = posBg(p.position);
+    return `<tr>
+      <td class="num"><span class="rank-num">${i+1}</span></td>
+      <td>
+        <div class="pl-cell">
+          ${photoEl(p)}
+          <div>
+            <div class="pl-name">${p.name}${injuryBadge(p.injury_status)}</div>
+            <div class="pl-meta">${p.nfl_team || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="pos-badge" style="${posStyle}">${p.position}</span></td>
+      <td><span class="nfl-team">${p.nfl_team || '—'}</span></td>
+      <td class="num"><span class="pts-val">${p.season_pts > 0 ? p.season_pts.toFixed(1) : '—'}</span></td>
+      <td class="num"><span class="avg-val">${p.avg_pts > 0 ? p.avg_pts.toFixed(1) : '—'}</span></td>
+      <td class="num"><span class="wks-val">${p.weeks_played || 0}</span></td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table class="players-table">
+    <thead><tr>${thead}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function sortBy(col) {
+  if (sortCol === col) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortCol = col;
+    sortDir = col === 'name' ? 'asc' : 'desc';
+  }
+  // Sync the select
+  const sel = document.getElementById('sort-select');
+  if (sel) {
+    const opt = `${sortCol}_${sortDir}`;
+    if ([...sel.options].some(o => o.value === opt)) sel.value = opt;
+  }
+  renderTable();
+}
+
+init();
+</script>
+</body>
+</html>
