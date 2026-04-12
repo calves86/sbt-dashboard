@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matchups · SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#080e1c;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto;background:#080e1c;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#0b1120}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+a{color:#10b981;text-decoration:none}
+
+#ln-topbar{display:none;background:#080f1e;border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 16px;align-items:center;gap:12px}
+#ln-mobile-btn{background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:2px 6px}
+.ln-topbar-title{font-size:13px;font-weight:700;color:#94a3b8}
+@media(max-width:700px){#ln-topbar{display:flex}}
+
+/* Loading */
+#mu-loading{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#64748b}
+.spinner{display:inline-block;width:22px;height:22px;border:2px solid rgba(16,185,129,0.2);border-top-color:#10b981;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Page banner */
+.page-banner{background:linear-gradient(135deg,#0d1b2e,#0f2339);border-bottom:1px solid rgba(16,185,129,0.12);padding:14px 22px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.banner-logo{height:36px;width:36px;object-fit:contain;border-radius:8px}
+.banner-ttl{font-size:24px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:linear-gradient(135deg,#10b981,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.banner-sub{font-size:11px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+/* Week + Matchup picker */
+.picker-bar{background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap}
+.week-nav{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.wn-btn{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#94a3b8;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
+.wn-btn:hover:not(:disabled){background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981}
+.wn-btn:disabled{opacity:.3;cursor:default}
+.wn-lbl{font-size:13px;font-weight:800;color:#e2e8f0;min-width:60px;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.mu-tabs{display:flex;gap:6px;overflow-x:auto;flex:1;padding-bottom:2px}
+.mu-tabs::-webkit-scrollbar{height:3px}
+.mu-tab{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.mu-tab:hover{border-color:rgba(16,185,129,0.2);background:rgba(16,185,129,0.04)}
+.mu-tab.active{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)}
+.mu-tab-logo{width:22px;height:22px;border-radius:5px;object-fit:contain;background:#0f172a}
+.mu-tab-score{font-size:11px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0}
+.mu-tab-vs{font-size:10px;color:#475569;font-weight:700}
+.mu-tab.playoff-tab{border-color:rgba(250,204,21,0.2);background:rgba(250,204,21,0.04)}
+.mu-tab.playoff-tab.active{border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.08)}
+
+/* Main layout */
+#mu-app{flex:1;display:flex;flex-direction:column;min-height:0}
+.mu-content{flex:1;display:flex;gap:0;min-height:0;overflow:hidden}
+.mu-main{flex:1;overflow-y:auto;padding:16px 20px 24px}
+.mu-sidebar{width:268px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.05);overflow-y:auto;padding:14px}
+@media(max-width:1200px){.mu-sidebar{display:none}}
+
+/* Score banner */
+.score-banner{background:linear-gradient(135deg,rgba(16,185,129,0.04),rgba(255,255,255,0.02));border:1px solid rgba(16,185,129,0.1);border-radius:16px;padding:18px 22px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:16px}
+.sb-team{display:flex;align-items:center;gap:12px;min-width:0}
+.sb-team.right{flex-direction:row-reverse}
+.sb-logo{width:52px;height:52px;border-radius:12px;object-fit:contain;flex-shrink:0;background:#0f172a}
+.sb-info{min-width:0}
+.sb-name{font-size:18px;font-weight:800;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.sb-record{font-size:11px;color:#64748b;font-weight:700;margin-top:2px}
+.sb-type-badge{display:inline-block;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.sb-center{text-align:center}
+.sb-scores{display:flex;align-items:center;gap:12px;justify-content:center}
+.sb-score{font-size:44px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;line-height:1}
+.sb-score.win{color:#10b981}
+.sb-score.loss{color:#475569}
+.sb-score.tie{color:#94a3b8}
+.sb-vs{font-size:14px;font-weight:700;color:#334155}
+.sb-type{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* Lineup section */
+.lineup-panel{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden}
+.lineup-hdr{display:grid;grid-template-columns:1fr 70px 70px 1fr;gap:8px;padding:8px 14px;background:rgba(0,0,0,0.25);font-size:10px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:1px}
+.lh-left{text-align:left}
+.lh-pts{text-align:center}
+.lh-right{text-align:right}
+.section-label{padding:6px 14px;background:rgba(0,0,0,0.2);font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between}
+.section-total{font-size:14px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;letter-spacing:1px}
+
+/* Player row */
+.player-row{display:grid;grid-template-columns:1fr 70px 70px 1fr;gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .1s}
+.player-row:hover{background:rgba(255,255,255,0.015)}
+.player-row:last-child{border-bottom:none}
+.player-row.bench{opacity:.7}
+.pr-cell{display:flex;align-items:center;gap:7px;min-width:0}
+.pr-cell.right{flex-direction:row-reverse}
+.pr-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#0f172a;border:1px solid rgba(255,255,255,0.06)}
+.pr-nfl{width:20px;height:20px;object-fit:contain;flex-shrink:0}
+.pr-info{flex:1;min-width:0}
+.pr-info.right{text-align:right}
+.pr-name-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pr-name-row.right{justify-content:flex-end}
+.pr-name{font-size:12px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-slot{font-size:8px;font-weight:800;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.07);color:#64748b;white-space:nowrap;flex-shrink:0}
+.pr-statline{font-size:10px;color:#64748b;margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-statline.right{text-align:right}
+.pr-pts-cell{text-align:center}
+.pr-pts{font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px;line-height:1}
+.pr-pts.high{color:#10b981}
+.pr-pts.low{color:#64748b}
+.pr-pts.even{color:#94a3b8}
+.pr-pts.bench-pts{color:#475569;font-size:16px}
+.pr-empty{color:#334155;font-size:11px;font-style:italic}
+
+/* Adjustments */
+.adj-section{padding:8px 14px;background:rgba(245,158,11,0.03);border-top:1px solid rgba(245,158,11,0.1)}
+.adj-hdr{font-size:10px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.adj-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:3px 0;font-size:11px}
+.adj-reason{color:#94a3b8}
+.adj-pts{font-weight:800;color:#f59e0b;text-align:center;white-space:nowrap}
+
+/* Totals row */
+.totals-row{display:grid;grid-template-columns:1fr 70px 70px 1fr;gap:8px;padding:10px 14px;background:rgba(16,185,129,0.04);border-top:1px solid rgba(16,185,129,0.12)}
+.tr-label{font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;align-self:center}
+.tr-label.right{text-align:right}
+.tr-total{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;text-align:center}
+.tr-total.win{color:#10b981}
+.tr-total.loss{color:#64748b}
+
+/* Sidebar news */
+.sb-news-hdr{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sb-news-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s}
+.sb-news-card:hover{border-color:rgba(16,185,129,0.2)}
+.snc-player{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.snc-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#0f172a;border:1px solid rgba(255,255,255,0.07)}
+.snc-nfl{width:18px;height:18px;object-fit:contain;flex-shrink:0}
+.snc-info{flex:1;min-width:0}
+.snc-name{font-size:11px;font-weight:800;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snc-meta{display:flex;align-items:center;gap:4px;margin-top:1px}
+.snc-pos{font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px}
+.snc-team{font-size:9px;color:#475569;font-weight:600}
+.snc-pts{font-size:13px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;white-space:nowrap}
+.snc-headline{font-size:11px;font-weight:700;color:#cbd5e1;line-height:1.45;margin-bottom:4px}
+.snc-body{font-size:10px;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.snc-date{font-size:9px;color:#334155;margin-top:5px}
+.pos-QB{color:#f472b6}.pos-RB{color:#22d3ee}.pos-WR{color:#34d399}.pos-TE{color:#fb923c}.pos-K{color:#facc15}.pos-DST{color:#a78bfa}
+.bg-QB{background:rgba(244,114,182,0.12)}.bg-RB{background:rgba(34,211,238,0.12)}.bg-WR{background:rgba(52,211,153,0.12)}.bg-TE{background:rgba(251,146,60,0.12)}.bg-K{background:rgba(250,204,21,0.12)}.bg-DST{background:rgba(167,139,250,0.12)}
+.no-news{font-size:11px;color:#334155;text-align:center;padding:20px 0}
+</style>
+</head>
+<body>
+<div id="shell">
+<nav id="leftnav"></nav>
+<div id="main">
+<div id="ln-topbar">
+  <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+  <span class="ln-topbar-title">SBT Fantasy Football</span>
+</div>
+
+<div class="page-banner">
+  <img src="sbt-logo.png" class="banner-logo" alt="SBT" onerror="this.style.display='none'">
+  <div>
+    <div class="banner-ttl">Matchups</div>
+    <div class="banner-sub">Sigma Beta Tau · 2025 Season</div>
+  </div>
+</div>
+
+<div id="mu-loading">
+  <div class="spinner"></div>
+  <span style="font-size:13px">Loading matchup data...</span>
+</div>
+
+<div id="mu-app" style="display:none;flex:1;flex-direction:column">
+  <div class="picker-bar">
+    <div class="week-nav">
+      <button class="wn-btn" id="wn-prev" onclick="navWeek(-1)">&#8249;</button>
+      <span class="wn-lbl" id="wn-lbl">Week 1</span>
+      <button class="wn-btn" id="wn-next" onclick="navWeek(1)">&#8250;</button>
+    </div>
+    <div class="mu-tabs" id="mu-tabs"></div>
+  </div>
+  <div class="mu-content">
+    <div class="mu-main" id="mu-main"></div>
+    <div class="mu-sidebar" id="mu-sidebar"></div>
+  </div>
+</div>
+
+</div><!-- /#main -->
+</div><!-- /#shell -->
+
+<script>
+const SEASON = 2025;
+const NFL_LOGO = t => `https://a.espncdn.com/i/teamlogos/nfl/500/${(t||'').toLowerCase()}.png`;
+const FRANCHISE_LOGOS = {
+  "Bear Exposures":"bearexposures-logo.jpg","Big Fat Chubby":"bigfatchubby-logo.jpg",
+  "Ceaser Salad Tossers":"ceaser-logo.jpg","Clitsburgh Feelers":"clitsburg-logo.jpg",
+  "Comeback Kid":"comebackkid-logo.jpg","Cooked To Perfection":"cookedtoperfection-logo.jpg",
+  "Gotham Rogues":"gotham-logo.gif","Smease Appeasers":"smease-logo.png",
+  "Team Freesh":"freesh-logo.jpg","The MUFF Divers":"muff-logo.png",
+  "Trump Train":"trumptrain-logo.jpg","skoot":"skoot-logo.jpg"
+};
+function tLogo(name){
+  if(!name) return '';
+  if(FRANCHISE_LOGOS[name]) return `team-logo/${FRANCHISE_LOGOS[name]}`;
+  const lower=name.toLowerCase();
+  for(const[k,v] of Object.entries(FRANCHISE_LOGOS)){
+    if(lower.includes(k.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g,''))) return `team-logo/${v}`;
+  }
+  return '';
+}
+function tLogoEl(name,cls){
+  const src=tLogo(name);
+  return src
+    ?`<img src="${src}" class="${cls}" alt="" onerror="this.style.display='none'">`
+    :`<div class="${cls}" style="background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#10b981">${(name||'?')[0]}</div>`;
+}
+
+const SLOT_ORDER = {QB:1,RB:2,WR:3,TE:4,'RB-WR-TE':5,K:6,DST:7};
+const SLOT_LABEL = {'RB-WR-TE':'FLEX'};
+const TYPE_LABEL = {regular:'Regular Season',playoff:'Playoff',consolation:'Consolation'};
+const TYPE_COLOR = {regular:'rgba(16,185,129,0.12)',playoff:'rgba(250,204,21,0.12)',consolation:'rgba(100,116,139,0.12)'};
+const TYPE_TC   = {regular:'#10b981',playoff:'#facc15',consolation:'#64748b'};
+
+let D = {};
+let selWeek = null;
+let selIdx = 0;
+// keyed maps
+let STAT_MAP = {};   // name.lower -> {week: {stat_line,fpts}}
+let PHOTO_MAP = {};  // name.lower -> photo_url
+let NEWS_MAP = {};   // name.lower -> articles[]
+let ADJ_MAP = {};    // week -> {team_name -> [{points,reason}]}
+let RECORD_MAP = {}; // team_name -> {wins,losses}
+
+async function loadAll(){
+  try{
+    const [mu,ws,stats,adj,news,standings] = await Promise.all([
+      fetch('data/matchups.json').then(r=>r.json()),
+      fetch('data/weekly_scores_2025.json').then(r=>r.json()),
+      fetch('data/player_stats_2025.json').then(r=>r.json()).catch(()=>({})),
+      fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
+      fetch('data/player_news_2025.json').then(r=>r.json()).catch(()=>({})),
+      fetch('data/standings.json').then(r=>r.json()).catch(()=>[])
+    ]);
+
+    D.matchups = mu.filter(m=>m.season===SEASON);
+    D.weekly   = ws;
+
+    // Build stat map from player_stats_2025.json
+    Object.values(stats).forEach(p=>{
+      if(!p.name) return;
+      const wkMap = {};
+      Object.entries(p.stats||{}).forEach(([wk,data])=>{ wkMap[parseInt(wk)]=data; });
+      STAT_MAP[p.name.toLowerCase()] = wkMap;
+    });
+
+    // Build team_id -> team_name from weekly_scores
+    const idToName = {};
+    ws.forEach(e=>{ if(e.team_id) idToName[e.team_id]=e.team_name; });
+
+    // Build adjustment map
+    adj.forEach(a=>{
+      const tn = idToName[a.team_id];
+      if(!tn||!a.adjustments||!a.adjustments.length) return;
+      if(!ADJ_MAP[a.week]) ADJ_MAP[a.week]={};
+      ADJ_MAP[a.week][tn]=a.adjustments;
+    });
+
+    // Build photo + news maps from player_news
+    const newsTeams = news.teams||news||{};
+    Object.values(newsTeams).forEach(players=>{
+      (players||[]).forEach(p=>{
+        if(!p.name) return;
+        const key = p.name.toLowerCase();
+        if(p.photo_url) PHOTO_MAP[key]=p.photo_url;
+        if(p.articles&&p.articles.length) NEWS_MAP[key]=p.articles;
+      });
+    });
+
+    // Build record map from standings
+    standings.filter(s=>s.season===SEASON).forEach(s=>{
+      RECORD_MAP[s.team_name]={wins:s.wins,losses:s.losses};
+    });
+
+    const wks = [...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+    selWeek = wks[wks.length-1]||1;
+    selIdx  = 0;
+
+    document.getElementById('mu-loading').style.display='none';
+    const app = document.getElementById('mu-app');
+    app.style.display='flex';
+
+    render();
+  }catch(e){
+    document.getElementById('mu-loading').innerHTML=`<span style="color:#ef4444">Error: ${e.message}</span>`;
+  }
+}
+
+function navWeek(delta){
+  const wks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  const idx=wks.indexOf(selWeek)+delta;
+  if(idx<0||idx>=wks.length) return;
+  selWeek=wks[idx];
+  selIdx=0;
+  render();
+}
+
+function selMatchup(i){
+  selIdx=i;
+  renderDetail();
+  renderSidebar();
+  document.querySelectorAll('.mu-tab').forEach((t,ti)=>t.classList.toggle('active',ti===selIdx));
+}
+
+function render(){
+  const wks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  const wkIdx=wks.indexOf(selWeek);
+  document.getElementById('wn-prev').disabled=wkIdx<=0;
+  document.getElementById('wn-lbl').textContent=`Week ${selWeek}`;
+  document.getElementById('wn-next').disabled=wkIdx>=wks.length-1;
+
+  const weekMatchups=D.matchups.filter(m=>m.week===selWeek).sort((a,b)=>b.team1_score-a.team1_score);
+
+  // Build matchup tabs
+  const tabs=weekMatchups.map((m,i)=>{
+    const isPO=m.matchup_type==='playoff';
+    const t1l=tLogo(m.team1_name),t2l=tLogo(m.team2_name);
+    const active=i===selIdx?'active':'';
+    return`<div class="mu-tab ${isPO?'playoff-tab':''} ${active}" onclick="selMatchup(${i})">
+      ${t1l?`<img src="${t1l}" class="mu-tab-logo" onerror="this.style.display='none'">`:''}
+      <span class="mu-tab-score">${m.team1_score??'—'}</span>
+      <span class="mu-tab-vs">vs</span>
+      <span class="mu-tab-score">${m.team2_score??'—'}</span>
+      ${t2l?`<img src="${t2l}" class="mu-tab-logo" onerror="this.style.display='none'">`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('mu-tabs').innerHTML=tabs;
+
+  renderDetail();
+  renderSidebar();
+}
+
+function getWkMatchup(){
+  const weekMatchups=D.matchups.filter(m=>m.week===selWeek).sort((a,b)=>b.team1_score-a.team1_score);
+  return weekMatchups[selIdx];
+}
+
+function getLineup(teamName,week){
+  const entry=D.weekly.find(e=>e.week===week&&e.team_name===teamName)||
+    D.weekly.find(e=>e.week===week&&teamName.toLowerCase().includes((e.team_name||'').toLowerCase().split(' ')[0]));
+  if(!entry||!entry.players) return{starters:[],bench:[]};
+  const starters=entry.players.filter(p=>p.status==='A').sort((a,b)=>(SLOT_ORDER[a.slot]||99)-(SLOT_ORDER[b.slot]||99));
+  const bench=entry.players.filter(p=>p.status!=='A').sort((a,b)=>(SLOT_ORDER[a.slot]||99)-(SLOT_ORDER[b.slot]||99));
+  return{starters,bench};
+}
+
+function playerCell(p, isRight, week, isBench){
+  if(!p){
+    return`<div class="pr-cell ${isRight?'right':''}" style="opacity:.3">
+      <div class="pr-info ${isRight?'right':''}"><div class="pr-name pr-empty">—</div></div>
+    </div>`;
+  }
+  const photo=PHOTO_MAP[p.name.toLowerCase()]
+    ?`<img src="${PHOTO_MAP[p.name.toLowerCase()]}" class="pr-photo" alt="" onerror="this.outerHTML='<div class=\\'pr-photo\\' style=\\'background:#0f172a;display:flex;align-items:center;justify-content:center;font-size:12px;color:#475569\\'>${(p.name||'?')[0]}</div>'">`
+    :`<div class="pr-photo" style="background:#0f172a;display:flex;align-items:center;justify-content:center;font-size:12px;color:#475569">${(p.name||'?')[0]}</div>`;
+  const nfl=p.nfl_team
+    ?`<img src="${NFL_LOGO(p.nfl_team)}" class="pr-nfl" alt="" onerror="this.style.display='none'">`
+    :`<div style="width:20px"></div>`;
+  const wkStats=STAT_MAP[p.name.toLowerCase()]?.[week]||{};
+  const statLine=wkStats.stat_line||'';
+  const pos=p.position||'';
+  const slotLbl=SLOT_LABEL[p.slot]||p.slot||pos;
+  const nameRow=`<div class="pr-name-row ${isRight?'right':''}">
+    <span class="pr-name">${p.name}</span>
+    <span class="pr-slot">${slotLbl}</span>
+  </div>`;
+  const statHtml=statLine?`<div class="pr-statline ${isRight?'right':''}">${statLine}</div>`:'';
+  const infoEl=`<div class="pr-info ${isRight?'right':''}">${nameRow}${statHtml}</div>`;
+
+  return isRight
+    ?`<div class="pr-cell right">${photo}${nfl}${infoEl}</div>`
+    :`<div class="pr-cell">${photo}${nfl}${infoEl}</div>`;
+}
+
+function ptsCell(pts, vsScore, isBench){
+  if(pts==null) return`<div class="pr-pts-cell"><span class="pr-pts even">—</span></div>`;
+  const cls = isBench ? 'bench-pts' : pts > vsScore ? 'high' : pts < vsScore ? 'low' : 'even';
+  return`<div class="pr-pts-cell"><span class="pr-pts ${cls}">${pts>0?pts.toFixed(1):'0.0'}</span></div>`;
+}
+
+function renderDetail(){
+  const m=getWkMatchup();
+  if(!m){document.getElementById('mu-main').innerHTML='<div style="padding:40px;text-align:center;color:#475569">No matchup selected</div>';return;}
+
+  const t1w=m.team1_score>m.team2_score, t2w=m.team2_score>m.team1_score;
+  const t1rec=RECORD_MAP[m.team1_name]||{wins:'?',losses:'?'};
+  const t2rec=RECORD_MAP[m.team2_name]||{wins:'?',losses:'?'};
+  const isPO=m.matchup_type==='playoff';
+  const typeColor=TYPE_TC[m.matchup_type]||'#64748b';
+  const typeBg=TYPE_COLOR[m.matchup_type]||'rgba(100,116,139,0.1)';
+
+  // Score banner
+  const scoreBanner=`<div class="score-banner">
+    <div class="sb-team">
+      ${tLogoEl(m.team1_name,'sb-logo')}
+      <div class="sb-info">
+        <div class="sb-name">${m.team1_name}</div>
+        <div class="sb-record">${t1rec.wins}–${t1rec.losses}</div>
+        <span class="sb-type-badge" style="background:${typeBg};color:${typeColor}">${TYPE_LABEL[m.matchup_type]||''}</span>
+      </div>
+    </div>
+    <div class="sb-center">
+      <div class="sb-scores">
+        <span class="sb-score ${t1w?'win':t2w?'loss':'tie'}">${m.team1_score??'—'}</span>
+        <span class="sb-vs">VS</span>
+        <span class="sb-score ${t2w?'win':t1w?'loss':'tie'}">${m.team2_score??'—'}</span>
+      </div>
+      <div class="sb-type">Week ${m.week}</div>
+    </div>
+    <div class="sb-team right">
+      ${tLogoEl(m.team2_name,'sb-logo')}
+      <div class="sb-info" style="text-align:right">
+        <div class="sb-name">${m.team2_name}</div>
+        <div class="sb-record">${t2rec.wins}–${t2rec.losses}</div>
+      </div>
+    </div>
+  </div>`;
+
+  const l1=getLineup(m.team1_name,m.week);
+  const l2=getLineup(m.team2_name,m.week);
+
+  // Column headers
+  const colHdr=`<div class="lineup-hdr">
+    <div class="lh-left">${m.team1_name}</div>
+    <div class="lh-pts">Pts</div>
+    <div class="lh-pts">Pts</div>
+    <div class="lh-right">${m.team2_name}</div>
+  </div>`;
+
+  // Starter rows
+  const numS=Math.max(l1.starters.length,l2.starters.length);
+  const t1StarterTotal=l1.starters.reduce((s,p)=>s+(p.points||0),0);
+  const t2StarterTotal=l2.starters.reduce((s,p)=>s+(p.points||0),0);
+
+  let starterRows='';
+  for(let i=0;i<numS;i++){
+    const p1=l1.starters[i]||null;
+    const p2=l2.starters[i]||null;
+    const pts1=p1?.points??null;
+    const pts2=p2?.points??null;
+    starterRows+=`<div class="player-row">
+      ${playerCell(p1,false,m.week,false)}
+      ${ptsCell(pts1,pts2,false)}
+      ${ptsCell(pts2,pts1,false)}
+      ${playerCell(p2,true,m.week,false)}
+    </div>`;
+  }
+
+  // Bench rows
+  const numB=Math.max(l1.bench.length,l2.bench.length);
+  const t1BenchTotal=l1.bench.reduce((s,p)=>s+(p.points||0),0);
+  const t2BenchTotal=l2.bench.reduce((s,p)=>s+(p.points||0),0);
+
+  let benchRows='';
+  for(let i=0;i<numB;i++){
+    const p1=l1.bench[i]||null;
+    const p2=l2.bench[i]||null;
+    const pts1=p1?.points??null;
+    const pts2=p2?.points??null;
+    benchRows+=`<div class="player-row bench">
+      ${playerCell(p1,false,m.week,true)}
+      <div class="pr-pts-cell"><span class="pr-pts bench-pts">${pts1!=null?pts1.toFixed(1):'—'}</span></div>
+      <div class="pr-pts-cell"><span class="pr-pts bench-pts">${pts2!=null?pts2.toFixed(1):'—'}</span></div>
+      ${playerCell(p2,true,m.week,true)}
+    </div>`;
+  }
+
+  // Adjustments
+  const t1Adj=(ADJ_MAP[m.week]||{})[m.team1_name]||[];
+  const t2Adj=(ADJ_MAP[m.week]||{})[m.team2_name]||[];
+  let adjHtml='';
+  if(t1Adj.length||t2Adj.length){
+    const t1AdjTotal=t1Adj.reduce((s,a)=>s+a.points,0);
+    const t2AdjTotal=t2Adj.reduce((s,a)=>s+a.points,0);
+    const numAdj=Math.max(t1Adj.length,t2Adj.length);
+    let adjRows='';
+    for(let i=0;i<numAdj;i++){
+      const a1=t1Adj[i],a2=t2Adj[i];
+      adjRows+=`<div class="adj-row">
+        <span class="adj-reason">${a1?a1.reason:''}</span>
+        <span class="adj-pts">${a1?(a1.points>0?'+':'')+a1.points.toFixed(1):''} ${a2?(a2.points>0?'+':'')+a2.points.toFixed(1):''}</span>
+        <span class="adj-reason" style="text-align:right">${a2?a2.reason:''}</span>
+      </div>`;
+    }
+    adjHtml=`<div class="adj-section">
+      <div class="adj-hdr">⚡ Adjustments</div>
+      ${adjRows}
+    </div>`;
+  }
+
+  // Totals row
+  const t1Total=(m.team1_score??0), t2Total=(m.team2_score??0);
+  const totalsRow=`<div class="totals-row">
+    <div class="tr-label">Starters: ${t1StarterTotal.toFixed(1)} &nbsp;·&nbsp; Bench: ${t1BenchTotal.toFixed(1)}</div>
+    <div class="tr-total ${t1w?'win':t2w?'loss':'even'}">${t1Total}</div>
+    <div class="tr-total ${t2w?'win':t1w?'loss':'even'}">${t2Total}</div>
+    <div class="tr-label right">Starters: ${t2StarterTotal.toFixed(1)} &nbsp;·&nbsp; Bench: ${t2BenchTotal.toFixed(1)}</div>
+  </div>`;
+
+  document.getElementById('mu-main').innerHTML=`
+    ${scoreBanner}
+    <div class="lineup-panel">
+      ${colHdr}
+      <div class="section-label">
+        <span>Starters</span>
+        <div style="display:flex;gap:16px">
+          <span class="section-total">${t1StarterTotal.toFixed(1)}</span>
+          <span style="color:#334155;font-size:10px;align-self:center">vs</span>
+          <span class="section-total">${t2StarterTotal.toFixed(1)}</span>
+        </div>
+      </div>
+      ${starterRows}
+      ${adjHtml}
+      ${totalsRow}
+      <div class="section-label">
+        <span>Bench</span>
+        <div style="display:flex;gap:16px">
+          <span style="font-size:13px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#475569;letter-spacing:1px">${t1BenchTotal.toFixed(1)}</span>
+          <span style="color:#334155;font-size:10px;align-self:center">vs</span>
+          <span style="font-size:13px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#475569;letter-spacing:1px">${t2BenchTotal.toFixed(1)}</span>
+        </div>
+      </div>
+      ${benchRows}
+    </div>`;
+}
+
+function renderSidebar(){
+  const m=getWkMatchup();
+  if(!m){document.getElementById('mu-sidebar').innerHTML='';return;}
+
+  const l1=getLineup(m.team1_name,m.week);
+  const l2=getLineup(m.team2_name,m.week);
+  const starters=[...l1.starters,...l2.starters].filter(p=>p&&p.name);
+
+  let cards=starters.map(p=>{
+    const articles=NEWS_MAP[p.name.toLowerCase()]||[];
+    const art=articles[0];
+    if(!art) return'';
+    const photo=PHOTO_MAP[p.name.toLowerCase()]
+      ?`<img src="${PHOTO_MAP[p.name.toLowerCase()]}" class="snc-photo" alt="" onerror="this.style.display='none'">`
+      :`<div class="snc-photo" style="background:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;color:#475569">${(p.name||'?')[0]}</div>`;
+    const nfl=p.nfl_team?`<img src="${NFL_LOGO(p.nfl_team)}" class="snc-nfl" alt="" onerror="this.style.display='none'">`:'';
+    const pos=p.position||'';
+    const wkStats=STAT_MAP[p.name.toLowerCase()]?.[m.week]||{};
+    const pts=p.points??wkStats.fpts??null;
+    return`<div class="sb-news-card">
+      <div class="snc-player">
+        ${photo}
+        <div class="snc-info">
+          <div class="snc-name">${p.name}</div>
+          <div class="snc-meta">
+            <span class="snc-pos pos-${pos} bg-${pos}">${pos}</span>
+            ${nfl}
+            <span class="snc-team">${p.nfl_team||''}</span>
+          </div>
+        </div>
+        ${pts!=null?`<span class="snc-pts">${pts.toFixed(1)}</span>`:''}
+      </div>
+      <div class="snc-headline">${art.headline||''}</div>
+      ${art.story?`<div class="snc-body">${art.story}</div>`:''}
+      <div class="snc-date">${art.date||''}</div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  if(!cards) cards='<div class="no-news">No player news available</div>';
+
+  document.getElementById('mu-sidebar').innerHTML=`
+    <div class="sb-news-hdr">&#127944; Player News This Week</div>
+    ${cards}`;
+}
+
+loadAll();
+</script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('matchup.html');</script>
+</body>
+</html>
