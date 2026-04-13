@@ -224,7 +224,7 @@ function renderBracket(){
   function lbRnd(idx){
     const gms=lbRounds[idx]; if(!gms) return '';
     const last=idx===lbRounds.length-1;
-    return`<div class="bk-round"><div class="bk-rlabel">${idx===0?'Round 1':'Finals'}</div><div class="bk-games">${gms.map(g=>{
+    return`<div class="bk-round"><div class="bk-rlabel">${`Round ${idx+1}`}</div><div class="bk-games">${gms.map(g=>{
       let wp=null,lp=null;
       if(last){const f=lbR1W.has(g.team1)&&lbR1W.has(g.team2);wp=f?5:7;lp=f?6:8;}
       return(last?`<div class="bk-game-lbl">${wp===5?'Picks 5/6':'Picks 7/8'}</div>`:'')+gc(g,wp,lp);
@@ -232,7 +232,7 @@ function renderBracket(){
   }
   function cRnd(r){
     const gms=cG.filter(g=>g.round===r); const last=r===maxCR;
-    return`<div class="bk-round"><div class="bk-rlabel">${r===1?'Round 1':'Finals'}</div><div class="bk-games">${gms.map(g=>{
+    return`<div class="bk-round"><div class="bk-rlabel">${`Round ${r}`}</div><div class="bk-games">${gms.map(g=>{
       let wp=null,lp=null;
       if(last){const n=g.round_name.toLowerCase();if(n.includes('booty')){wp=1;lp=2;}else{wp=3;lp=4;}}
       return(last?`<div class="bk-game-lbl">${g.round_name}</div>`:'')+gc(g,wp,lp);
