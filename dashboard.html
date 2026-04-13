@@ -567,27 +567,31 @@ function getFinalStandings(){
   }
   return Object.entries(picks).sort((a,b)=>b[1]-a[1]).map(([team,pick],i)=>({team,pick,rank:i+1}));
 }
-function standBadges(team, rows, isDivView){
-  let b='';
-  const maxW=Math.max(...rows.map(r=>r.wins||0));
-  const maxPF=Math.max(...rows.map(r=>r.points_for||0));
-  const tw=rows.find(r=>r.team_name===team);
-  if(!tw) return '';
-  if(isDivView&&rows[0]?.team_name===team)
-    b+=`<span title="Division Winner" style="font-size:9px;font-weight:800;padding:1px 6px;border-radius:3px;background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.2);margin-left:4px">DIV</span>`;
-  if(tw.wins===maxW)
-    b+=`<span title="Best Record">&#11088;</span>`;
-  if(tw.points_for===maxPF)
-    b+=`<span title="Most Points">&#9889;</span>`;
-  return b;
-}
 function buildStandRows(){
+  const regRows=getRegSeasonStandings();
+  // Division leaders (for regular season tab)
+  const divGroups={};
+  regRows.forEach(r=>{const d=DIVS[r.team_name];if(d){if(!divGroups[d])divGroups[d]=[];divGroups[d].push(r);}});
+  const divLeaderSet=new Set(Object.values(divGroups).map(g=>g[0]?.team_name).filter(Boolean));
+
+  function badges(team, rows, isDivView){
+    const tw=rows.find(r=>r.team_name===team); if(!tw) return '';
+    const maxW=Math.max(...rows.map(r=>r.wins||0));
+    const maxPF=Math.max(...rows.map(r=>r.points_for||0));
+    const isDivLeader=isDivView?rows[0]?.team_name===team:divLeaderSet.has(team);
+    let b='';
+    if(isDivLeader) b+=`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">DIV</span>`;
+    if(tw.wins===maxW) b+=`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">WINS</span>`;
+    if(tw.points_for===maxPF) b+=`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">PF</span>`;
+    return b;
+  }
+
   if(stTab==='final'){
     const rows=getFinalStandings();
     if(!rows.length) return '<div style="padding:20px;text-align:center;color:#475569">No playoff data</div>';
     let out='';
     rows.forEach(({team,rank})=>{
-      const s=getRegSeasonStandings().find(x=>x.team_name===team)||{};
+      const s=regRows.find(x=>x.team_name===team)||{};
       out+=`<div class="stand-row">
         <div class="sr-rank">${rank}</div>
         <div class="sr-team">${tLogoImg(team,'sr-tlogo')}<span class="sr-tname">${team}</span></div>
@@ -597,7 +601,6 @@ function buildStandRows(){
     });
     return out;
   }
-  const regRows=getRegSeasonStandings();
   const rows=stTab==='regular'?regRows:regRows.filter(s=>DIVS[s.team_name]===stTab).map((s,i)=>({...s,rank:i+1}));
   const isDivView=stTab!=='regular';
   let out='';
@@ -605,7 +608,7 @@ function buildStandRows(){
     const rank=isDivView?i+1:s.rank;
     out+=`<div class="stand-row">
       <div class="sr-rank">${rank}</div>
-      <div class="sr-team">${tLogoImg(s.team_name,'sr-tlogo')}<span class="sr-tname">${s.team_name}</span>${standBadges(s.team_name,rows,isDivView)}</div>
+      <div class="sr-team">${tLogoImg(s.team_name,'sr-tlogo')}<span class="sr-tname">${s.team_name}</span>${badges(s.team_name,rows,isDivView)}</div>
       <div class="sr-record">${s.wins}–${s.losses}</div>
       <div class="sr-pts">${(s.points_for||0).toFixed(1)}</div>
     </div>`;
