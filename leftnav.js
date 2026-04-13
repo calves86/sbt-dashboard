@@ -46,23 +46,28 @@ function _buildNavHTML(activePage, opts) {
 
   // Current-season nav items
   const season = [
-    { href: 'dashboard.html',    icon: '&#127968;', label: 'Dashboard'     },
-    { href: 'matchup.html',      icon: '&#9878;',   label: 'Matchups'      },
-    { href: 'team.html',         icon: '&#128101;', label: 'My Teams'      },
-    { href: 'transactions.html', icon: '&#128257;', label: 'Activity'      },
-    { href: 'players.html',      icon: '&#10133;',  label: 'Free Agents'   },
-    { href: 'trade.html',        icon: '&#8652;',   label: 'Trade Builder' },
-    { href: 'playoff.html',      icon: '&#127942;', label: 'Playoffs'      },
-    { href: 'mock-draft.html',   icon: '&#127919;', label: 'Mock Draft'    },
+    { href: 'dashboard.html',    label: 'Dashboard'     },
+    { href: 'matchup.html',      label: 'Matchups'      },
+    { href: 'team.html',         label: 'My Teams'      },
+    { href: 'transactions.html', label: 'Activity'      },
+    { href: 'players.html',      label: 'Free Agents'   },
+    { href: 'trade.html',        label: 'Trade Builder' },
+    { href: 'playoff.html',      label: 'Playoffs'      },
+  ];
+
+  // Draft nav items
+  const draft = [
+    { href: 'mock-draft.html',  label: 'Mock Draft'  },
+    { href: 'draft-room.html',  label: 'Draft Room', badge: 'SOON' },
   ];
 
   // History nav items — all route to index.html with a ?tab= param
   const history = [
-    { href: 'index.html?tab=Overview',      icon: '&#128200;', label: 'All-Time Stats'  },
-    { href: 'index.html?tab=Champions',     icon: '&#127942;', label: 'Champions'       },
-    { href: 'index.html?tab=Teams',         icon: '&#127939;', label: 'Franchise History'},
-    { href: 'index.html?tab=Record+Book',   icon: '&#128218;', label: 'Record Book'     },
-    { href: 'index.html?tab=Draft+History', icon: '&#128203;', label: 'Draft History'   },
+    { href: 'index.html?tab=Overview',      label: 'All-Time Stats'   },
+    { href: 'index.html?tab=Champions',     label: 'Champions'        },
+    { href: 'index.html?tab=Teams',         label: 'Franchise History'},
+    { href: 'index.html?tab=Record+Book',   label: 'Record Book'      },
+    { href: 'index.html?tab=Draft+History', label: 'Draft History'    },
   ];
 
   // Archive years — link to index.html with ?year=
@@ -85,7 +90,18 @@ function _buildNavHTML(activePage, opts) {
     const active = activePage2 === item.href;
     html += `
     <a href="${item.href}" class="ln-item${active ? ' active' : ''}">
-      <span class="ln-icon">${item.icon}</span>
+      <span>${item.label}</span>
+    </a>`;
+  });
+
+  html += `
+    <div class="ln-divider"></div>
+    <div class="ln-section">Draft</div>`;
+
+  draft.forEach(item => {
+    const active = activePage2 === item.href;
+    html += `
+    <a href="${item.href}" class="ln-item${active ? ' active' : ''}">
       <span>${item.label}</span>
       ${item.badge ? `<span class="ln-badge">${item.badge}</span>` : ''}
     </a>`;
@@ -99,7 +115,6 @@ function _buildNavHTML(activePage, opts) {
     const active = activePage === item.href;
     html += `
     <a href="${item.href}" class="ln-item hist${active ? ' active' : ''}">
-      <span class="ln-icon">${item.icon}</span>
       <span>${item.label}</span>
     </a>`;
   });
@@ -107,7 +122,6 @@ function _buildNavHTML(activePage, opts) {
   // Season Archive expandable
   html += `
     <button class="ln-item hist" id="ln-archive-toggle" type="button">
-      <span class="ln-icon">&#128197;</span>
       <span>Season Archive</span>
       <span class="ln-chev" id="ln-archive-chev">&#9660;</span>
     </button>

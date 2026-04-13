@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft Room — SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);border-bottom:1px solid rgba(16,185,129,0.15);padding:20px 24px;flex-shrink:0}
+.header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.page-title{font-size:26px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.content{flex:1;display:flex;align-items:center;justify-content:center;padding:60px 24px}
+.soon-card{max-width:480px;width:100%;text-align:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:56px 40px}
+.soon-icon{font-size:56px;margin-bottom:24px;line-height:1}
+.soon-title{font-size:32px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;color:#e2e8f0;margin-bottom:12px}
+.soon-badge{display:inline-block;background:rgba(16,185,129,0.15);color:#10b981;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid rgba(16,185,129,0.3);margin-bottom:20px}
+.soon-desc{font-size:14px;color:#64748b;line-height:1.7;margin-bottom:32px}
+.soon-features{text-align:left;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.1);border-radius:12px;padding:20px 24px;margin-bottom:32px}
+.soon-features-title{font-size:10px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px}
+.soon-feature{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px;color:#64748b}
+.soon-feature:last-child{margin-bottom:0}
+.soon-feature-dot{width:6px;height:6px;border-radius:50%;background:#10b981;margin-top:5px;flex-shrink:0}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:#475569;font-size:13px;font-weight:600;text-decoration:none;transition:color .15s}
+.back-link:hover{color:#94a3b8}
+</style>
+</head>
+<body>
+<div id="shell">
+<nav id="leftnav"></nav>
+<div id="main">
+<div id="ln-topbar">
+  <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+  <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
+</div>
+<div class="header">
+  <div class="header-inner">
+    <div class="page-title">Draft Room</div>
+  </div>
+</div>
+<div class="content">
+  <div class="soon-card">
+    <div class="soon-icon">🏈</div>
+    <div class="soon-title">Draft Room</div>
+    <div class="soon-badge">Coming Soon</div>
+    <p class="soon-desc">The live Draft Room is currently in development. Once ready, you'll be able to run your fantasy draft live right here — picks tracked in real time for everyone in the league.</p>
+    <div class="soon-features">
+      <div class="soon-features-title">Planned Features</div>
+      <div class="soon-feature"><div class="soon-feature-dot"></div><span>Live draft board with real-time pick updates</span></div>
+      <div class="soon-feature"><div class="soon-feature-dot"></div><span>On-the-clock timer and auto-pick options</span></div>
+      <div class="soon-feature"><div class="soon-feature-dot"></div><span>Player rankings, ADP, and stats at a glance</span></div>
+      <div class="soon-feature"><div class="soon-feature-dot"></div><span>Draft recap and grade analysis when done</span></div>
+    </div>
+    <a href="mock-draft.html" class="back-link">&#8592; Practice with Mock Draft in the meantime</a>
+  </div>
+</div>
+</div>
+</div>
+<script src="leftnav.js"></script>
+<script>initLeftNav('draft-room.html');</script>
+</body>
+</html>

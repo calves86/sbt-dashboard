@@ -64,7 +64,7 @@ body.nav-col .ln-logo{width:30px;height:30px}
 body.nav-col .ln-brand-text{display:none}
 body.nav-col .ln-section{opacity:0;padding:6px 0}
 body.nav-col .ln-item{justify-content:center;padding:10px 4px;margin:2px 3px;width:calc(100% - 6px)}
-body.nav-col .ln-item>span:not(.ln-icon){display:none}
+body.nav-col .ln-item>span{display:none}
 body.nav-col .ln-badge{display:none}
 body.nav-col .ln-chev{display:none}
 body.nav-col .ln-sub{display:none}
