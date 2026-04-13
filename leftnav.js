@@ -35,6 +35,22 @@ function initLeftNav(activePage, opts) {
       colBtn.innerHTML = '<span>&#9654;</span><span>Expand</span>';
     }
   }
+
+  // Overlay backdrop — tap outside to close nav on mobile
+  if (!document.getElementById('ln-overlay')) {
+    const ov = document.createElement('div');
+    ov.id = 'ln-overlay';
+    ov.onclick = lnToggleMobile;
+    document.body.appendChild(ov);
+  }
+
+  // Bottom tab nav — mobile only (shown via CSS)
+  if (!document.getElementById('bottom-nav')) {
+    const bn = document.createElement('nav');
+    bn.id = 'bottom-nav';
+    bn.innerHTML = _buildBottomNavHTML(activePage);
+    document.body.appendChild(bn);
+  }
 }
 
 function _buildNavHTML(activePage, opts) {
@@ -173,4 +189,32 @@ function lnToggleCollapse() {
 
 function lnToggleMobile() {
   document.getElementById('leftnav')?.classList.toggle('open');
+  document.getElementById('ln-overlay')?.classList.toggle('show');
+}
+
+function _buildBottomNavHTML(activePage) {
+  const ap = activePage.split('?')[0];
+
+  const IC = {
+    home:      '<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    matchup:   '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    team:      '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    standings: '<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    more:      '<svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>',
+  };
+
+  const tabs = [
+    { href: 'dashboard.html',  label: 'Home',      icon: IC.home      },
+    { href: 'matchup.html',    label: 'Matchup',   icon: IC.matchup   },
+    { href: 'team.html',       label: 'My Team',   icon: IC.team      },
+    { href: 'standings.html',  label: 'Standings', icon: IC.standings },
+  ];
+
+  let html = tabs.map(t =>
+    `<a href="${t.href}" class="bn-tab${ap === t.href ? ' active' : ''}">${t.icon}<span class="bn-label">${t.label}</span></a>`
+  ).join('');
+
+  html += `<button class="bn-tab" onclick="lnToggleMobile()" type="button">${IC.more}<span class="bn-label">More</span></button>`;
+
+  return html;
 }
