@@ -75,7 +75,7 @@ a{color:#10b981;text-decoration:none}
 </style>
 </head>
 <body>
-<div id="shell">
+<div id="app">
 <nav id="leftnav"></nav>
 <div id="main">
 <div id="ln-topbar">
@@ -91,7 +91,7 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 <div class="page-body">
-  <div id="app"><div class="loading">Loading standings…</div></div>
+  <div id="stnds"><div class="loading">Loading standings…</div></div>
 </div>
 </div>
 </div>
@@ -221,7 +221,7 @@ function getFinalStandings(){
 function render(){
   const{rec,streak,sorted}=getRegStats();
   if(!sorted.length){
-    document.getElementById('app').innerHTML='<div class="loading">No standings data available.</div>';
+    document.getElementById('stnds').innerHTML='<div class="loading">No standings data available.</div>';
     return;
   }
 
@@ -345,7 +345,7 @@ function render(){
     body+=`</div></div>`;
   }
 
-  document.getElementById('app').innerHTML=tabs+body;
+  document.getElementById('stnds').innerHTML=tabs+body;
 }
 
 function setTab(t){stTab=t;render();}
