@@ -54,6 +54,7 @@ function _buildNavHTML(activePage, opts) {
     { href: 'players.html',      label: 'Free Agents'   },
     { href: 'trade.html',        label: 'Trade Builder' },
     { href: 'playoff.html',      label: 'Playoffs'      },
+    { href: 'index.html?tab=Rules', label: 'Rules'         },
   ];
 
   // Draft nav items
