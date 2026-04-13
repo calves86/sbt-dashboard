@@ -276,7 +276,7 @@ function tLogoImg(name,cls='mu-tlogo'){
 
 let D={};
 let selWeek=null;
-let stTab='overall';
+let stTab='regular';
 const DIVS={};
 let PHOTO_MAP={};
 
@@ -495,12 +495,14 @@ function buildLineupCol(entry,teamName,isRight){
 
 /* ── Standings ── */
 function renderStandings(){
-  const divNames=[...new Set(D.divs.map(d=>d.division))].sort();
+  const DIV_ORDER=['Sigma','Beta','Tau'];
+  const divNames=DIV_ORDER.filter(d=>[...new Set(D.divs.map(x=>x.division))].includes(d));
   const hasDivs=divNames.length>0;
-  const tabs=hasDivs?`<div class="stand-tabs">
-    <button class="stand-tab ${stTab==='overall'?'on':''}" onclick="stTab='overall';reStand()">Overall</button>
-    ${divNames.map(d=>`<button class="stand-tab ${stTab===d?'on':''}" onclick="stTab='${d}';reStand()">${d}</button>`).join('')}
-  </div>`:'';
+  const tabs=`<div class="stand-tabs">
+    <button class="stand-tab ${stTab==='regular'?'on':''}" onclick="stTab='regular';reStand()">Regular Season</button>
+    ${hasDivs?divNames.map(d=>`<button class="stand-tab ${stTab===d?'on':''}" onclick="stTab='${d}';reStand()">${d}</button>`).join(''):''}
+    <button class="stand-tab ${stTab==='final'?'on':''}" onclick="stTab='final';reStand()">Final</button>
+  </div>`;
   return`<div class="panel">
     <div class="panel-hdr"><span class="ph-title">Standings</span><span class="ph-badge">2025</span></div>
     ${tabs}
@@ -508,15 +510,81 @@ function renderStandings(){
     <div class="stand-body" id="stand-body">${buildStandRows()}</div>
   </div>`;
 }
+function pickStyle(n){
+  if(n===12) return 'background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.25)';
+  if(n===11) return 'background:rgba(148,163,184,.12);color:#94a3b8;border:1px solid rgba(148,163,184,.2)';
+  if(n===10) return 'background:rgba(180,130,10,.15);color:#d97706;border:1px solid rgba(180,130,10,.25)';
+  if(n>=9)   return 'background:rgba(100,116,139,.1);color:#64748b;border:1px solid rgba(100,116,139,.15)';
+  if(n>=5)   return 'background:rgba(96,165,250,.1);color:#60a5fa;border:1px solid rgba(96,165,250,.15)';
+  if(n===1)  return 'background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.15)';
+  return 'background:rgba(100,116,139,.08);color:#64748b;border:1px solid rgba(100,116,139,.12)';
+}
+function getFinalStandings(){
+  const pg=D.playoffGames.filter(g=>g.season===SEASON);
+  const wG=pg.filter(g=>g.bracket==='playoff');
+  const cG=pg.filter(g=>g.bracket==='consolation');
+  if(!wG.length) return [];
+  const maxWR=Math.max(...wG.map(g=>g.round));
+  const picks={};
+  // Winners bracket finals
+  wG.filter(g=>g.round===maxWR).forEach(g=>{
+    const loser=g.winner===g.team1?g.team2:g.team1;
+    const n=g.round_name.toLowerCase();
+    if(n.includes('champ')){picks[g.winner]=12;picks[loser]=11;}
+    else{picks[g.winner]=10;picks[loser]=9;}
+  });
+  // Consolation finals
+  const maxCR=cG.length?Math.max(...cG.map(g=>g.round)):0;
+  cG.filter(g=>g.round===maxCR).forEach(g=>{
+    const loser=g.winner===g.team1?g.team2:g.team1;
+    const n=g.round_name.toLowerCase();
+    if(n.includes('booty')){picks[g.winner]=1;picks[loser]=2;}
+    else{picks[g.winner]=3;picks[loser]=4;}
+  });
+  // Losers bracket (picks 5-8)
+  const r1L=new Set(wG.filter(g=>g.round===1).map(g=>g.winner===g.team1?g.team2:g.team1));
+  const allWks=[...new Set(D.matchups.filter(m=>m.matchup_type==='playoff').map(m=>m.week))].sort((a,b)=>a-b);
+  const lbRounds=[];let lbR1W=new Set();
+  for(const wk of allWks){
+    if(lbRounds.length>=maxWR-1) break;
+    const gms=D.matchups.filter(m=>m.week===wk&&r1L.has(m.team1_name)&&r1L.has(m.team2_name));
+    if(!gms.length) continue;
+    const mapped=gms.map(g=>({team1:g.team1_name,s1:g.team1_score,team2:g.team2_name,s2:g.team2_score,winner:g.team1_score>g.team2_score?g.team1_name:g.team2_name}));
+    if(!lbRounds.length) mapped.forEach(g=>lbR1W.add(g.winner));
+    lbRounds.push(mapped);
+  }
+  if(lbRounds.length){
+    lbRounds[lbRounds.length-1].forEach(g=>{
+      const f=lbR1W.has(g.team1)&&lbR1W.has(g.team2);
+      const loser=g.winner===g.team1?g.team2:g.team1;
+      picks[g.winner]=f?5:7; picks[loser]=f?6:8;
+    });
+  }
+  return Object.entries(picks).sort((a,b)=>b[1]-a[1]).map(([team,pick],i)=>({team,pick,rank:i+1}));
+}
 function buildStandRows(){
-  const rows=stTab==='overall'?D.standings:D.standings.filter(s=>DIVS[s.team_name]===stTab);
+  if(stTab==='final'){
+    const rows=getFinalStandings();
+    if(!rows.length) return '<div style="padding:20px;text-align:center;color:#475569">No playoff data</div>';
+    let out='';
+    rows.forEach(({team,pick,rank})=>{
+      const s=D.standings.find(x=>x.team_name===team)||{};
+      out+=`<div class="stand-row">
+        <div class="sr-rank">${rank}</div>
+        <div class="sr-team">${tLogoImg(team,'sr-tlogo')}<span class="sr-tname">${team}</span><span class="bk-pick" style="${pickStyle(pick)};font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:5px">P${pick}</span></div>
+        <div class="sr-record">${s.wins??'—'}–${s.losses??'—'}</div>
+        <div class="sr-pts">${s.points_for!=null?(s.points_for).toFixed(1):'—'}</div>
+      </div>`;
+    });
+    return out;
+  }
+  const rows=stTab==='regular'?D.standings:D.standings.filter(s=>DIVS[s.team_name]===stTab);
   let out='';
   rows.forEach((s,i)=>{
-    const rank=stTab==='overall'?s.rank:i+1;
-    const isPO=stTab==='overall'&&rank<=PLAYOFF_SPOTS;
+    const rank=stTab==='regular'?s.rank:i+1;
     out+=`<div class="stand-row">
       <div class="sr-rank">${rank}</div>
-      <div class="sr-team">${tLogoImg(s.team_name,'sr-tlogo')}<span class="sr-tname">${s.team_name}</span>${isPO?'<span class="po-badge">PO</span>':''}</div>
+      <div class="sr-team">${tLogoImg(s.team_name,'sr-tlogo')}<span class="sr-tname">${s.team_name}</span></div>
       <div class="sr-record">${s.wins}–${s.losses}</div>
       <div class="sr-pts">${(s.points_for||0).toFixed(1)}</div>
     </div>`;
@@ -524,7 +592,14 @@ function buildStandRows(){
   return out||'<div style="padding:20px;text-align:center;color:#475569">No data</div>';
 }
 function reStand(){
-  document.querySelectorAll('.stand-tab').forEach(t=>t.classList.toggle('on',t.textContent.trim()===(stTab==='overall'?'Overall':stTab)));
+  document.querySelectorAll('.stand-tab').forEach(t=>{
+    const lbl=t.textContent.trim();
+    t.classList.toggle('on',
+      (stTab==='regular'&&lbl==='Regular Season')||
+      (stTab==='final'&&lbl==='Final')||
+      (stTab!=='regular'&&stTab!=='final'&&lbl===stTab)
+    );
+  });
   document.getElementById('stand-body').innerHTML=buildStandRows();
 }
 
