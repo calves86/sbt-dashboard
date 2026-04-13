@@ -273,15 +273,54 @@ a{color:#10b981;text-decoration:none}
 
 /* ===== MOBILE ===== */
 @media(max-width:700px){
-  #team-header{padding:14px 16px 0}
-  #team-switcher{padding:12px 16px 0}
-  #tab-content{padding:14px 16px 60px}
-  #tab-bar{padding:14px 16px 0}
-  .th-card{padding:16px}
-  .th-logo,.th-logo-ph{width:60px;height:60px}
-  .th-name{font-size:22px}
-  .roster-hdr,.p-row{grid-template-columns:44px 44px 1fr 64px 52px 44px}
-  .sched-hdr,.sched-row{grid-template-columns:44px 1fr 110px 50px}
+  /* Layout spacing */
+  #team-header{padding:12px 14px 0}
+  #team-switcher{padding:10px 14px 0}
+  #tab-content{padding:12px 14px 60px}
+  #tab-bar{padding:12px 14px 0;gap:2px;overflow-x:auto}
+  .tab-btn{padding:7px 12px;font-size:11px;white-space:nowrap;flex-shrink:0}
+
+  /* Team switcher chips — compact */
+  .ts-chip{padding:6px 10px;gap:6px}
+  .ts-name{font-size:11px}
+  .ts-record{display:none}
+
+  /* Header card — keep logo+info side by side, stack actions below */
+  .th-card{padding:14px;gap:14px;border-radius:14px;align-items:center}
+  .th-logo,.th-logo-ph{width:56px;height:56px;border-radius:12px}
+  .th-name{font-size:20px;margin-bottom:2px}
+  .th-owner{font-size:11px;margin-bottom:8px}
+  .th-badges{margin-bottom:10px;gap:5px}
+  .th-rank,.th-record{font-size:10px;padding:3px 9px}
+  .th-stats{gap:14px}
+  .th-stat-val{font-size:18px}
+  .th-stat-lbl{font-size:9px;letter-spacing:.5px}
+
+  /* Action buttons — side by side below the info */
+  .th-actions{flex-direction:row;width:100%;align-self:stretch}
+  .th-action-btn{flex:1;width:auto;padding:9px 10px;font-size:11px}
+
+  /* Roster — drop avg + bye, keep slot | photo+badge | name+sub | pts */
+  .roster-hdr{grid-template-columns:36px 44px 1fr 52px;padding:6px 10px}
+  .roster-hdr .r-avg{display:none}
+  .roster-hdr .r-bye{display:none}
+  .p-row{grid-template-columns:36px 44px 1fr 52px;padding:8px 10px}
+  .p-avg{display:none}
+  .p-bye{display:none}
+  .slot-badge{font-size:8px;padding:2px 4px;letter-spacing:0}
+  .p-photo-wrap{width:36px;height:36px}
+  .p-photo,.p-photo-ph{width:36px;height:36px;font-size:12px}
+  .p-nfl-badge{width:14px;height:14px}
+  .p-info{padding:0 8px}
+  .p-name{font-size:12px}
+  .p-nfl{font-size:9px}
+  .p-pts{font-size:14px}
+
+  /* Schedule */
+  .sched-hdr,.sched-row{grid-template-columns:40px 1fr 100px 44px}
+  .sched-opp-name{font-size:11px}
+  .sched-score-line{font-size:12px}
+  .sched-week{font-size:11px}
 }
 </style>
 </head>
