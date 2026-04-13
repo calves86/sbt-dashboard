@@ -16,7 +16,8 @@ a{color:#10b981;text-decoration:none}
 ::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 
 /* ===== LAYOUT ===== */
-#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+#tm-center{max-width:1400px;width:100%;margin:0 auto;display:flex;flex-direction:column;flex:1}
 
 /* ===== TEAM HEADER ===== */
 #team-header{padding:24px 28px 0;flex-shrink:0}
@@ -48,7 +49,7 @@ a{color:#10b981;text-decoration:none}
 .tab-btn.active{background:rgba(16,185,129,0.12);color:#10b981}
 
 /* ===== TAB CONTENT ===== */
-#tab-content{padding:20px 28px 60px;flex:1;overflow-y:auto}
+#tab-content{padding:20px 28px 60px;flex:1}
 
 /* ===== ROSTER ===== */
 .roster-section-label{font-size:11px;font-weight:800;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:10px}
@@ -290,17 +291,19 @@ a{color:#10b981;text-decoration:none}
       <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
     </div>
 
-    <div id="team-switcher"></div>
-    <div id="team-header"></div>
+    <div id="tm-center">
+      <div id="team-switcher"></div>
+      <div id="team-header"></div>
 
-    <div id="tab-bar">
-      <button class="tab-btn active" data-tab="roster" onclick="switchTab('roster')">Roster</button>
-      <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">Schedule</button>
-      <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">Transactions</button>
-      <button class="tab-btn" data-tab="news" onclick="switchTab('news')">News</button>
+      <div id="tab-bar">
+        <button class="tab-btn active" data-tab="roster" onclick="switchTab('roster')">Roster</button>
+        <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">Schedule</button>
+        <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">Transactions</button>
+        <button class="tab-btn" data-tab="news" onclick="switchTab('news')">News</button>
+      </div>
+
+      <div id="tab-content"></div>
     </div>
-
-    <div id="tab-content"></div>
   </div>
 </div>
 
