@@ -141,7 +141,7 @@ async function loadAll(){
   D.matchups=matchups.filter(m=>m.season===SEASON);
   D.divs=(divs||[]).filter(d=>d.season===SEASON);
   D.divs.forEach(d=>{DIVS[d.team_name]=d.division;});
-  D.playoffGames=Array.isArray(playoffGames)?playoffGames:[];
+  D.playoffGames=(Array.isArray(playoffGames)?playoffGames:[]).filter(g=>g.season===SEASON);
   render();
 }
 
