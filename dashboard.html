@@ -617,7 +617,7 @@ function renderBracket(){
   // R1 playoff losers
   const r1L=new Set(wG.filter(g=>g.round===1).map(g=>g.winner===g.team1?g.team2:g.team1));
   // Build losers bracket from matchups where both teams are R1 playoff losers
-  const allWks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  const allWks=[...new Set(D.matchups.filter(m=>m.matchup_type==='playoff').map(m=>m.week))].sort((a,b)=>a-b);
   const lbRounds=[];
   let lbR1W=new Set();
   for(const wk of allWks){
