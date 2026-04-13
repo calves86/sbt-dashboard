@@ -249,9 +249,24 @@ a{color:#10b981;text-decoration:none}
 .news-analysis{font-size:11px;color:#475569;line-height:1.5;font-style:italic;border-left:2px solid rgba(16,185,129,0.3);padding-left:8px;margin-top:4px}
 .news-empty{text-align:center;padding:40px 20px;color:#334155;font-size:13px}
 
+/* ===== TEAM SWITCHER ===== */
+#team-switcher{padding:16px 28px 0;flex-shrink:0;overflow-x:auto}
+#team-switcher::-webkit-scrollbar{height:3px}
+#team-switcher::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+.ts-inner{display:flex;gap:8px;min-width:max-content}
+.ts-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.ts-chip:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
+.ts-chip.active{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3)}
+.ts-logo{width:24px;height:24px;border-radius:5px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,0.04)}
+.ts-logo-ph{width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#64748b;flex-shrink:0}
+.ts-name{font-size:12px;font-weight:700;color:#94a3b8}
+.ts-chip.active .ts-name{color:#10b981}
+.ts-record{font-size:10px;color:#475569;margin-left:2px}
+
 /* ===== MOBILE ===== */
 @media(max-width:700px){
   #team-header{padding:14px 16px 0}
+  #team-switcher{padding:12px 16px 0}
   #tab-content{padding:14px 16px 60px}
   #tab-bar{padding:14px 16px 0}
   .th-card{padding:16px}
@@ -275,6 +290,7 @@ a{color:#10b981;text-decoration:none}
       <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
     </div>
 
+    <div id="team-switcher"></div>
     <div id="team-header"></div>
 
     <div id="tab-bar">
@@ -409,24 +425,20 @@ function toggleSidebar() {
   document.getElementById('leftnav').classList.toggle('open');
 }
 
-/* ===== SIDEBAR ===== */
+/* ===== TEAM SWITCHER ===== */
 function buildSidebar() {
-  const el = document.getElementById('team-list');
-  el.innerHTML = DATA.teams.map((t, i) => {
+  const el = document.getElementById('team-switcher');
+  el.innerHTML = `<div class="ts-inner">${DATA.teams.map((t, i) => {
     const logo = franchiseLogo(t.team_name);
     const logoEl = logo
-      ? `<img src="${logo}" class="team-item-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-      : '';
-    const ph = `<div class="team-item-logo-ph" ${logo ? 'style="display:none"' : ''}>${t.team_name[0]}</div>`;
-    return `<div class="team-item ${i===currentIdx?'active':''}" onclick="selectTeam(${i})">
-      ${logoEl}${ph}
-      <div class="team-item-info">
-        <div class="team-item-name">${t.team_name}</div>
-        <div class="team-item-record">${t.wins}-${t.losses}${t.ties?`-${t.ties}`:''} · Rank #${t.rank}</div>
-      </div>
-      <div class="team-item-pts">${t.points_for.toFixed(0)}</div>
+      ? `<img src="${logo}" class="ts-logo" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="ts-logo-ph" style="display:none">${t.team_name[0]}</div>`
+      : `<div class="ts-logo-ph">${t.team_name[0]}</div>`;
+    return `<div class="ts-chip${i===currentIdx?' active':''}" onclick="selectTeam(${i})">
+      ${logoEl}
+      <span class="ts-name">${t.team_name}</span>
+      <span class="ts-record">${t.wins}-${t.losses}</span>
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
 
 function selectTeam(idx) {
@@ -434,12 +446,11 @@ function selectTeam(idx) {
   currentTab = 'roster';
   benchOpen = true;
   touchSel = null;
-  document.querySelectorAll('.team-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  document.querySelectorAll('.ts-chip').forEach((el, i) => el.classList.toggle('active', i === idx));
   const t = DATA.teams[idx];
   history.replaceState(null, '', `?team=${encodeURIComponent(t.team_name)}`);
   initLineup(idx);
   renderTeam(idx);
-  document.getElementById('sidebar').classList.remove('open');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'roster'));
 }
 
@@ -1298,6 +1309,6 @@ function closePlayerModal() {
 init();
 </script>
 <script src="leftnav.js"></script>
-<script>initLeftNav('team.html', { includeTeamList: true });</script>
+<script>initLeftNav('team.html', {});</script>
 </body>
 </html>
