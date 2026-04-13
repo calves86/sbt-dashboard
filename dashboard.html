@@ -574,15 +574,16 @@ function buildStandRows(){
   regRows.forEach(r=>{const d=DIVS[r.team_name];if(d){if(!divGroups[d])divGroups[d]=[];divGroups[d].push(r);}});
   const divLeaderSet=new Set(Object.values(divGroups).map(g=>g[0]?.team_name).filter(Boolean));
 
+  const leagueMaxW=Math.max(...regRows.map(r=>r.wins||0));
+  const leagueMaxPF=Math.max(...regRows.map(r=>r.points_for||0));
+
   function badges(team, rows, isDivView){
     const tw=rows.find(r=>r.team_name===team); if(!tw) return '';
-    const maxW=Math.max(...rows.map(r=>r.wins||0));
-    const maxPF=Math.max(...rows.map(r=>r.points_for||0));
     const isDivLeader=isDivView?rows[0]?.team_name===team:divLeaderSet.has(team);
     let b='';
     if(isDivLeader) b+=`<span style="font-size:9px;font-weight:700;color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">DIV</span>`;
-    if(tw.wins===maxW) b+=`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">WINS</span>`;
-    if(tw.points_for===maxPF) b+=`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">PF</span>`;
+    if(tw.wins===leagueMaxW) b+=`<span style="font-size:9px;font-weight:700;color:#facc15;border:1px solid rgba(250,204,21,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">WINS</span>`;
+    if(tw.points_for===leagueMaxPF) b+=`<span style="font-size:9px;font-weight:700;color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">PF</span>`;
     return b;
   }
 
