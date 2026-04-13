@@ -178,9 +178,30 @@ a{color:#10b981;text-decoration:none}
 .pr-pts.good{color:#10b981}
 .pr-pts.bench{color:#475569}
 
+.bk-section{margin-top:16px}
+.bk-wrap{display:flex;gap:0;overflow-x:auto}
+.bk-sub{min-width:0;padding:14px 16px;border-right:1px solid rgba(255,255,255,0.05)}
+.bk-sub:last-child{border-right:none}
+.bk-sub-title{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px}
+.bk-sub-sub{font-size:9px;font-weight:600;color:#475569;margin-bottom:12px}
+.bk-rounds{display:flex;gap:8px;align-items:stretch}
+.bk-round{flex:1;min-width:120px;display:flex;flex-direction:column}
+.bk-rlabel{font-size:9px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.8px;text-align:center;padding:0 0 8px}
+.bk-games{display:flex;flex-direction:column;justify-content:space-evenly;flex:1;gap:8px}
+.bk-game{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
+.bk-game-lbl{font-size:8px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.5px;text-align:center;padding:4px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.04)}
+.bk-team{display:flex;align-items:center;gap:5px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);min-width:0}
+.bk-team:last-child{border-bottom:none}
+.bk-team.bk-w{background:rgba(16,185,129,0.06)}
+.bk-logo{width:18px;height:18px;border-radius:4px;object-fit:contain;flex-shrink:0;background:#0f172a}
+.bk-name{font-size:10px;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.bk-team.bk-l .bk-name,.bk-team.bk-l .bk-score{color:#475569}
+.bk-score{font-size:10px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#64748b;flex-shrink:0;margin-left:2px}
+.bk-team.bk-w .bk-score{color:#10b981}
+.bk-pick{font-size:8px;font-weight:800;padding:1px 5px;border-radius:3px;flex-shrink:0;white-space:nowrap;margin-left:3px}
 @media(max-width:1100px){.main-grid{grid-template-columns:1fr}}
 @media(max-width:800px){.stat-row{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.modal-body{grid-template-columns:1fr}.lineup-col.right{border-left:none;border-top:1px solid rgba(255,255,255,0.05)}}
+@media(max-width:600px){.modal-body{grid-template-columns:1fr}.lineup-col.right{border-left:none;border-top:1px solid rgba(255,255,255,0.05)}.bk-wrap{flex-direction:column}}
 @media(max-width:500px){.stat-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -261,13 +282,14 @@ let PHOTO_MAP={};
 
 async function loadAll(){
   try{
-    const [standings,matchups,transactions,divisions,newsRaw,weeklyScores]=await Promise.all([
+    const [standings,matchups,transactions,divisions,newsRaw,weeklyScores,playoffGamesRaw]=await Promise.all([
       fetch('data/standings.json').then(r=>r.json()),
       fetch('data/matchups.json').then(r=>r.json()),
       fetch('data/transactions.json').then(r=>r.json()),
       fetch('data/divisions.json').then(r=>r.json()).catch(()=>[]),
       fetch('data/player_news_2025.json').then(r=>r.json()).catch(()=>({})),
-      fetch('data/weekly_scores_2025.json').then(r=>r.json()).catch(()=>[])
+      fetch('data/weekly_scores_2025.json').then(r=>r.json()).catch(()=>[]),
+      fetch('data/playoff_games.json').then(r=>r.json()).catch(()=>[])
     ]);
     D.standings=standings.filter(s=>s.season===SEASON).sort((a,b)=>a.rank-b.rank);
     D.matchups=matchups.filter(m=>m.season===SEASON);
@@ -276,6 +298,7 @@ async function loadAll(){
     D.divs.forEach(d=>{DIVS[d.team_name]=d.division;});
     D.news=newsRaw.teams||newsRaw||{};
     D.weekly=weeklyScores;
+    D.playoffGames=Array.isArray(playoffGamesRaw)?playoffGamesRaw:[];
     // build photo map from player_news
     Object.values(D.news).forEach(players=>{
       (players||[]).forEach(p=>{
@@ -299,6 +322,7 @@ function render(){
       <div class="left-col">${renderMatchups()}${renderFeed()}</div>
       <div>${renderStandings()}</div>
     </div>
+    ${renderBracket()}
     ${renderNews()}`;
 }
 
@@ -580,6 +604,109 @@ function renderNews(){
     <div class="section-ttl">Player News</div>
     <div class="section-sub">Latest updates for players on 2025 rosters — <a onclick="location.reload()" href="#">Shuffle ↻</a></div>
     <div class="news-grid">${html}</div>
+  </div>`;
+}
+
+function renderBracket(){
+  const pg=(D.playoffGames||[]).filter(g=>g.season===SEASON);
+  if(!pg.length) return '';
+  const wG=pg.filter(g=>g.bracket==='playoff');
+  const cG=pg.filter(g=>g.bracket==='consolation');
+  if(!wG.length) return '';
+  const maxWR=Math.max(...wG.map(g=>g.round));
+  // R1 playoff losers
+  const r1L=new Set(wG.filter(g=>g.round===1).map(g=>g.winner===g.team1?g.team2:g.team1));
+  // Build losers bracket from matchups where both teams are R1 playoff losers
+  const allWks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
+  const lbRounds=[];
+  let lbR1W=new Set();
+  for(const wk of allWks){
+    if(lbRounds.length>=maxWR-1) break;
+    const gms=D.matchups.filter(m=>m.week===wk&&r1L.has(m.team1_name)&&r1L.has(m.team2_name));
+    if(!gms.length) continue;
+    const mapped=gms.map(g=>({team1:g.team1_name,s1:g.team1_score,team2:g.team2_name,s2:g.team2_score,winner:g.team1_score>g.team2_score?g.team1_name:g.team2_name}));
+    if(!lbRounds.length) mapped.forEach(g=>lbR1W.add(g.winner));
+    lbRounds.push(mapped);
+  }
+  if(lbRounds.length>1) lbRounds[lbRounds.length-1].sort((a,b)=>(lbR1W.has(b.team1)&&lbR1W.has(b.team2)?1:0)-(lbR1W.has(a.team1)&&lbR1W.has(a.team2)?1:0));
+  const maxCR=cG.length?Math.max(...cG.map(g=>g.round)):0;
+
+  function pStyle(n){
+    if(n===12) return 'background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.25)';
+    if(n===11) return 'background:rgba(148,163,184,.12);color:#94a3b8;border:1px solid rgba(148,163,184,.2)';
+    if(n===10) return 'background:rgba(180,130,10,.15);color:#d97706;border:1px solid rgba(180,130,10,.25)';
+    if(n>=9)   return 'background:rgba(100,116,139,.1);color:#64748b;border:1px solid rgba(100,116,139,.15)';
+    if(n>=5)   return 'background:rgba(96,165,250,.1);color:#60a5fa;border:1px solid rgba(96,165,250,.15)';
+    if(n===1)  return 'background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.15)';
+    return 'background:rgba(100,116,139,.08);color:#64748b;border:1px solid rgba(100,116,139,.12)';
+  }
+  function gc(g,wp,lp){
+    const t1=g.team1||g.team1_name,t2=g.team2||g.team2_name;
+    const s1=g.score1??g.s1,s2=g.score2??g.s2;
+    const w=g.winner; const isT1W=w===t1;
+    function row(nm,sc,isW,pk){
+      const src=tLogo(nm);
+      const logo=src?`<img src="${src}" class="bk-logo" alt="" onerror="this.style.display='none'">`:`<div class="bk-logo" style="display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#10b981">${(nm||'?')[0]}</div>`;
+      return`<div class="bk-team ${isW?'bk-w':'bk-l'}">${logo}<span class="bk-name" title="${nm}">${nm}</span><span class="bk-score">${sc!=null?sc.toFixed(1):''}</span>${pk!=null?`<span class="bk-pick" style="${pStyle(pk)}">P${pk}</span>`:''}</div>`;
+    }
+    return`<div class="bk-game">${row(t1,s1,isT1W,isT1W?wp:lp)}${row(t2,s2,!isT1W,!isT1W?wp:lp)}</div>`;
+  }
+  function wRnd(r){
+    const gms=[...wG.filter(g=>g.round===r)].sort((a,b)=>(b.round_name.toLowerCase().includes('champ')?1:0)-(a.round_name.toLowerCase().includes('champ')?1:0));
+    const last=r===maxWR;
+    const lbl=r===1?'Quarterfinals':r===maxWR?'Finals':'Semifinals';
+    return`<div class="bk-round"><div class="bk-rlabel">${lbl}</div><div class="bk-games">${gms.map(g=>{
+      let wp=null,lp=null;
+      if(last){const n=g.round_name.toLowerCase();if(n.includes('champ')){wp=12;lp=11;}else{wp=10;lp=9;}}
+      return(last?`<div class="bk-game-lbl">${g.round_name}</div>`:'')+gc(g,wp,lp);
+    }).join('')}</div></div>`;
+  }
+  function lbRnd(idx){
+    const gms=lbRounds[idx]; if(!gms) return '';
+    const last=idx===lbRounds.length-1;
+    const lbl=idx===0?'Round 1':'Finals';
+    return`<div class="bk-round"><div class="bk-rlabel">${lbl}</div><div class="bk-games">${gms.map(g=>{
+      let wp=null,lp=null;
+      if(last){const f=lbR1W.has(g.team1)&&lbR1W.has(g.team2);wp=f?5:7;lp=f?6:8;}
+      return(last?`<div class="bk-game-lbl">${wp===5?'Picks 5/6':'Picks 7/8'}</div>`:'')+gc(g,wp,lp);
+    }).join('')}</div></div>`;
+  }
+  function cRnd(r){
+    const gms=cG.filter(g=>g.round===r); const last=r===maxCR;
+    const lbl=r===1?'Round 1':'Finals';
+    return`<div class="bk-round"><div class="bk-rlabel">${lbl}</div><div class="bk-games">${gms.map(g=>{
+      let wp=null,lp=null;
+      if(last){const n=g.round_name.toLowerCase();if(n.includes('booty')){wp=1;lp=2;}else{wp=3;lp=4;}}
+      return(last?`<div class="bk-game-lbl">${g.round_name}</div>`:'')+gc(g,wp,lp);
+    }).join('')}</div></div>`;
+  }
+  const wHtml=Array.from({length:maxWR},(_,i)=>wRnd(i+1)).join('');
+  const lbHtml=lbRounds.map((_,i)=>lbRnd(i)).join('');
+  const cHtml=Array.from({length:maxCR},(_,i)=>cRnd(i+1)).join('');
+  return`<div class="bk-section">
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="ph-title">2025 Playoff Bracket</span>
+        <span class="ph-badge">Draft Pick Order</span>
+      </div>
+      <div class="bk-wrap">
+        <div class="bk-sub" style="flex:${maxWR}">
+          <div class="bk-sub-title">Winners Bracket</div>
+          <div class="bk-sub-sub">Picks 9–12 &nbsp;·&nbsp; Champion picks last</div>
+          <div class="bk-rounds">${wHtml}</div>
+        </div>
+        ${lbRounds.length?`<div class="bk-sub" style="flex:${lbRounds.length}">
+          <div class="bk-sub-title">Picks 5–8</div>
+          <div class="bk-sub-sub">First-Round Playoff Losers</div>
+          <div class="bk-rounds">${lbHtml}</div>
+        </div>`:''}
+        ${cHtml?`<div class="bk-sub" style="flex:${maxCR}">
+          <div class="bk-sub-title">Booty Bowl</div>
+          <div class="bk-sub-sub">Picks 1–4 &nbsp;·&nbsp; Champ picks first</div>
+          <div class="bk-rounds">${cHtml}</div>
+        </div>`:''}
+      </div>
+    </div>
   </div>`;
 }
 
