@@ -1443,7 +1443,7 @@ function renderSeasons(){
       const maxWR=Math.max(...wG.map(g=>g.round)),picks={};
       wG.filter(g=>g.round===maxWR).forEach(g=>{const loser=g.winner===g.team1?g.team2:g.team1;const n=(g.round_name||'').toLowerCase();if(n.includes('champ')){picks[g.winner]=12;picks[loser]=11;}else{picks[g.winner]=10;picks[loser]=9;}});
       const maxCR=cG.length?Math.max(...cG.map(g=>g.round)):0;
-      if(maxCR)cG.filter(g=>g.round===maxCR).forEach(g=>{const loser=g.winner===g.team1?g.team2:g.team1;const n=(g.round_name||'').toLowerCase();if(n.includes('booty')){picks[g.winner]=1;picks[loser]=2;}else{picks[g.winner]=3;picks[loser]=4;}});
+      if(maxCR)cG.filter(g=>g.round===maxCR).forEach(g=>{const loser=g.winner===g.team1?g.team2:g.team1;const n=(g.round_name||'').toLowerCase();if(n.includes('booty')){picks[g.winner]=4;picks[loser]=3;}else{picks[g.winner]=2;picks[loser]=1;}});
       const r1L=new Set(wG.filter(g=>g.round===1).map(g=>g.winner===g.team1?g.team2:g.team1));
       const allWks=[...new Set(DATA.matchups.filter(m=>m.season===yr&&m.matchup_type==='playoff').map(m=>m.week))].sort((a,b)=>a-b);
       const lbRds=[];let lbR1W=new Set();
