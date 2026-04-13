@@ -1,0 +1,21 @@
+{
+  "name": "SBT Fantasy Football",
+  "short_name": "SBT Fantasy",
+  "description": "Sigma Beta Tau Fantasy Football League",
+  "start_url": "./dashboard.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "categories": ["sports"],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "sbt-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
