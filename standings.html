@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Standings — SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+a{color:#10b981;text-decoration:none}
+
+/* Header */
+.header{background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);border-bottom:1px solid rgba(16,185,129,0.15);padding:20px 24px;flex-shrink:0}
+.header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:14px}
+.page-title{font-size:26px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.season-badge{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#10b981;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+
+/* Page content */
+.page-body{max-width:1300px;margin:0 auto;padding:24px}
+
+/* Tabs */
+.stand-tabs{display:flex;gap:0;border-bottom:2px solid rgba(255,255,255,0.06);margin-bottom:0;flex-wrap:wrap}
+.stand-tab{padding:10px 18px;border:none;background:transparent;color:#64748b;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.stand-tab:hover{color:#94a3b8}
+.stand-tab.on{color:#10b981;border-bottom-color:#10b981}
+
+/* Table */
+.table-wrap{overflow-x:auto;margin-top:0;border:1px solid rgba(255,255,255,0.06);border-radius:0 0 12px 12px;background:#0d1529}
+.table-inner{min-width:780px}
+.t-hdr{display:grid;grid-template-columns:var(--gcols);align-items:center;padding:10px 16px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.06);font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.8px}
+.t-row{display:grid;grid-template-columns:var(--gcols);align-items:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .1s}
+.t-row:last-child{border-bottom:none}
+.t-row:hover{background:rgba(255,255,255,0.025)}
+.t-row.alt{background:rgba(255,255,255,0.012)}
+.t-row.alt:hover{background:rgba(255,255,255,0.025)}
+
+/* Team cell */
+.t-team{display:flex;align-items:center;gap:8px;min-width:0}
+.t-logo{width:24px;height:24px;object-fit:contain;border-radius:4px;flex-shrink:0}
+.t-logo-ph{width:24px;height:24px;border-radius:4px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.t-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Cells */
+.c-rank{font-size:12px;font-weight:800;color:#475569;text-align:center}
+.c-num{font-size:12px;color:#94a3b8;text-align:center}
+.c-pf{font-size:12px;color:#10b981;font-weight:700;text-align:right}
+.c-dim{font-size:12px;color:#475569;text-align:right}
+.c-str-w{font-size:12px;color:#10b981;font-weight:700;text-align:center}
+.c-str-l{font-size:12px;color:#f87171;font-weight:700;text-align:center}
+.c-str-n{font-size:12px;color:#94a3b8;text-align:center}
+
+/* Badges */
+.bdg{font-size:9px;font-weight:700;border-radius:3px;padding:1px 4px;margin-left:3px;border:1px solid;display:inline-block}
+.bdg-div{color:#60a5fa;border-color:rgba(96,165,250,0.3)}
+.bdg-wins{color:#facc15;border-color:rgba(250,204,21,0.3)}
+.bdg-pf{color:#f97316;border-color:rgba(249,115,22,0.3)}
+
+/* Division header */
+.div-hdr{font-size:11px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:2px;padding:14px 16px 8px;border-bottom:1px solid rgba(16,185,129,0.15);background:rgba(16,185,129,0.03)}
+
+/* Section card */
+.section-card{background:#0d1529;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px}
+
+/* Loading */
+.loading{padding:60px;text-align:center;color:#475569;font-size:14px}
+
+/* Final trophy icons */
+.fin-icon{font-size:14px;padding-left:4px}
+</style>
+</head>
+<body>
+<div id="shell">
+<nav id="leftnav"></nav>
+<div id="main">
+<div id="ln-topbar">
+  <button id="ln-mobile-btn" onclick="lnToggleMobile()">&#9776;</button>
+  <span class="ln-topbar-title">Sigma Beta Tau Fantasy Football</span>
+</div>
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="page-title">Standings</div>
+      <span class="season-badge">2025 Season</span>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div id="app"><div class="loading">Loading standings…</div></div>
+</div>
+</div>
+</div>
+
+<script>
+const SEASON = 2025;
+const ACCENT = '#10b981';
+const DIV_ORDER = ['Sigma','Beta','Tau'];
+const GROUP_LABEL = 'Division';
+const BADGE_LABEL = 'DIV';
+
+const FRANCHISE_LOGOS = {
+  "Bear Exposures":"bearexposures-logo.jpg","Big Fat Chubby":"bigfatchubby-logo.jpg",
+  "Ceaser Salad Tossers":"ceaser-logo.jpg","Clitsburgh Feelers":"clitsburg-logo.jpg",
+  "Comeback Kid":"comebackkid-logo.jpg","Cooked To Perfection":"cookedtoperfection-logo.jpg",
+  "Gotham Rogues":"gotham-logo.gif","Smease Appeasers":"smease-logo.png",
+  "Team Freesh":"freesh-logo.jpg","The MUFF Divers":"muff-logo.png",
+  "Trump Train":"trumptrain-logo.jpg","skoot":"skoot-logo.jpg"
+};
+
+function tLogo(name){
+  if(!name) return '';
+  if(FRANCHISE_LOGOS[name]) return `team-logo/${FRANCHISE_LOGOS[name]}`;
+  const lower=name.toLowerCase();
+  for(const[k,v] of Object.entries(FRANCHISE_LOGOS)){
+    if(lower.includes(k.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g,''))) return `team-logo/${v}`;
+  }
+  return '';
+}
+function tLogoImg(name){
+  const src=tLogo(name);
+  return src
+    ?`<img src="${src}" class="t-logo" alt="" onerror="this.style.display='none'">`
+    :`<div class="t-logo-ph">${(name||'?')[0]}</div>`;
+}
+
+let D={matchups:[],divs:[],playoffGames:[]};
+let DIVS={};
+let stTab='regular';
+
+async function loadAll(){
+  const [matchups,divs,playoffGames]=await Promise.all([
+    fetch('data/matchups.json').then(r=>r.json()),
+    fetch('data/divisions.json').then(r=>r.json()).catch(()=>[]),
+    fetch('data/playoff_games.json').then(r=>r.json()).catch(()=>[])
+  ]);
+  D.matchups=matchups.filter(m=>m.season===SEASON);
+  D.divs=(divs||[]).filter(d=>d.season===SEASON);
+  D.divs.forEach(d=>{DIVS[d.team_name]=d.division;});
+  D.playoffGames=Array.isArray(playoffGames)?playoffGames:[];
+  render();
+}
+
+// ── Compute regular-season records from matchups ──
+function getRegStats(){
+  const reg=D.matchups.filter(m=>m.matchup_type==='regular');
+  const rec={};
+  reg.forEach(m=>{
+    const{team1_name:a,team1_score:as_,team2_name:b,team2_score:bs_}=m;
+    if(!rec[a])rec[a]={w:0,l:0,t:0,pf:0,pa:0,cw:0,cl:0,ct:0};
+    if(!rec[b])rec[b]={w:0,l:0,t:0,pf:0,pa:0,cw:0,cl:0,ct:0};
+    rec[a].pf+=as_||0; rec[b].pf+=bs_||0;
+    rec[a].pa+=bs_||0; rec[b].pa+=as_||0;
+    const sd=DIVS[a]&&DIVS[a]===DIVS[b];
+    if((as_||0)>(bs_||0)){rec[a].w++;rec[b].l++;if(sd){rec[a].cw++;rec[b].cl++;}}
+    else if((bs_||0)>(as_||0)){rec[b].w++;rec[a].l++;if(sd){rec[b].cw++;rec[a].cl++;}}
+    else{rec[a].t++;rec[b].t++;if(sd){rec[a].ct++;rec[b].ct++;}}
+  });
+  // streak
+  const streak={};
+  Object.keys(rec).forEach(t=>{
+    const tg=reg.filter(m=>m.team1_name===t||m.team2_name===t).sort((a,b)=>a.week-b.week);
+    if(!tg.length){streak[t]='—';return;}
+    let last=null,cnt=0;
+    tg.forEach(m=>{
+      const s1=m.team1_score||0,s2=m.team2_score||0;
+      const r=(m.team1_name===t?s1>s2:s2>s1)?'W':(m.team1_name===t?s1<s2:s2<s1)?'L':'T';
+      if(r===last)cnt++;else cnt=1;last=r;
+    });
+    streak[t]=(last||'—')+(cnt>1?cnt:'');
+  });
+  const sorted=Object.keys(rec).sort((a,b)=>(rec[b].w-rec[a].w)||(rec[b].pf-rec[a].pf));
+  return{rec,streak,sorted};
+}
+
+// ── Final standings from playoff_games ──
+function getFinalStandings(){
+  const wG=D.playoffGames.filter(g=>g.bracket==='playoff');
+  const cG=D.playoffGames.filter(g=>g.bracket==='consolation');
+  if(!wG.length)return[];
+  const maxWR=Math.max(...wG.map(g=>g.round)),picks={};
+  wG.filter(g=>g.round===maxWR).forEach(g=>{
+    const loser=g.winner===g.team1?g.team2:g.team1;
+    const n=(g.round_name||'').toLowerCase();
+    if(n.includes('champ')){picks[g.winner]=12;picks[loser]=11;}
+    else{picks[g.winner]=10;picks[loser]=9;}
+  });
+  const maxCR=cG.length?Math.max(...cG.map(g=>g.round)):0;
+  if(maxCR)cG.filter(g=>g.round===maxCR).forEach(g=>{
+    const loser=g.winner===g.team1?g.team2:g.team1;
+    const n=(g.round_name||'').toLowerCase();
+    if(n.includes('booty')){picks[g.winner]=4;picks[loser]=3;}
+    else{picks[g.winner]=2;picks[loser]=1;}
+  });
+  const r1L=new Set(wG.filter(g=>g.round===1).map(g=>g.winner===g.team1?g.team2:g.team1));
+  const allWks=[...new Set(D.matchups.filter(m=>m.matchup_type==='playoff').map(m=>m.week))].sort((a,b)=>a-b);
+  const lbRds=[];let lbR1W=new Set();
+  for(const wk of allWks){
+    if(lbRds.length>=maxWR-1)break;
+    const gms=D.matchups.filter(m=>m.week===wk&&m.matchup_type==='playoff'&&r1L.has(m.team1_name)&&r1L.has(m.team2_name));
+    if(!gms.length)continue;
+    const mp=gms.map(g=>({t1:g.team1_name,t2:g.team2_name,w:g.team1_score>g.team2_score?g.team1_name:g.team2_name}));
+    if(!lbRds.length)mp.forEach(g=>lbR1W.add(g.w));
+    lbRds.push(mp);
+  }
+  if(lbRds.length){
+    lbRds[lbRds.length-1].forEach(g=>{
+      const f=lbR1W.has(g.t1)&&lbR1W.has(g.t2);
+      const loser=g.w===g.t1?g.t2:g.t1;
+      picks[g.w]=f?5:7;picks[loser]=f?6:8;
+    });
+  }
+  return Object.entries(picks).sort((a,b)=>b[1]-a[1]).map(([team,pick])=>({team,pick}));
+}
+
+// ── Render ──
+function render(){
+  const{rec,streak,sorted}=getRegStats();
+  if(!sorted.length){
+    document.getElementById('app').innerHTML='<div class="loading">No standings data available.</div>';
+    return;
+  }
+
+  const lgLdr=sorted[0];
+  const lgLdrW=rec[lgLdr].w,lgLdrL=rec[lgLdr].l,lgLdrPF=rec[lgLdr].pf;
+  const leagueMaxW=lgLdrW,leagueMaxPF=lgLdrPF;
+
+  // Division groups (sorted by wins/PF already)
+  const divGroups={};
+  sorted.forEach(t=>{const d=DIVS[t];if(d)(divGroups[d]=divGroups[d]||[]).push(t);});
+  const divLeaderSet=new Set(Object.values(divGroups).map(g=>g[0]).filter(Boolean));
+  const divNames=DIV_ORDER.filter(d=>divGroups[d]);
+
+  function gbStr(t,ldrW,ldrL){
+    const gb=((ldrW-rec[t].w)+(rec[t].l-ldrL))/2;
+    return gb<=0?'—':gb%1===0?String(gb):gb.toFixed(1);
+  }
+  function backStr(t,ldrPF){
+    const bk=ldrPF-rec[t].pf;
+    return bk<=0?'—':bk.toFixed(1);
+  }
+  function badges(t,isDivLdr){
+    let b='';
+    if(isDivLdr)b+=`<span class="bdg bdg-div">${BADGE_LABEL}</span>`;
+    if(rec[t].w===leagueMaxW)b+=`<span class="bdg bdg-wins">WINS</span>`;
+    if(rec[t].pf===leagueMaxPF)b+=`<span class="bdg bdg-pf">PF</span>`;
+    return b;
+  }
+  function strClass(sc){
+    return sc.startsWith('W')?'c-str-w':sc.startsWith('L')?'c-str-l':'c-str-n';
+  }
+
+  const GCOLS='28px 1fr 36px 36px 36px 58px 48px 56px 58px 78px 58px 68px 80px';
+
+  function hdr(){
+    return`<div class="t-hdr" style="--gcols:${GCOLS}">
+      <div>#</div><div>Team</div>
+      <div style="text-align:center">W</div><div style="text-align:center">L</div><div style="text-align:center">T</div>
+      <div style="text-align:center">Win%</div><div style="text-align:center">GB</div>
+      <div style="text-align:center">Streak</div><div style="text-align:center">${BADGE_LABEL}</div>
+      <div style="text-align:right">PF</div><div style="text-align:right">Back</div>
+      <div style="text-align:right">PA</div><div></div>
+    </div>`;
+  }
+
+  function row(t,rank,ldrW,ldrL,ldrPF,isDivLdr,i){
+    const r=rec[t];
+    const gm=r.w+r.l+r.t;
+    const pct=gm>0?(r.w/gm).toFixed(3):'—';
+    const dRec=`${r.cw}-${r.cl}${r.ct>0?'-'+r.ct:''}`;
+    const sc=streak[t]||'—';
+    return`<div class="t-row${i%2?'':' alt'}" style="--gcols:${GCOLS}">
+      <div class="c-rank">${rank}</div>
+      <div class="t-team">${tLogoImg(t)}<span class="t-name">${t}</span>${badges(t,isDivLdr)}</div>
+      <div class="c-num">${r.w}</div><div class="c-num">${r.l}</div><div class="c-num">${r.t}</div>
+      <div class="c-num">${pct}</div>
+      <div class="c-num">${gbStr(t,ldrW,ldrL)}</div>
+      <div class="${strClass(sc)}">${sc}</div>
+      <div class="c-num">${dRec}</div>
+      <div class="c-pf">${r.pf>0?r.pf.toFixed(1):'—'}</div>
+      <div class="c-dim">${backStr(t,ldrPF)}</div>
+      <div class="c-dim">${r.pa>0?r.pa.toFixed(1):'—'}</div>
+      <div></div>
+    </div>`;
+  }
+
+  // Tabs
+  const tabDefs=[{k:'regular',l:'Regular Season'},...divNames.map(d=>({k:d,l:d})),{k:'final',l:'Final'}];
+  let tabs=`<div class="stand-tabs">`;
+  tabDefs.forEach(({k,l})=>{
+    tabs+=`<button class="stand-tab${stTab===k?' on':''}" onclick="setTab('${k}')">${l}</button>`;
+  });
+  tabs+=`</div>`;
+
+  let body='';
+
+  if(stTab==='final'){
+    const fRows=getFinalStandings();
+    if(!fRows.length){
+      body='<div class="loading">No playoff data yet.</div>';
+    } else {
+      body=`<div class="table-wrap"><div class="table-inner">${hdr()}`;
+      fRows.forEach(({team,pick},i)=>{
+        const r=rec[team]||{w:0,l:0,t:0,pf:0,pa:0,cw:0,cl:0,ct:0};
+        const gm=r.w+r.l+r.t;
+        const pct=gm>0?(r.w/gm).toFixed(3):'—';
+        const dRec=`${r.cw}-${r.cl}${r.ct>0?'-'+r.ct:''}`;
+        const sc=streak[team]||'—';
+        const finIcon=pick===12?'🏆':pick===1?'💩':'';
+        body+=`<div class="t-row${i%2?'':' alt'}" style="--gcols:${GCOLS}">
+          <div class="c-rank">${i+1}</div>
+          <div class="t-team">${tLogoImg(team)}<span class="t-name">${team}</span></div>
+          <div class="c-num">${r.w}</div><div class="c-num">${r.l}</div><div class="c-num">${r.t}</div>
+          <div class="c-num">${pct}</div>
+          <div class="c-num">—</div>
+          <div class="${strClass(sc)}">${sc}</div>
+          <div class="c-num">${dRec}</div>
+          <div class="c-pf">${r.pf>0?r.pf.toFixed(1):'—'}</div>
+          <div class="c-dim">—</div>
+          <div class="c-dim">${r.pa>0?r.pa.toFixed(1):'—'}</div>
+          <div class="fin-icon">${finIcon}</div>
+        </div>`;
+      });
+      body+=`</div></div>`;
+    }
+  } else if(stTab==='regular'){
+    body=`<div class="table-wrap"><div class="table-inner">${hdr()}`;
+    sorted.forEach((t,i)=>{
+      body+=row(t,i+1,lgLdrW,lgLdrL,lgLdrPF,divLeaderSet.has(t),i);
+    });
+    body+=`</div></div>`;
+  } else {
+    // Division view
+    const divTeams=divGroups[stTab]||[];
+    const dlt=divTeams[0];
+    const dldrW=dlt?rec[dlt].w:0,dldrL=dlt?rec[dlt].l:0,dldrPF=dlt?rec[dlt].pf:0;
+    body=`<div class="table-wrap"><div class="table-inner">${hdr()}`;
+    divTeams.forEach((t,i)=>{
+      body+=row(t,i+1,dldrW,dldrL,dldrPF,i===0,i);
+    });
+    body+=`</div></div>`;
+  }
+
+  document.getElementById('app').innerHTML=tabs+body;
+}
+
+function setTab(t){stTab=t;render();}
+
+loadAll();
+</script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('standings.html');</script>
+</body>
+</html>

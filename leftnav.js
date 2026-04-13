@@ -49,6 +49,7 @@ function _buildNavHTML(activePage, opts) {
     { href: 'dashboard.html',    label: 'Dashboard'     },
     { href: 'matchup.html',      label: 'Matchups'      },
     { href: 'team.html',         label: 'My Teams'      },
+    { href: 'standings.html',    label: 'Standings'     },
     { href: 'transactions.html', label: 'Activity'      },
     { href: 'players.html',      label: 'Free Agents'   },
     { href: 'trade.html',        label: 'Trade Builder' },
