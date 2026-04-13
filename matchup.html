@@ -46,11 +46,11 @@ a{color:#10b981;text-decoration:none}
 .mu-tab-team{display:flex;align-items:center;gap:7px}
 .mu-tab-logo{width:28px;height:28px;border-radius:7px;object-fit:contain;background:#0f172a;flex-shrink:0}
 .mu-tab-name{font-size:12px;font-weight:800;color:#e2e8f0;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mu-tab-scores{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 4px}
-.mu-tab-score{font-size:18px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;line-height:1;letter-spacing:.5px}
+.mu-tab-team-info{display:flex;flex-direction:column;gap:1px}
+.mu-tab-score{font-size:15px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#e2e8f0;line-height:1;letter-spacing:.5px}
 .mu-tab-score.win{color:#10b981}
 .mu-tab-score.loss{color:#64748b}
-.mu-tab-vs{font-size:9px;color:#334155;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.mu-tab-sep{font-size:9px;color:#334155;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:0 4px;align-self:center;flex-shrink:0}
 .mu-tab.playoff-tab{border-color:rgba(250,204,21,0.2);background:rgba(250,204,21,0.04)}
 .mu-tab.playoff-tab.active{border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.09)}
 
@@ -95,22 +95,22 @@ a{color:#10b981;text-decoration:none}
 .player-row.bench{opacity:.7}
 .pr-cell{display:flex;align-items:center;gap:7px;min-width:0}
 .pr-cell.right{flex-direction:row-reverse}
-.pr-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#0f172a;border:1px solid rgba(255,255,255,0.06)}
-.pr-nfl{width:20px;height:20px;object-fit:contain;flex-shrink:0}
+.pr-photo{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#0f172a;border:1px solid rgba(255,255,255,0.06)}
+.pr-nfl{width:24px;height:24px;object-fit:contain;flex-shrink:0}
 .pr-info{flex:1;min-width:0}
 .pr-info.right{text-align:right}
 .pr-name-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .pr-name-row.right{justify-content:flex-end}
-.pr-name{font-size:12px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-name{font-size:14px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr-slot{font-size:8px;font-weight:800;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.07);color:#64748b;white-space:nowrap;flex-shrink:0}
-.pr-statline{font-size:10px;color:#64748b;margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-statline{font-size:12px;color:#64748b;margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr-statline.right{text-align:right}
 .pr-pts-cell{text-align:center}
-.pr-pts{font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px;line-height:1}
+.pr-pts{font-size:26px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px;line-height:1}
 .pr-pts.high{color:#10b981}
 .pr-pts.low{color:#64748b}
 .pr-pts.even{color:#94a3b8}
-.pr-pts.bench-pts{color:#475569;font-size:16px}
+.pr-pts.bench-pts{color:#475569;font-size:20px}
 .pr-empty{color:#334155;font-size:11px;font-style:italic}
 
 /* Adjustments */
@@ -142,11 +142,35 @@ a{color:#10b981;text-decoration:none}
 .snc-team{font-size:9px;color:#475569;font-weight:600}
 .snc-pts{font-size:13px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#10b981;white-space:nowrap}
 .snc-headline{font-size:11px;font-weight:700;color:#cbd5e1;line-height:1.45;margin-bottom:4px}
-.snc-body{font-size:10px;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.snc-body{font-size:10px;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .snc-date{font-size:9px;color:#334155;margin-top:5px}
 .pos-QB{color:#f472b6}.pos-RB{color:#22d3ee}.pos-WR{color:#34d399}.pos-TE{color:#fb923c}.pos-K{color:#facc15}.pos-DST{color:#a78bfa}
 .bg-QB{background:rgba(244,114,182,0.12)}.bg-RB{background:rgba(34,211,238,0.12)}.bg-WR{background:rgba(52,211,153,0.12)}.bg-TE{background:rgba(251,146,60,0.12)}.bg-K{background:rgba(250,204,21,0.12)}.bg-DST{background:rgba(167,139,250,0.12)}
 .no-news{font-size:11px;color:#334155;text-align:center;padding:20px 0}
+
+/* Player / News modals */
+.mu-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px}
+.mu-modal{background:#0d1b2e;border:1px solid rgba(255,255,255,0.08);border-radius:18px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.7)}
+.mum-hdr{background:linear-gradient(135deg,rgba(16,185,129,0.08),transparent);border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 20px;display:flex;align-items:center;gap:14px}
+.mum-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(16,185,129,0.3);flex-shrink:0;background:#0f172a}
+.mum-title{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;color:#e2e8f0;line-height:1}
+.mum-meta{font-size:11px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mum-close{margin-left:auto;background:none;border:none;color:#475569;font-size:22px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0}
+.mum-close:hover{color:#e2e8f0}
+.mum-body{padding:16px 20px}
+.mum-section{margin-bottom:18px}
+.mum-sec-title{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.mum-stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;gap:8px}
+.mum-stat-row:last-child{border-bottom:none}
+.mum-wk{color:#64748b;font-weight:700;flex-shrink:0;min-width:36px}
+.mum-pts{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#10b981;letter-spacing:.5px;flex-shrink:0}
+.mum-line{color:#94a3b8;font-size:11px;flex:1;text-align:center}
+.mum-article{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.mum-article:last-child{border-bottom:none}
+.mum-art-headline{font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.45;margin-bottom:4px}
+.mum-art-source{font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.mum-art-story{font-size:11px;color:#94a3b8;line-height:1.55;margin-bottom:4px}
+.mum-art-analysis{font-size:11px;color:#64748b;line-height:1.55;border-left:2px solid rgba(16,185,129,0.3);padding-left:8px}
 </style>
 </head>
 <body>
@@ -332,16 +356,18 @@ function render(){
     return`<div class="mu-tab ${isPO?'playoff-tab':''} ${active}" onclick="selMatchup(${i})">
       <div class="mu-tab-team">
         ${t1l?`<img src="${t1l}" class="mu-tab-logo" onerror="this.style.display='none'">`:`<div class="mu-tab-logo" style="background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#10b981">${(m.team1_name||'?')[0]}</div>`}
-        <span class="mu-tab-name">${shortName(m.team1_name)}</span>
+        <div class="mu-tab-team-info">
+          <span class="mu-tab-name">${shortName(m.team1_name)}</span>
+          <span class="mu-tab-score ${t1w?'win':t2w?'loss':''}">${m.team1_score??'—'}</span>
+        </div>
       </div>
-      <div class="mu-tab-scores">
-        <span class="mu-tab-score ${t1w?'win':t2w?'loss':''}">${m.team1_score??'—'}</span>
-        <span class="mu-tab-vs">vs</span>
-        <span class="mu-tab-score ${t2w?'win':t1w?'loss':''}">${m.team2_score??'—'}</span>
-      </div>
+      <span class="mu-tab-sep">vs</span>
       <div class="mu-tab-team">
+        <div class="mu-tab-team-info" style="text-align:right">
+          <span class="mu-tab-name">${shortName(m.team2_name)}</span>
+          <span class="mu-tab-score ${t2w?'win':t1w?'loss':''}">${m.team2_score??'—'}</span>
+        </div>
         ${t2l?`<img src="${t2l}" class="mu-tab-logo" onerror="this.style.display='none'">`:`<div class="mu-tab-logo" style="background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#10b981">${(m.team2_name||'?')[0]}</div>`}
-        <span class="mu-tab-name">${shortName(m.team2_name)}</span>
       </div>
     </div>`;
   }).join('');
@@ -376,7 +402,7 @@ function playerCell(p, isRight, week, isBench){
     :`<div class="pr-photo" style="background:#0f172a;display:flex;align-items:center;justify-content:center;font-size:12px;color:#475569">${(p.name||'?')[0]}</div>`;
   const nfl=p.nfl_team
     ?`<img src="${NFL_LOGO(p.nfl_team)}" class="pr-nfl" alt="" onerror="this.style.display='none'">`
-    :`<div style="width:20px"></div>`;
+    :`<div style="width:24px"></div>`;
   const wkStats=STAT_MAP[p.name.toLowerCase()]?.[week]||{};
   const statLine=wkStats.stat_line||'';
   const pos=p.position||'';
@@ -387,10 +413,11 @@ function playerCell(p, isRight, week, isBench){
   </div>`;
   const statHtml=statLine?`<div class="pr-statline ${isRight?'right':''}">${statLine}</div>`:'';
   const infoEl=`<div class="pr-info ${isRight?'right':''}">${nameRow}${statHtml}</div>`;
+  const safeN=(p.name||'').replace(/"/g,'&quot;');
 
   return isRight
-    ?`<div class="pr-cell right">${photo}${nfl}${infoEl}</div>`
-    :`<div class="pr-cell">${photo}${nfl}${infoEl}</div>`;
+    ?`<div class="pr-cell right" style="cursor:pointer" onclick="openPlayerModal(this)" data-name="${safeN}" data-pos="${pos}" data-nfl="${p.nfl_team||''}" data-slot="${slotLbl}">${photo}${nfl}${infoEl}</div>`
+    :`<div class="pr-cell" style="cursor:pointer" onclick="openPlayerModal(this)" data-name="${safeN}" data-pos="${pos}" data-nfl="${p.nfl_team||''}" data-slot="${slotLbl}">${photo}${nfl}${infoEl}</div>`;
 }
 
 function ptsCell(pts, vsScore, isBench){
@@ -564,7 +591,8 @@ function renderSidebar(){
     const pos=p.position||'';
     const wkStats=STAT_MAP[p.name.toLowerCase()]?.[m.week]||{};
     const pts=p.points??wkStats.fpts??null;
-    return`<div class="sb-news-card">
+    const safeKey=(p.name||'').toLowerCase().replace(/"/g,'&quot;');
+    return`<div class="sb-news-card" style="cursor:pointer" onclick="openNewsModal(this)" data-player="${safeKey}">
       <div class="snc-player">
         ${photo}
         <div class="snc-info">
@@ -579,7 +607,7 @@ function renderSidebar(){
       </div>
       <div class="snc-headline">${art.headline||''}</div>
       ${art.story?`<div class="snc-body">${art.story}</div>`:''}
-      <div class="snc-date">${art.date||''}</div>
+      <div class="snc-date">${art.date||''} · tap to read more</div>
     </div>`;
   }).filter(Boolean).join('');
 
@@ -588,6 +616,93 @@ function renderSidebar(){
   document.getElementById('mu-sidebar').innerHTML=`
     <div class="sb-news-hdr">&#127944; Player News This Week</div>
     ${cards}`;
+}
+
+function openPlayerModal(el){
+  const name=el.dataset.name, pos=el.dataset.pos, nfl=el.dataset.nfl, slot=el.dataset.slot;
+  const key=name.toLowerCase();
+  const photo=PHOTO_MAP[key]
+    ?`<img src="${PHOTO_MAP[key]}" class="mum-photo" alt="" onerror="this.style.background='#0f172a'">`
+    :`<div class="mum-photo" style="display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#10b981">${(name||'?')[0]}</div>`;
+  const nflImg=nfl?`<img src="${NFL_LOGO(nfl)}" style="width:18px;height:18px;object-fit:contain" alt="" onerror="this.style.display='none'">` :'';
+  // Weekly stats
+  const wkData=STAT_MAP[key]||{};
+  const weeks=Object.keys(wkData).map(Number).sort((a,b)=>a-b);
+  const statsHtml=weeks.length
+    ?weeks.map(wk=>{const s=wkData[wk];return`<div class="mum-stat-row">
+        <span class="mum-wk">Wk ${wk}</span>
+        <span class="mum-line">${s.stat_line||'—'}</span>
+        <span class="mum-pts">${s.fpts!=null?parseFloat(s.fpts).toFixed(1):'—'}</span>
+      </div>`;}).join('')
+    :'<div style="color:#475569;font-size:12px;padding:8px 0">No weekly stats available.</div>';
+  // News
+  const arts=NEWS_MAP[key]||[];
+  const newsHtml=arts.length
+    ?arts.slice(0,6).map(a=>`<div class="mum-article">
+        <div class="mum-art-headline">${a.headline||''}</div>
+        <div class="mum-art-source">${a.source||'Rotowire'} · ${a.date||''}</div>
+        ${a.story?`<div class="mum-art-story">${a.story}</div>`:''}
+        ${a.analysis?`<div class="mum-art-analysis">${a.analysis}</div>`:''}
+      </div>`).join('')
+    :'<div style="color:#475569;font-size:12px;padding:8px 0">No recent news.</div>';
+  document.body.insertAdjacentHTML('beforeend',`<div class="mu-modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="mu-modal">
+      <div class="mum-hdr">
+        ${photo}
+        <div style="flex:1;min-width:0">
+          <div class="mum-title">${name}</div>
+          <div class="mum-meta">
+            <span class="snc-pos pos-${pos} bg-${pos}" style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px">${pos}</span>
+            ${nflImg}
+            <span>${nfl||''}</span>
+            ${slot?`<span style="color:#475569">· ${slot}</span>`:''}
+          </div>
+        </div>
+        <button class="mum-close" onclick="this.closest('.mu-modal-overlay').remove()">&#10005;</button>
+      </div>
+      <div class="mum-body">
+        <div class="mum-section">
+          <div class="mum-sec-title">&#128200; Weekly Stats</div>
+          ${statsHtml}
+        </div>
+        <div class="mum-section">
+          <div class="mum-sec-title">&#128240; Recent News</div>
+          ${newsHtml}
+        </div>
+      </div>
+    </div>
+  </div>`);
+}
+
+function openNewsModal(el){
+  const key=el.dataset.player;
+  const arts=NEWS_MAP[key]||[];
+  if(!arts.length) return;
+  const displayName=key.replace(/\b\w/g,c=>c.toUpperCase());
+  const photo=PHOTO_MAP[key]
+    ?`<img src="${PHOTO_MAP[key]}" class="mum-photo" alt="" onerror="this.style.background='#0f172a'">`
+    :`<div class="mum-photo" style="display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#10b981">${(displayName||'?')[0]}</div>`;
+  const newsHtml=arts.map(a=>`<div class="mum-article">
+    <div class="mum-art-headline">${a.headline||''}</div>
+    <div class="mum-art-source">${a.source||'Rotowire'} · ${a.date||''}</div>
+    ${a.story?`<div class="mum-art-story">${a.story}</div>`:''}
+    ${a.analysis?`<div class="mum-art-analysis">${a.analysis}</div>`:''}
+  </div>`).join('');
+  document.body.insertAdjacentHTML('beforeend',`<div class="mu-modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="mu-modal">
+      <div class="mum-hdr">
+        ${photo}
+        <div style="flex:1;min-width:0">
+          <div class="mum-title">${displayName}</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px">${arts.length} article${arts.length!==1?'s':''}</div>
+        </div>
+        <button class="mum-close" onclick="this.closest('.mu-modal-overlay').remove()">&#10005;</button>
+      </div>
+      <div class="mum-body">
+        <div class="mum-section">${newsHtml}</div>
+      </div>
+    </div>
+  </div>`);
 }
 
 loadAll();
