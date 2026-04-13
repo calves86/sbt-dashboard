@@ -376,7 +376,7 @@ function buildMatchupCards(){
   const cards=wkGames.map(m=>{
     const t1w=m.team1_score>m.team2_score,t2w=m.team2_score>m.team1_score;
     const isPO=m.matchup_type==='playoff';
-    return`<div class="mu-card ${isPO?'playoff':''}" onclick="openMatchup(${selWeek},'${m.team1_name.replace(/'/g,"\\'")}','${m.team2_name.replace(/'/g,"\\'")}',${m.team1_score},${m.team2_score},'${m.matchup_type||'regular'}')">
+    return`<div class="mu-card ${isPO?'playoff':''}" onclick="location.href='matchup.html?week='+selWeek" style="cursor:pointer">
       <div class="mu-team">
         ${tLogoImg(m.team1_name)}
         <div style="min-width:0"><div class="mu-tname">${m.team1_name}</div></div>

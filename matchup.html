@@ -308,6 +308,8 @@ async function loadAll(){
 
     const wks = [...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
     selWeek = wks[wks.length-1]||1;
+    const _qw=parseInt(new URLSearchParams(location.search).get('week'));
+    if(_qw && wks.includes(_qw)) selWeek=_qw;
     selIdx  = 0;
 
     document.getElementById('mu-loading').style.display='none';
