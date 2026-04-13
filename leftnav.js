@@ -52,7 +52,8 @@ function _buildNavHTML(activePage, opts) {
     { href: 'transactions.html', icon: '&#128257;', label: 'Activity'      },
     { href: 'players.html',      icon: '&#10133;',  label: 'Free Agents'   },
     { href: 'trade.html',        icon: '&#8652;',   label: 'Trade Builder' },
-    { href: 'mock-draft.html',   icon: '&#127919;', label: 'Mock Draft', badge: 'NEW' },
+    { href: 'playoff.html',      icon: '&#127942;', label: 'Playoffs'      },
+    { href: 'mock-draft.html',   icon: '&#127919;', label: 'Mock Draft'    },
   ];
 
   // History nav items — all route to index.html with a ?tab= param

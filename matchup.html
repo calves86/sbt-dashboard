@@ -320,6 +320,15 @@ async function loadAll(){
   }
 }
 
+function weekLabel(wk){
+  const poWks=[...new Set(D.matchups.filter(m=>m.matchup_type==='playoff').map(m=>m.week))].sort((a,b)=>a-b);
+  const idx=poWks.indexOf(wk);
+  if(idx===0) return 'Playoffs · Quarterfinals';
+  if(idx===1) return 'Playoffs · Semifinals';
+  if(idx===2) return 'Playoffs · Finals';
+  if(idx>2)   return `Playoffs · Wk ${idx+1}`;
+  return `Week ${wk}`;
+}
 function navWeek(delta){
   const wks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
   const idx=wks.indexOf(selWeek)+delta;
@@ -340,7 +349,7 @@ function render(){
   const wks=[...new Set(D.matchups.map(m=>m.week))].sort((a,b)=>a-b);
   const wkIdx=wks.indexOf(selWeek);
   document.getElementById('wn-prev').disabled=wkIdx<=0;
-  document.getElementById('wn-lbl').textContent=`Week ${selWeek}`;
+  document.getElementById('wn-lbl').textContent=weekLabel(selWeek);
   document.getElementById('wn-next').disabled=wkIdx>=wks.length-1;
 
   const weekMatchups=D.matchups.filter(m=>m.week===selWeek).sort((a,b)=>b.team1_score-a.team1_score);
@@ -453,7 +462,7 @@ function renderDetail(){
         <span class="sb-vs">VS</span>
         <span class="sb-score ${t2w?'win':t1w?'loss':'tie'}">${m.team2_score??'—'}</span>
       </div>
-      <div class="sb-type">Week ${m.week}</div>
+      <div class="sb-type">${weekLabel(m.week)}</div>
     </div>
     <div class="sb-team right">
       ${tLogoEl(m.team2_name,'sb-logo')}
