@@ -77,6 +77,7 @@ function _buildNavHTML(activePage, opts) {
   const stats = [
     { href: 'index.html?tab=Player+Stats', label: 'Player Stats'   },
     { href: 'ngs-stats.html',              label: 'Next Gen Stats', badge: 'NEW' },
+    { href: 'ngs-charts.html',             label: 'NGS Charts',     badge: 'NEW' },
   ];
 
   // Draft nav items

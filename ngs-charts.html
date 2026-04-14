@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10b981">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SBT Fantasy">
+<link rel="apple-touch-icon" href="sbt-logo.png">
+<title>NGS Charts — SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<script src="data/ngs_charts_2025.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+a{color:#10b981;text-decoration:none}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);border-bottom:1px solid rgba(16,185,129,0.15);padding:20px 24px;flex-shrink:0}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.page-title{font-size:26px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nfl-badge{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#10b981;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+.source-link{font-size:11px;color:#475569;font-weight:600}
+.source-link a{color:#475569;text-decoration:underline;text-underline-offset:2px}
+.source-link a:hover{color:#94a3b8}
+
+/* ── Controls ── */
+.controls{background:#0f172a;border-bottom:1px solid rgba(255,255,255,0.05);padding:12px 24px}
+.controls-inner{max-width:1400px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+select{background:#1e293b;border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:6px 28px 6px 10px;border-radius:8px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+select:focus{outline:none;border-color:rgba(16,185,129,0.4)}
+select:hover{border-color:rgba(255,255,255,0.15)}
+
+/* ── Type tabs ── */
+.type-tabs{background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.06);padding:0 24px;display:flex;overflow-x:auto}
+.type-tabs-inner{max-width:1400px;margin:0 auto;display:flex;white-space:nowrap}
+.type-tab{padding:10px 16px;border:none;background:transparent;color:#475569;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.type-tab:hover{color:#94a3b8}
+.type-tab.on{color:#10b981;border-bottom-color:#10b981}
+
+/* ── Pos filter pills ── */
+.pos-pills{background:#0b1120;padding:10px 24px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.04)}
+.pos-pills-inner{max-width:1400px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap}
+.pos-pill{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#475569;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:all .15s}
+.pos-pill:hover{border-color:rgba(255,255,255,0.2);color:#94a3b8}
+.pos-pill.on{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#10b981}
+
+/* ── Search ── */
+.search-wrap{padding:10px 24px;background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.04)}
+.search-wrap-inner{max-width:1400px;margin:0 auto}
+.search-input{background:#1e293b;border:1px solid rgba(255,255,255,0.08);color:#e2e8f0;font-size:13px;font-family:'DM Sans',sans-serif;padding:8px 14px;border-radius:8px;width:260px;max-width:100%;outline:none;transition:border-color .15s}
+.search-input::placeholder{color:#334155}
+.search-input:focus{border-color:rgba(16,185,129,0.4)}
+
+/* ── Chart count ── */
+.chart-count{padding:10px 24px 0;font-size:12px;color:#334155;font-weight:600}
+.chart-count span{color:#475569}
+
+/* ── Gallery grid ── */
+.page-body{max-width:1400px;margin:0 auto;padding:14px 24px 32px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.chart-card{background:#0f172a;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;transition:border-color .15s,transform .15s;cursor:pointer}
+.chart-card:hover{border-color:rgba(16,185,129,0.3);transform:translateY(-2px)}
+.chart-img-wrap{position:relative;background:#0b1120;aspect-ratio:1;overflow:hidden}
+.chart-img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s}
+.chart-img.loading{opacity:0}
+.chart-type-badge{position:absolute;top:8px;left:8px;font-size:9px;font-weight:800;letter-spacing:.8px;padding:3px 7px;border-radius:4px;text-transform:uppercase}
+.chart-type-badge.route{background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
+.chart-type-badge.pass{background:rgba(167,139,250,0.2);color:#a78bfa;border:1px solid rgba(167,139,250,0.3)}
+.chart-type-badge.carry{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.25)}
+.chart-info{padding:10px 12px}
+.chart-player{font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-meta{font-size:11px;color:#475569;margin-top:3px;display:flex;gap:8px;align-items:center}
+.chart-team{font-weight:700;color:#64748b}
+.chart-pos{font-weight:700;letter-spacing:.3px}
+.chart-stats{font-size:11px;color:#64748b;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.chart-stat{background:rgba(255,255,255,0.04);padding:2px 7px;border-radius:4px}
+.chart-stat strong{color:#94a3b8}
+
+/* ── Lightbox ── */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
+.lightbox.open{display:flex}
+.lb-inner{position:relative;max-width:900px;width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+.lb-img{max-width:100%;max-height:85vh;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,0.8)}
+.lb-info{background:#0f172a;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 20px;width:100%;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.lb-player{font-size:18px;font-weight:800;color:#e2e8f0}
+.lb-sub{font-size:12px;color:#475569;margin-top:2px}
+.lb-stats{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap}
+.lb-stat{text-align:center}
+.lb-stat-val{font-size:16px;font-weight:800;color:#10b981}
+.lb-stat-lbl{font-size:10px;color:#475569;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.lb-close{position:absolute;top:-12px;right:-12px;width:32px;height:32px;border-radius:50%;background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;font-size:18px;line-height:32px;text-align:center;cursor:pointer;transition:all .15s}
+.lb-close:hover{background:#334155;color:#e2e8f0}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;font-size:20px;line-height:40px;text-align:center;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.lb-nav:hover{background:#1e293b;color:#e2e8f0}
+.lb-prev{left:-52px}
+.lb-next{right:-52px}
+
+/* ── Empty / loading ── */
+.state-msg{padding:60px 24px;text-align:center;color:#334155;font-size:13px;font-weight:600}
+
+/* ── Mobile ── */
+@media(max-width:700px){
+  .header{padding:12px 14px}
+  .page-title{font-size:20px}
+  .source-link{display:none}
+  .controls{padding:8px 14px}
+  .controls-inner{gap:8px}
+  .ctrl-group{flex:1;min-width:0}
+  select{width:100%;font-size:13px;padding:8px 28px 8px 10px}
+  .type-tabs{padding:0 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .type-tabs::-webkit-scrollbar{display:none}
+  .pos-pills{padding:8px 14px}
+  .search-wrap{padding:8px 14px}
+  .search-input{width:100%}
+  .chart-count{padding:8px 14px 0}
+  .page-body{padding:10px 14px 24px}
+  .gallery{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+  .chart-info{padding:8px 10px}
+  .chart-player{font-size:12px}
+  .lb-nav{display:none}
+  .lb-info{gap:10px}
+  .lb-stats{gap:10px;margin-left:0}
+}
+</style>
+</head>
+<body>
+<div id="shell">
+  <nav id="leftnav"></nav>
+  <div id="main">
+
+    <!-- Top bar (mobile) -->
+    <div id="ln-topbar">
+      <div class="ln-topbar-title">NGS Charts</div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="lbClickOutside(event)">
+      <div class="lb-inner">
+        <span class="lb-close" onclick="closeLb()">&#215;</span>
+        <button class="lb-nav lb-prev" onclick="lbNav(-1)">&#8249;</button>
+        <button class="lb-nav lb-next" onclick="lbNav(+1)">&#8250;</button>
+        <img class="lb-img" id="lb-img" src="" alt="">
+        <div class="lb-info" id="lb-info"></div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="page-title">NGS Charts</div>
+          <span class="nfl-badge" id="year-badge">2025</span>
+        </div>
+        <div class="source-link">Source: <a href="https://nextgenstats.nfl.com/charts/list/all" target="_blank" rel="noopener">nextgenstats.nfl.com</a></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="controls-inner">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Season</span>
+          <select id="year-sel"></select>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">Week</span>
+          <select id="week-sel"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart type tabs -->
+    <div class="type-tabs">
+      <div class="type-tabs-inner">
+        <button class="type-tab on" data-type="all"    onclick="setType('all')">All</button>
+        <button class="type-tab"    data-type="route"  onclick="setType('route')">Route</button>
+        <button class="type-tab"    data-type="pass"   onclick="setType('pass')">Pass</button>
+        <button class="type-tab"    data-type="carry"  onclick="setType('carry')">Carry</button>
+      </div>
+    </div>
+
+    <!-- Position filter pills -->
+    <div class="pos-pills">
+      <div class="pos-pills-inner" id="pos-pills">
+        <button class="pos-pill on" data-pos="" onclick="setPos('')">All</button>
+        <button class="pos-pill" data-pos="QB" onclick="setPos('QB')">QB</button>
+        <button class="pos-pill" data-pos="WR" onclick="setPos('WR')">WR</button>
+        <button class="pos-pill" data-pos="RB" onclick="setPos('RB')">RB</button>
+        <button class="pos-pill" data-pos="TE" onclick="setPos('TE')">TE</button>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <div class="search-wrap-inner">
+        <input class="search-input" id="search-input" type="text" placeholder="Search player..." oninput="render()">
+      </div>
+    </div>
+
+    <!-- Chart count -->
+    <div class="chart-count" id="chart-count"></div>
+
+    <!-- Gallery -->
+    <div class="page-body">
+      <div class="gallery" id="gallery"></div>
+      <div class="state-msg" id="state-msg" style="display:none"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="leftnav.js"></script>
+<script>
+initLeftNav('ngs-charts.html', {
+  leagueName: 'SBT Fantasy',
+  leagueSub:  'Sigma Beta Tau',
+  logo:       'sbt-logo.png',
+});
+</script>
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+
+let CHARTS = null;
+let activeYear = 2025;
+let activeWeek = 'REG_01';
+let activeType = 'all';
+let activePos  = '';
+let filteredCards = [];
+let lbIdx = 0;
+
+const AVAILABLE_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019];
+const _yearLoaded = { 2025: true };
+
+const WEEK_ORDER = [
+  ...Array.from({length:18},(_,i)=>({ key:`REG_${String(i+1).padStart(2,'0')}`, label:`Week ${i+1}` })),
+];
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+
+function boot() {
+  if (!window.NGS_CHARTS) { showMsg('Charts data not found. Run: python fetch_ngs_charts.py 2025'); return; }
+  CHARTS = window.NGS_CHARTS;
+  window['NGS_CHARTS_2025'] = CHARTS;
+  buildYearSel();
+  buildWeekSel();
+  render();
+}
+
+// ── Year selector ─────────────────────────────────────────────────────────────
+
+function buildYearSel() {
+  const sel = document.getElementById('year-sel');
+  sel.innerHTML = AVAILABLE_YEARS.map(y =>
+    `<option value="${y}"${y === activeYear ? ' selected':''}>${y}</option>`
+  ).join('');
+  sel.addEventListener('change', e => setYear(parseInt(e.target.value, 10)));
+}
+
+function setYear(year) {
+  if (year === activeYear) return;
+  activeYear = year;
+  document.getElementById('year-badge').textContent = year;
+  if (_yearLoaded[year]) {
+    CHARTS = window['NGS_CHARTS_' + year] || CHARTS;
+    _afterYearLoad();
+    return;
+  }
+  showMsg(`Loading ${year} charts...`);
+  const s = document.createElement('script');
+  s.src = `data/ngs_charts_${year}.js`;
+  s.onload = () => {
+    _yearLoaded[year] = true;
+    window['NGS_CHARTS_' + year] = window.NGS_CHARTS;
+    CHARTS = window.NGS_CHARTS;
+    hideMsg();
+    _afterYearLoad();
+  };
+  s.onerror = () => showMsg(`No charts found for ${year}. Run: python fetch_ngs_charts.py ${year}`);
+  document.head.appendChild(s);
+}
+
+function _afterYearLoad() {
+  activeWeek = Object.keys(CHARTS).sort()[0] || 'REG_01';
+  buildWeekSel();
+  render();
+}
+
+// ── Week selector ─────────────────────────────────────────────────────────────
+
+function buildWeekSel() {
+  const avail = Object.keys(CHARTS).sort();
+  const sel = document.getElementById('week-sel');
+  sel.innerHTML = WEEK_ORDER
+    .filter(w => avail.includes(w.key))
+    .map(w => `<option value="${w.key}"${w.key===activeWeek?' selected':''}>${w.label}</option>`)
+    .join('');
+  if (!avail.includes(activeWeek)) {
+    activeWeek = avail[0] || 'REG_01';
+    sel.value = activeWeek;
+  }
+  sel.onchange = e => { activeWeek = e.target.value; render(); };
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+
+function setType(t) {
+  activeType = t;
+  document.querySelectorAll('.type-tab').forEach(el =>
+    el.classList.toggle('on', el.dataset.type === t));
+  render();
+}
+
+function setPos(p) {
+  activePos = p;
+  document.querySelectorAll('.pos-pill').forEach(el =>
+    el.classList.toggle('on', el.dataset.pos === p));
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render() {
+  const query = document.getElementById('search-input').value.trim().toLowerCase();
+  let cards = (CHARTS && CHARTS[activeWeek]) || [];
+
+  if (activeType !== 'all') cards = cards.filter(c => c.type === activeType);
+  if (activePos)            cards = cards.filter(c => c.pos === activePos);
+  if (query)                cards = cards.filter(c => c.player.toLowerCase().includes(query));
+
+  filteredCards = cards;
+
+  const countEl = document.getElementById('chart-count');
+  countEl.innerHTML = `<span>${cards.length}</span> chart${cards.length !== 1 ? 's' : ''}`;
+
+  if (!cards.length) {
+    document.getElementById('gallery').innerHTML = '';
+    showMsg('No charts for this selection.');
+    return;
+  }
+  hideMsg();
+
+  document.getElementById('gallery').innerHTML = cards.map((c, i) => `
+    <div class="chart-card" onclick="openLb(${i})">
+      <div class="chart-img-wrap">
+        <img class="chart-img loading" src="${c.img_md}" alt="${c.player}"
+             loading="lazy" onload="this.classList.remove('loading')"
+             onerror="this.parentElement.style.background='#1e293b'">
+        <span class="chart-type-badge ${c.type}">${c.type}</span>
+      </div>
+      <div class="chart-info">
+        <div class="chart-player">${c.player}</div>
+        <div class="chart-meta">
+          <span class="chart-team">${c.team}</span>
+          <span class="chart-pos">${c.pos}</span>
+        </div>
+        <div class="chart-stats">${buildStatPills(c)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function buildStatPills(c) {
+  const pills = [];
+  if (c.type === 'route') {
+    if (c.rec  != null) pills.push(`<span class="chart-stat"><strong>${c.rec}</strong> REC</span>`);
+    if (c.yds  != null) pills.push(`<span class="chart-stat"><strong>${c.yds}</strong> YDS</span>`);
+    if (c.td   != null && c.td > 0) pills.push(`<span class="chart-stat"><strong>${c.td}</strong> TD</span>`);
+  } else if (c.type === 'pass') {
+    if (c.cmp  != null) pills.push(`<span class="chart-stat"><strong>${c.cmp}/${c.att}</strong> CMP</span>`);
+    if (c.yds  != null) pills.push(`<span class="chart-stat"><strong>${c.yds}</strong> YDS</span>`);
+    if (c.td   != null) pills.push(`<span class="chart-stat"><strong>${c.td}TD/${c.int}INT</strong></span>`);
+    if (c.rtg  != null) pills.push(`<span class="chart-stat"><strong>${c.rtg}</strong> RTG</span>`);
+  } else if (c.type === 'carry') {
+    if (c.att  != null) pills.push(`<span class="chart-stat"><strong>${c.att}</strong> ATT</span>`);
+    if (c.yds  != null) pills.push(`<span class="chart-stat"><strong>${c.yds}</strong> YDS</span>`);
+    if (c.td   != null && c.td > 0) pills.push(`<span class="chart-stat"><strong>${c.td}</strong> TD</span>`);
+  }
+  return pills.join('');
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+
+function openLb(idx) {
+  lbIdx = idx;
+  _renderLb();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLb() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lbClickOutside(e) {
+  if (e.target === document.getElementById('lightbox')) closeLb();
+}
+
+function lbNav(dir) {
+  lbIdx = (lbIdx + dir + filteredCards.length) % filteredCards.length;
+  _renderLb();
+}
+
+function _renderLb() {
+  const c = filteredCards[lbIdx];
+  if (!c) return;
+  const img = document.getElementById('lb-img');
+  img.src = c.img_lg || c.img_md;
+  img.alt = c.player;
+  document.getElementById('lb-info').innerHTML = `
+    <div>
+      <div class="lb-player">${c.player}</div>
+      <div class="lb-sub">${c.team} &middot; ${c.pos} &middot; <span class="chart-type-badge ${c.type}" style="position:static;font-size:9px">${c.type}</span></div>
+    </div>
+    <div class="lb-stats">${buildLbStats(c)}</div>
+  `;
+}
+
+function buildLbStats(c) {
+  const s = [];
+  if (c.type === 'route') {
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.rec}</div><div class="lb-stat-lbl">Rec</div></div>`);
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.yds}</div><div class="lb-stat-lbl">Yards</div></div>`);
+    if (c.td > 0) s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.td}</div><div class="lb-stat-lbl">TD</div></div>`);
+  } else if (c.type === 'pass') {
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.cmp}/${c.att}</div><div class="lb-stat-lbl">CMP/ATT</div></div>`);
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.yds}</div><div class="lb-stat-lbl">Yards</div></div>`);
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.td}/${c.int}</div><div class="lb-stat-lbl">TD/INT</div></div>`);
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.rtg}</div><div class="lb-stat-lbl">RTG</div></div>`);
+  } else if (c.type === 'carry') {
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.att}</div><div class="lb-stat-lbl">Att</div></div>`);
+    s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.yds}</div><div class="lb-stat-lbl">Yards</div></div>`);
+    if (c.td > 0) s.push(`<div class="lb-stat"><div class="lb-stat-val">${c.td}</div><div class="lb-stat-lbl">TD</div></div>`);
+  }
+  return s.join('');
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape')      closeLb();
+  if (e.key === 'ArrowRight')  lbNav(+1);
+  if (e.key === 'ArrowLeft')   lbNav(-1);
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function showMsg(msg) {
+  const el = document.getElementById('state-msg');
+  el.textContent = msg;
+  el.style.display = '';
+  document.getElementById('gallery').innerHTML = '';
+}
+
+function hideMsg() {
+  document.getElementById('state-msg').style.display = 'none';
+}
+
+boot();
+</script>
+</body>
+</html>
