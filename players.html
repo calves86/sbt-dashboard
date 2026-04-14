@@ -122,6 +122,14 @@ a{color:#10b981;text-decoration:none}
 .chart-footer{display:flex;gap:16px;flex-wrap:wrap}
 .chart-footer-item{font-size:11px;color:#475569}
 .chart-footer-item span{font-weight:800}
+.pm-tab{padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#64748b;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.pm-tab.on{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:#10b981}
+.pm-chart-panel{display:block}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.adv-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px}
+.adv-val{font-size:20px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px;line-height:1.1}
+.adv-lbl{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+.adv-sub{font-size:9px;color:#334155;margin-top:1px}
 .career-table{width:100%;border-collapse:collapse}
 .career-table th{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:right;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.05)}
 .career-table th:first-child,.career-table th:nth-child(2){text-align:left}
@@ -497,6 +505,16 @@ function sortBy(col) {
 }
 
 /* ===== PLAYER STAT MODAL ===== */
+function pmTab(btn, chartId) {
+  btn.parentElement.querySelectorAll('.pm-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const target = document.getElementById(chartId);
+  if (!target) return;
+  target.parentElement.querySelectorAll('.pm-chart-panel').forEach(p=>{
+    p.style.display = p.id===chartId ? '' : 'none';
+  });
+}
+
 function openPlayerModal(idx) {
   const p = window._displayedPlayers[idx];
   if (!p) return;
@@ -531,38 +549,108 @@ function openPlayerModal(idx) {
     <div class="career-stat"><div class="career-stat-val" style="color:#e2e8f0">${avgSeason > 0 ? avgSeason.toFixed(1) : '—'}</div><div class="career-stat-lbl">Avg / Season</div></div>
   </div>`;
 
-  let chartHtml = '';
-  if (career.length > 0) {
-    const maxFpts = Math.max(...career.map(c => c.fpts || 0), 0.1);
-    const barMaxH = 56;
-    const bars = career.map(c => {
-      const isCur = c.year === 2025;
-      const h = Math.round(((c.fpts||0) / maxFpts) * barMaxH);
-      const barColor = isCur ? ACCENT : (c.fpts === bestSeason.fpts ? '#a78bfa' : 'rgba(16,185,129,0.3)');
-      return `<div class="chart-bar-col">
-        <div class="chart-bar-val">${(c.fpts||0) > 0 ? c.fpts.toFixed(0) : ''}</div>
-        <div class="chart-bar" style="height:${h}px;background:${barColor}" title="${c.year}: ${c.fpts ? c.fpts.toFixed(1) : '—'} pts"></div>
-        <div class="chart-bar-yr ${isCur?'cur':''}">'${String(c.year).slice(-2)}</div>
+  // Last 3 seasons for popup (full history stays on Players page)
+  const recentCareer = [...career].sort((a,b)=>b.year-a.year).slice(0,3).reverse();
+  const recentStats = recentCareer[recentCareer.length-1]||null;
+  const AD = 'rgba(16,185,129,0.35)'; // dim accent
+
+  // Weekly array
+  const weekArr = Object.entries(p.weekly||{})
+    .map(([wk,w])=>({wk:parseInt(wk),...w}))
+    .sort((a,b)=>a.wk-b.wk)
+    .filter(w=>w.opp&&w.opp!=='-');
+
+  // ── FPTS Chart (By Week default / By Season last 3 yrs) ──
+  let fptChartHtml = '';
+  {
+    // Season bars
+    let sBars = recentCareer.length > 0 ? (()=>{
+      const maxS=Math.max(...recentCareer.map(c=>c.fpts||0),0.1);
+      const bestS=recentCareer.reduce((b,c)=>(c.fpts||0)>(b.fpts||0)?c:b,recentCareer[0]);
+      const avgS=recentCareer.reduce((s,c)=>s+(c.fpts||0),0)/recentCareer.length;
+      const filtered3=recentCareer.filter(c=>(c.fpts||0)>0);
+      const lowS=filtered3.length>1?filtered3.reduce((b,c)=>(c.fpts||0)<(b.fpts||0)?c:b,filtered3[0]):null;
+      return `<div class="chart-bars">${recentCareer.map(c=>{
+        const h=Math.max(Math.round(((c.fpts||0)/maxS)*56),(c.fpts||0)>0?2:0);
+        const isBest=c.year===bestS.year,isCur=c.year===2025;
+        const bc=isBest?ACCENT:(isCur?AD:AD.replace('0.35','0.2'));
+        return `<div class="chart-bar-col"><div class="chart-bar-val">${(c.fpts||0)>0?c.fpts.toFixed(0):''}</div><div class="chart-bar" style="height:${h}px;background:${bc}"></div><div class="chart-bar-yr${isCur?' cur':''}">'${String(c.year).slice(-2)}</div></div>`;
+      }).join('')}</div>
+      <div class="chart-footer">
+        <span class="chart-footer-item">Avg/Season: <span style="color:${ACCENT}">${avgS.toFixed(1)}</span></span>
+        <span class="chart-footer-item">Best: <span style="color:#a78bfa">${(bestS.fpts||0).toFixed(1)}</span></span>
+        ${lowS?`<span class="chart-footer-item">Low: <span style="color:#ef4444">${(lowS.fpts||0).toFixed(1)}</span></span>`:''}
       </div>`;
-    }).join('');
-    const footerItems = [
-      avgSeason > 0 ? `Avg/Season: <span style="color:${ACCENT}">${avgSeason.toFixed(1)}</span>` : null,
-      bestSeason.fpts ? `Best: <span style="color:#a78bfa">${bestSeason.fpts.toFixed(1)}</span> (${bestSeason.year})` : null,
-    ].filter(Boolean);
-    chartHtml = `<div class="modal-section">
-      <div class="modal-section-title">FPTS by Season</div>
-      <div class="chart-outer">
-        <div class="chart-bars">${bars}</div>
-        <div class="chart-footer">${footerItems.map(i=>`<span class="chart-footer-item">${i}</span>`).join('')}</div>
+    })() : '<div style="padding:16px;text-align:center;color:#475569;font-size:12px">No season data</div>';
+
+    // Week bars
+    let wBars = weekArr.length > 0 ? (()=>{
+      const maxW=Math.max(...weekArr.map(w=>w.fpts||0),0.1);
+      const wGames=weekArr.filter(w=>(w.fpts||0)>0);
+      const bestW=wGames.length?wGames.reduce((b,w)=>(w.fpts||0)>(b.fpts||0)?w:b,wGames[0]):null;
+      const lowW=wGames.length>1?wGames.reduce((b,w)=>(w.fpts||0)<(b.fpts||0)?w:b,wGames[0]):null;
+      const avgW=wGames.length?wGames.reduce((s,w)=>s+(w.fpts||0),0)/wGames.length:0;
+      return `<div class="chart-bars">${weekArr.map(w=>{
+        const fpts=w.fpts||0;
+        const h=Math.max(Math.round((fpts/maxW)*56),fpts>0?2:0);
+        const isBest=bestW&&w.wk===bestW.wk;
+        return `<div class="chart-bar-col"><div class="chart-bar-val">${fpts>0?fpts.toFixed(0):''}</div><div class="chart-bar" style="height:${h}px;background:${isBest?ACCENT:AD}"></div><div class="chart-bar-yr">${w.wk}</div></div>`;
+      }).join('')}</div>
+      <div class="chart-footer">
+        <span class="chart-footer-item">Avg/Wk: <span style="color:${ACCENT}">${avgW.toFixed(1)}</span></span>
+        ${bestW?`<span class="chart-footer-item">Best: <span style="color:${ACCENT}">${(bestW.fpts||0).toFixed(1)}</span></span>`:''}
+        ${lowW?`<span class="chart-footer-item">Low: <span style="color:#ef4444">${(lowW.fpts||0).toFixed(1)}</span></span>`:''}
+      </div>`;
+    })() : '<div style="padding:16px;text-align:center;color:#475569;font-size:12px">No weekly data yet</div>';
+
+    fptChartHtml=`<div class="modal-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="modal-section-title" style="margin-bottom:0">FPTS CHART</div>
+        <div style="display:flex;gap:4px">
+          <button class="pm-tab on" onclick="pmTab(this,'pm-chart-week')">By Week</button>
+          <button class="pm-tab" onclick="pmTab(this,'pm-chart-season')">By Season</button>
+        </div>
       </div>
+      <div id="pm-chart-week" class="pm-chart-panel"><div class="chart-outer">${wBars}</div></div>
+      <div id="pm-chart-season" class="pm-chart-panel" style="display:none"><div class="chart-outer">${sBars}</div></div>
     </div>`;
   }
 
+  // ── Advanced / Efficiency Stats (most recent season) ──
+  let advHtml = '';
+  if (recentStats) {
+    const pos = p.position;
+    let metrics = [];
+    if (pos==='QB') {
+      const cmpPct=recentStats.pass_att>0?(recentStats.pass_comp/recentStats.pass_att*100).toFixed(1)+'%':'—';
+      const ypa=recentStats.pass_att>0?(recentStats.pass_yds/recentStats.pass_att).toFixed(1):'—';
+      const tdInt=recentStats.pass_int>0?(recentStats.pass_td/recentStats.pass_int).toFixed(2):recentStats.pass_td>0?'∞':'—';
+      metrics=[{val:cmpPct,lbl:'CMP%',sub:'Completion rate'},{val:ypa,lbl:'YDS/ATT',sub:'Pass efficiency'},{val:recentStats.pass_td||'—',lbl:'PASS TD',sub:'Touchdowns'},{val:tdInt,lbl:'TD:INT',sub:'Quality ratio'}];
+    } else if (pos==='RB') {
+      const ypc=recentStats.rush_att>0?(recentStats.rush_yds/recentStats.rush_att).toFixed(1):'—';
+      const ypr=recentStats.rec_rec>0?(recentStats.rec_yds/recentStats.rec_rec).toFixed(1):'—';
+      const tds=(recentStats.rush_td||0)+(recentStats.rec_td||0);
+      metrics=[{val:ypc,lbl:'YDS/CARRY',sub:'Rushing efficiency'},{val:ypr,lbl:'YDS/REC',sub:'Receiving avg'},{val:(recentStats.rush_att||0)+(recentStats.rec_rec||0)||'—',lbl:'TOUCHES',sub:'Rush att + rec'},{val:tds||'—',lbl:'TOTAL TD',sub:'All touchdowns'}];
+    } else if (pos==='WR'||pos==='TE') {
+      const catchPct=recentStats.rec_tar>0?(recentStats.rec_rec/recentStats.rec_tar*100).toFixed(1)+'%':'—';
+      const ypr=recentStats.rec_rec>0?(recentStats.rec_yds/recentStats.rec_rec).toFixed(1):'—';
+      const ypt=recentStats.rec_tar>0?(recentStats.rec_yds/recentStats.rec_tar).toFixed(1):'—';
+      metrics=[{val:catchPct,lbl:'CATCH%',sub:'Rec / Targets'},{val:ypr,lbl:'YDS/REC',sub:'After the catch'},{val:ypt,lbl:'YDS/TGT',sub:'Target efficiency'},{val:recentStats.rec_td||'—',lbl:'REC TD',sub:'Touchdowns'}];
+    }
+    if (metrics.length) {
+      advHtml=`<div class="modal-section">
+        <div class="modal-section-title">ADVANCED STATS <span style="font-size:9px;color:#334155;font-weight:400;letter-spacing:.5px">${recentStats.year}</span></div>
+        <div class="adv-grid">${metrics.map(m=>`<div class="adv-card"><div class="adv-val" style="color:${ACCENT}">${m.val}</div><div class="adv-lbl">${m.lbl}</div><div class="adv-sub">${m.sub}</div></div>`).join('')}</div>
+      </div>`;
+    }
+  }
+
+  // Year-by-year table — last 3 seasons only in popup
   let tableHtml = '';
-  if (career.length > 0) {
+  if (recentCareer.length > 0) {
     const cols = careerColumns(p.position);
     const thead = `<tr><th>Year</th><th>Team</th>${cols.map(c=>`<th>${c.lbl}</th>`).join('')}</tr>`;
-    const rows = [...career].reverse().map(c => {
+    const rows = [...recentCareer].reverse().map(c => {
       const isCur = c.year === 2025;
       const cells = cols.map(col => {
         const v = c[col.k];
@@ -578,7 +666,7 @@ function openPlayerModal(idx) {
       </tr>`;
     }).join('');
     tableHtml = `<div class="modal-section">
-      <div class="modal-section-title">Year-by-Year Stats</div>
+      <div class="modal-section-title">Year-by-Year Stats <span style="font-size:9px;color:#334155;font-weight:400">(last 3 seasons)</span></div>
       <div style="overflow-x:auto"><table class="career-table"><thead>${thead}</thead><tbody>${rows}</tbody></table></div>
     </div>`;
   }
@@ -614,7 +702,8 @@ function openPlayerModal(idx) {
       </div>
       <div class="modal-body-inner">
         <div class="modal-section">${careerStrip}</div>
-        ${chartHtml}
+        ${fptChartHtml}
+        ${advHtml}
         ${tableHtml}
         <div class="modal-section">
           <div class="modal-section-title">2025 Weekly Stats</div>
