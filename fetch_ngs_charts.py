@@ -87,8 +87,8 @@ def transform_chart(c):
         row['int']  = c.get('interceptions', 0)
         row['rtg']  = round(c.get('passerRating', 0), 1)
     elif chart_type == 'carry':
-        row['att']  = c.get('rushAttempts', 0)
-        row['yds']  = c.get('rushYards', 0)
+        row['att']  = c.get('carries', 0)
+        row['yds']  = c.get('rushingYards', 0)
         row['td']   = c.get('touchdowns', 0)
     return row
 
