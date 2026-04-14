@@ -1,23 +1,13 @@
 /* ===== SBT Fantasy Football — Service Worker ===== */
-const CACHE = 'sbt-v2';
+const CACHE = 'sbt-v8';
 
 const STATIC_ASSETS = [
-  './dashboard.html',
-  './matchup.html',
-  './team.html',
-  './standings.html',
-  './transactions.html',
-  './players.html',
-  './trade.html',
-  './playoff.html',
-  './index.html',
-  './mock-draft.html',
   './leftnav.js',
   './leftnav.css',
   './manifest.json',
 ];
 
-/* Install — cache static shell */
+/* Install — cache only truly static assets (not HTML pages) */
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
@@ -38,16 +28,19 @@ self.addEventListener('activate', e => {
 });
 
 /* Fetch strategy:
-   - data/*.json  → network first, fall back to cache (keep data fresh)
-   - everything else → cache first, fall back to network
+   - .html pages   → network first (always get latest code)
+   - data/*.json   → network first (always get latest data)
+   - JS/CSS/images → cache first (stable assets, fast load)
 */
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   const url = new URL(e.request.url);
+  const isHtml = url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/');
+  const isData = url.pathname.includes('/data/');
 
-  if (url.pathname.includes('/data/')) {
-    // Network first for data files
+  if (isHtml || isData) {
+    // Network first — always fresh, fall back to cache if offline
     e.respondWith(
       fetch(e.request)
         .then(res => {
@@ -58,7 +51,7 @@ self.addEventListener('fetch', e => {
         .catch(() => caches.match(e.request))
     );
   } else {
-    // Cache first for static assets
+    // Cache first for JS, CSS, images, fonts
     e.respondWith(
       caches.match(e.request)
         .then(cached => cached || fetch(e.request)

@@ -62,12 +62,14 @@ a{color:#10b981;text-decoration:none}
 .roster-section-label{font-size:11px;font-weight:800;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .roster-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05)}
 .roster-table{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:14px;overflow:hidden;margin-bottom:24px}
-.roster-hdr{display:grid;grid-template-columns:52px 52px 1fr 78px 68px 52px;gap:0;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.roster-hdr{display:grid;grid-template-columns:52px 52px 1fr 62px 70px 54px 54px 58px;gap:0;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
 .roster-hdr span{font-size:10px;font-weight:700;letter-spacing:1px;color:#334155;text-transform:uppercase}
-.roster-hdr .r-pts{text-align:right}
+.roster-hdr .r-opp{text-align:center}
+.roster-hdr .r-time{text-align:center}
+.roster-hdr .r-prev{text-align:right}
 .roster-hdr .r-avg{text-align:right}
-.roster-hdr .r-bye{text-align:center}
-.p-row{display:grid;grid-template-columns:52px 52px 1fr 78px 68px 52px;gap:0;padding:10px 12px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .12s}
+.roster-hdr .r-proj{text-align:right}
+.p-row{display:grid;grid-template-columns:52px 52px 1fr 62px 70px 54px 54px 58px;gap:0;padding:10px 12px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .12s}
 .p-row:last-child{border-bottom:none}
 .p-row:hover{background:rgba(255,255,255,0.025)}
 .slot-badge{font-size:9px;font-weight:800;letter-spacing:.5px;color:#475569;text-transform:uppercase;background:rgba(255,255,255,0.04);border-radius:5px;padding:3px 6px;text-align:center;white-space:nowrap}
@@ -81,10 +83,14 @@ a{color:#10b981;text-decoration:none}
 .p-sub{display:flex;align-items:center;gap:5px;margin-top:2px}
 .pos-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .p-nfl{font-size:10px;color:#475569;font-weight:600}
-.p-pts{text-align:right;font-size:15px;font-weight:800;color:#e2e8f0;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
-.p-pts-zero{color:#334155}
+.p-opp{text-align:center;font-size:11px;font-weight:700;color:#94a3b8;white-space:nowrap}
+.p-time{text-align:center;font-size:10px;color:#475569;font-weight:600;white-space:nowrap;line-height:1.3}
+.p-prev{text-align:right;font-size:15px;font-weight:800;color:#e2e8f0;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+.p-prev-zero{color:#334155}
 .p-avg{text-align:right;font-size:11px;color:#64748b;font-weight:600}
-.p-bye{text-align:center;font-size:10px;color:#475569;font-weight:700;background:rgba(255,255,255,0.03);border-radius:5px;padding:3px 6px;white-space:nowrap}
+.p-proj{text-align:right;font-size:14px;font-weight:800;color:#10b981;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+.p-matchup{display:none;font-size:10px;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-score-col{display:contents}
 
 /* ===== BENCH TOGGLE ===== */
 .bench-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-bottom:8px}
@@ -300,21 +306,27 @@ a{color:#10b981;text-decoration:none}
   .th-actions{flex-direction:row;width:100%;align-self:stretch}
   .th-action-btn{flex:1;width:auto;padding:9px 10px;font-size:11px}
 
-  /* Roster — drop avg + bye, keep slot | photo+badge | name+sub | pts */
-  .roster-hdr{grid-template-columns:36px 44px 1fr 52px;padding:6px 10px}
-  .roster-hdr .r-avg{display:none}
-  .roster-hdr .r-bye{display:none}
-  .p-row{grid-template-columns:36px 44px 1fr 52px;padding:8px 10px}
-  .p-avg{display:none}
-  .p-bye{display:none}
-  .slot-badge{font-size:8px;padding:2px 4px;letter-spacing:0}
-  .p-photo-wrap{width:36px;height:36px}
-  .p-photo,.p-photo-ph{width:36px;height:36px;font-size:12px}
-  .p-nfl-badge{width:14px;height:14px}
-  .p-info{padding:0 8px}
-  .p-name{font-size:12px}
-  .p-nfl{font-size:9px}
-  .p-pts{font-size:14px}
+  /* Roster — Sleeper-style cards on mobile */
+  .roster-hdr{display:none}
+  .p-row{display:flex;align-items:center;gap:10px;padding:10px 12px}
+  .p-slot{display:none}
+  .p-opp{display:none}
+  .p-time{display:none}
+  .p-proj{display:none}
+  .p-matchup{display:block}
+  .p-photo-col{flex-shrink:0}
+  .p-photo-wrap{width:42px;height:42px}
+  .p-photo,.p-photo-ph{width:42px;height:42px;font-size:14px}
+  .p-nfl-badge{width:15px;height:15px}
+  .p-info{flex:1;min-width:0;padding:0}
+  .p-name{font-size:13px;white-space:normal;overflow:visible;line-height:1.2}
+  .p-name-btn{white-space:normal;overflow:visible;font-size:13px}
+  .p-nfl{font-size:10px}
+  .p-matchup{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .p-score-col{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;margin-left:auto;padding-left:8px}
+  .p-prev{font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1;text-align:right}
+  .p-prev-zero{color:#334155}
+  .p-avg{font-size:10px;color:#64748b;font-weight:600;margin-top:2px;text-align:right}
 
   /* Schedule */
   .sched-hdr,.sched-row{grid-template-columns:40px 1fr 100px 44px}
@@ -778,9 +790,10 @@ function renderRoster() {
     ${!isTouchDevice ? '<span class="touch-hint" style="font-size:10px;color:#334155;margin-left:auto">Drag to swap · Tap to select on touch</span>' : '<span class="touch-hint" style="margin-left:auto">Tap a player, then tap another to swap</span>'}
   </div>${validationBanner}`;
 
-  const hdr = `<div class="roster-hdr" style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
-    <span></span><span>SLOT</span><span></span><span>PLAYER</span>
-    <span class="r-pts">PTS</span><span class="r-avg">AVG</span><span class="r-bye">BYE</span>
+  const hdr = `<div class="roster-hdr">
+    <span>SLOT</span><span></span><span>PLAYER</span>
+    <span class="r-opp">OPP</span><span class="r-time">TIME</span>
+    <span class="r-prev">PREV</span><span class="r-avg">AVG</span><span class="r-proj">PROJ</span>
   </div>`;
 
   const makeRows = (players, sec) => players.length
@@ -816,23 +829,21 @@ function playerRow(p, sec, idx) {
   if (p.empty) {
     const label = slotLabel(p.slot);
     const eligible = (SLOT_ELIGIBLE[p.slot] || []).join(', ');
-    return `<div class="p-row empty-slot"
-      data-sec="${sec}" data-idx="${idx}"
-      style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
-      <div></div>
+    return `<div class="p-row empty-slot" data-sec="${sec}" data-idx="${idx}">
       <div><span class="slot-badge" style="opacity:.35">${label}</span></div>
       <div class="p-photo-col">
         <div style="width:40px;height:40px;border-radius:50%;border:2px dashed rgba(16,185,129,0.25)"></div>
       </div>
       <div class="p-info"><span class="empty-label">Empty — drag a ${eligible} here</span></div>
-      <div></div><div></div><div></div>
+      <div></div><div></div>
+      <div class="p-score-col"><div></div><div></div></div>
+      <div></div>
     </div>`;
   }
 
   const pc = POS_COLOR[p.position] || '#64748b';
   const photo = p.photo_url || '';
   const logo = nflLogo(p.nfl_team, p.name, p.position);
-  const pts = p.season_pts || 0;
   const isTouchSel = touchSel && touchSel.sec === sec && touchSel.idx === idx;
 
   const photoEl = photo
@@ -843,14 +854,25 @@ function playerRow(p, sec, idx) {
 
   const inj = injuryBadge(p.injury_status, p.injury_notes);
 
-  return `<div class="p-row ${isTouchSel?'touch-selected':''}"
-    draggable="true" data-sec="${sec}" data-idx="${idx}"
-    style="grid-template-columns:24px 52px 52px 1fr 78px 68px 52px">
-    <div class="drag-handle">&#8942;&#8942;</div>
-    <div><span class="slot-badge">${slotLabel(p.slot)}</span></div>
+  // Previous week stats — find last week with a score
+  const weekNums = Object.keys(p.weekly||{}).map(Number).sort((a,b)=>b-a);
+  const lastWeek = weekNums.find(w => (p.weekly[w]?.fpts||0) > 0);
+  const lastStats = lastWeek ? p.weekly[lastWeek] : null;
+  const prevPts = lastStats ? lastStats.fpts : null;
+  const lastOpp = lastStats ? lastStats.opp : '—';
+  const statLine = lastStats?.stat_line || '';
+  // Next game time & projected — placeholder until live data is available
+  const gameTime = p.next_game_time || '—';
+  const proj = p.projected_pts != null ? p.projected_pts.toFixed(1) : '—';
+  // Mobile info line: last opp + stat line
+  const matchupParts = [lastOpp !== '—' ? lastOpp : null, statLine || null].filter(Boolean);
+  const matchupLine = matchupParts.join(' · ') || '—';
+
+  return `<div class="p-row ${isTouchSel?'touch-selected':''}" draggable="true" data-sec="${sec}" data-idx="${idx}">
+    <div class="p-slot"><span class="slot-badge" style="background:${pc}22;color:${pc};border:1px solid ${pc}55">${slotLabel(p.slot)}</span></div>
     <div class="p-photo-col"><div class="p-photo-wrap">${photoEl}${phEl}${nflEl}</div></div>
     <div class="p-info">
-      <div class="p-name" style="display:flex;align-items:center;gap:4px">
+      <div class="p-name" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
         <button class="p-name-btn" onclick="event.stopPropagation();openPlayerModal('${sec}',${idx})">${p.name}</button>
         ${inj}
       </div>
@@ -858,10 +880,15 @@ function playerRow(p, sec, idx) {
         <div class="pos-dot" style="background:${pc}"></div>
         <span class="p-nfl">${p.position} · ${p.nfl_team || 'FA'}</span>
       </div>
+      <div class="p-matchup">${matchupLine}</div>
     </div>
-    <div class="p-pts ${pts===0?'p-pts-zero':''}">${pts>0?pts.toFixed(1):'—'}</div>
-    <div class="p-avg">${p.avg_pts>0?p.avg_pts.toFixed(1):'—'}</div>
-    <div class="p-bye">${p.bye_week?`Wk ${p.bye_week}`:'—'}</div>
+    <div class="p-opp">${lastOpp}</div>
+    <div class="p-time">${gameTime}</div>
+    <div class="p-score-col">
+      <div class="p-prev ${prevPts===null||prevPts===0?'p-prev-zero':''}">${prevPts!=null&&prevPts>0?prevPts.toFixed(1):'—'}</div>
+      <div class="p-avg">Avg ${p.avg_pts>0?p.avg_pts.toFixed(1):'—'}</div>
+    </div>
+    <div class="p-proj">${proj}</div>
   </div>`;
 }
 
