@@ -233,6 +233,16 @@ select.sel option{background:#1e293b}
 .vboard-cell.v-mine{background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.1)}
 .vboard-cell.v-cur{background:rgba(16,185,129,0.14);border-color:rgba(16,185,129,0.35);animation:blink .9s ease-in-out infinite}
 .vboard-cell.v-queued{outline:2px solid rgba(250,204,21,0.45);outline-offset:-2px}
+/* Board header inner */
+.vth-inner{display:flex;flex-direction:column;align-items:center;gap:3px}
+.vth-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px;display:block}
+.vth-slot{display:none;font-size:8px;color:#475569;font-weight:700}
+@media(max-width:700px){
+  .vboard-th,.vboard-cell{width:64px;max-width:64px}
+  .vth-inner{flex-direction:row;gap:4px;justify-content:center}
+  .vth-name{font-size:9px;max-width:36px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+  .vth-slot{display:inline;margin-left:2px}
+}
 </style>
 </head>
 <body>
@@ -735,9 +745,9 @@ function buildPlayerList(isMyTurn) {
       ?`<img src="${m.photo_url}" class="p-photo" alt="${p.name}" onerror="this.outerHTML='<div class=\\'p-photo-ph\\'>${p.pos}</div>'">`
       :`<div class="p-photo-ph">${p.pos}</div>`;
     const logoUrl=S.teamLogos[p.team]||'';
-    const teamLine=p.team?`<div class="p-team" style="display:flex;align-items:center;gap:3px">${logoUrl?`<img src="${logoUrl}" class="team-logo" alt="${p.team}" onerror="this.style.display='none'">`:''} ${p.team}</div>`:'';
     const adpRound=Math.ceil(p.rank/N);
     const adpPick=((p.rank-1)%N)+1;
+    const teamLine=`<div class="p-team" style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">${logoUrl?`<img src="${logoUrl}" class="team-logo" alt="${p.team}" onerror="this.style.display='none'">`:''}<span>${p.team||'—'}</span><span style="color:#334155">·</span><span style="font-size:10px;color:#10b981;font-weight:700">${p.ppg}/gm</span><span style="font-size:9px;color:#334155">Rd ${adpRound}.${adpPick}</span></div>`;
     const queued=S.queue.includes(p.id);
     const btn=isMyTurn
       ?`<button class="draft-btn" onclick="userDraft('${p.id}')">DRAFT</button>`
@@ -882,7 +892,7 @@ function buildVisualBoard() {
     const name=S.teamOrder[t];const logo=fl(name,26);
     const disp=name.length>11?name.substring(0,10)+'…':name;
     html+=`<th class="vboard-th" ${t===me?'style="border-bottom:2px solid #10b981;color:#10b981"':''} title="${name}">`;
-    html+=logo?`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${logo}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px;display:block">${disp}</span></div>`:disp;
+    html+=logo?`<div class="vth-inner">${logo}<span class="vth-name">${disp}</span><span class="vth-slot">#${t+1}</span></div>`:disp;
     html+=`</th>`;
   }
   html+=`</tr></thead><tbody>`;
