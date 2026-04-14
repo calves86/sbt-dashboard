@@ -270,7 +270,7 @@ function render(){
       <div style="text-align:center">Win%</div><div style="text-align:center">GB</div>
       <div style="text-align:center">Streak</div><div style="text-align:center">${BADGE_LABEL}</div>
       <div style="text-align:right">PF</div><div style="text-align:right">Back</div>
-      <div style="text-align:right">PA</div><div></div>
+      <div style="text-align:right">PA</div><div style="text-align:center">Lead</div>
     </div>`;
   }
 
@@ -282,7 +282,7 @@ function render(){
     const sc=streak[t]||'—';
     return`<div class="t-row${i%2?'':' alt'}" style="--gcols:${GCOLS}">
       <div class="c-rank">${rank}</div>
-      <div class="t-team">${tLogoImg(t)}<span class="t-name">${t}</span>${badges(t,isDivLdr)}</div>
+      <div class="t-team">${tLogoImg(t)}<span class="t-name">${t}</span></div>
       <div class="c-num">${r.w}</div><div class="c-num">${r.l}</div><div class="c-num">${r.t}</div>
       <div class="c-num">${pct}</div>
       <div class="c-num">${gbStr(t,ldrW,ldrL)}</div>
@@ -291,7 +291,7 @@ function render(){
       <div class="c-pf">${r.pf>0?r.pf.toFixed(1):'—'}</div>
       <div class="c-dim">${backStr(t,ldrPF)}</div>
       <div class="c-dim">${r.pa>0?r.pa.toFixed(1):'—'}</div>
-      <div></div>
+      <div style="text-align:center">${badges(t,isDivLdr)}</div>
     </div>`;
   }
 
