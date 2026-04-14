@@ -115,36 +115,64 @@ def fetch_all_charts_for_week(year, season_type, week_num):
     return [transform_chart(c) for c in all_charts]
 
 
-def week_key(week_num):
-    return f"REG_{int(week_num):02d}"
+def week_key(season_type, week_num):
+    if season_type == 'REG':
+        return f"REG_{int(week_num):02d}"
+    post_map = {19: 'POST_WC', 20: 'POST_DIV', 21: 'POST_CONF', 23: 'POST_SB',
+                18: 'POST_WC', 22: 'POST_SB'}  # pre-2021: WC=18, SB=22
+    return post_map.get(int(week_num), f"POST_{week_num}")
+
+
+def playoff_weeks(year):
+    """Return (season_type, week_num, label) tuples for playoff rounds."""
+    y = int(year)
+    if y >= 2021:
+        # 18-week season: WC=19, DIV=20, CONF=21, SB=23 (22=Pro Bowl)
+        return [('POST', 19, 'Wild Card'), ('POST', 20, 'Divisional'),
+                ('POST', 21, 'Conference'), ('POST', 23, 'Super Bowl')]
+    else:
+        # 17-week season: WC=18, DIV=19, CONF=20, SB=22 (21=Pro Bowl)
+        return [('POST', 18, 'Wild Card'), ('POST', 19, 'Divisional'),
+                ('POST', 20, 'Conference'), ('POST', 22, 'Super Bowl')]
 
 
 def fetch_year(year):
     year = str(year)
     reg_weeks = 18 if int(year) >= 2021 else 17
     result = {}
+    post_weeks = playoff_weeks(year)
 
     print(f"\n{'='*55}")
-    print(f"  Charts Year: {year}  ({reg_weeks} regular-season weeks)")
+    print(f"  Charts Year: {year}  ({reg_weeks} REG + 4 POST weeks)")
     print(f"{'='*55}")
 
-    def _fetch(wk):
-        charts = fetch_all_charts_for_week(year, 'REG', wk)
-        return wk, charts
+    all_tasks = (
+        [('REG', wk) for wk in range(1, reg_weeks + 1)] +
+        [(stype, wnum) for stype, wnum, _ in post_weeks]
+    )
+    label_map = {('POST', wnum): lbl for stype, wnum, lbl in post_weeks}
+
+    def _fetch(args):
+        stype, wk = args
+        charts = fetch_all_charts_for_week(year, stype, wk)
+        return stype, wk, charts
 
     with ThreadPoolExecutor(max_workers=6) as ex:
-        futs = {ex.submit(_fetch, wk): wk for wk in range(1, reg_weeks + 1)}
+        futs = {ex.submit(_fetch, t): t for t in all_tasks}
         for fut in as_completed(futs):
-            wk, charts = fut.result()
+            stype, wk, charts = fut.result()
             if charts:
-                result[week_key(wk)] = charts
+                key = week_key(stype, wk)
+                result[key] = charts
                 route = sum(1 for c in charts if c['type'] == 'route')
-                pass_  = sum(1 for c in charts if c['type'] == 'pass')
+                pass_ = sum(1 for c in charts if c['type'] == 'pass')
                 carry = sum(1 for c in charts if c['type'] == 'carry')
-                print(f"  Week {wk:2d}: {len(charts):3d} charts  "
+                label = label_map.get((stype, wk), f"Week {wk}")
+                print(f"  {label:12s}: {len(charts):3d} charts  "
                       f"(route={route} pass={pass_} carry={carry})")
             else:
-                print(f"  Week {wk:2d}: 0 charts")
+                label = label_map.get((stype, wk), f"Week {wk}")
+                print(f"  {label:12s}: 0 charts")
 
     total = sum(len(v) for v in result.values())
     print(f"\n  Total: {total} charts across {len(result)} weeks")

@@ -244,6 +244,10 @@ const _yearLoaded = { 2025: true };
 
 const WEEK_ORDER = [
   ...Array.from({length:18},(_,i)=>({ key:`REG_${String(i+1).padStart(2,'0')}`, label:`Week ${i+1}` })),
+  { key:'POST_WC',   label:'Wild Card'   },
+  { key:'POST_DIV',  label:'Divisional'  },
+  { key:'POST_CONF', label:'Conference'  },
+  { key:'POST_SB',   label:'Super Bowl'  },
 ];
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
