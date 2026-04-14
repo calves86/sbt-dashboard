@@ -73,6 +73,12 @@ function _buildNavHTML(activePage, opts) {
     { href: 'index.html?tab=Rules', label: 'Rules'         },
   ];
 
+  // Stats nav items
+  const stats = [
+    { href: 'index.html?tab=Player+Stats', label: 'Player Stats'   },
+    { href: 'ngs-stats.html',              label: 'Next Gen Stats', badge: 'NEW' },
+  ];
+
   // Draft nav items
   const draft = [
     { href: 'mock-draft.html',  label: 'Mock Draft'  },
@@ -109,6 +115,19 @@ function _buildNavHTML(activePage, opts) {
     html += `
     <a href="${item.href}" class="ln-item${active ? ' active' : ''}">
       <span>${item.label}</span>
+    </a>`;
+  });
+
+  html += `
+    <div class="ln-divider"></div>
+    <div class="ln-section">Stats</div>`;
+
+  stats.forEach(item => {
+    const active = activePage === item.href || activePage2 === item.href;
+    html += `
+    <a href="${item.href}" class="ln-item${active ? ' active' : ''}">
+      <span>${item.label}</span>
+      ${item.badge ? `<span class="ln-badge">${item.badge}</span>` : ''}
     </a>`;
   });
 

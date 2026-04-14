@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10b981">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SBT Fantasy">
+<link rel="apple-touch-icon" href="sbt-logo.png">
+<title>Next Gen Stats — SBT Fantasy Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<script src="data/ngs_2025.js"></script>
+<script src="data/nfl_photos.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
+#shell{display:flex;flex:1;min-height:100vh}
+#main{flex:1;min-width:0;overflow-y:auto}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+a{color:#10b981;text-decoration:none}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);border-bottom:1px solid rgba(16,185,129,0.15);padding:20px 24px;flex-shrink:0}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.page-title{font-size:26px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;background:linear-gradient(135deg,#10b981,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nfl-badge{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#10b981;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+.source-link{font-size:11px;color:#475569;font-weight:600}
+.source-link a{color:#475569;text-decoration:underline;text-underline-offset:2px}
+.source-link a:hover{color:#94a3b8}
+
+/* ── Controls bar ── */
+.controls{background:#0f172a;border-bottom:1px solid rgba(255,255,255,0.05);padding:12px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.controls-inner{max-width:1400px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+select{background:#1e293b;border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:6px 28px 6px 10px;border-radius:8px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+select:focus{outline:none;border-color:rgba(16,185,129,0.4)}
+select:hover{border-color:rgba(255,255,255,0.15)}
+
+/* ── Category tabs ── */
+.cat-tabs{background:#0b1120;border-bottom:1px solid rgba(255,255,255,0.06);padding:0 24px;overflow-x:auto;display:flex}
+.cat-tabs-inner{max-width:1400px;margin:0 auto;display:flex;gap:0;white-space:nowrap}
+.cat-tab{padding:11px 16px;border:none;background:transparent;color:#475569;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.cat-tab:hover{color:#94a3b8}
+.cat-tab.on{color:#10b981;border-bottom-color:#10b981}
+.cat-tab.top-play{color:#64748b}
+.cat-tab.top-play.on{color:#a78bfa;border-bottom-color:#a78bfa}
+
+/* ── Page body ── */
+.page-body{max-width:1400px;margin:0 auto;padding:20px 24px}
+
+/* ── Category description ── */
+.cat-desc{background:#0f172a;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:#64748b;line-height:1.6}
+.cat-desc strong{color:#94a3b8}
+
+/* ── Stats table ── */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.06)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#0f172a;padding:10px 12px;text-align:right;font-size:10px;font-weight:800;color:#475569;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;user-select:none;transition:color .12s}
+thead th:first-child,thead th.left{text-align:left}
+thead th:hover{color:#94a3b8}
+thead th.sort-asc::after{content:' ▲';color:#10b981}
+thead th.sort-desc::after{content:' ▼';color:#10b981}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,0.03)}
+tbody td{padding:9px 12px;text-align:right;color:#94a3b8;white-space:nowrap}
+tbody td:first-child,tbody td.left{text-align:left;color:#e2e8f0;font-weight:600}
+tbody td.team{color:#64748b;font-size:11px;font-weight:700}
+tbody td.pos{color:#475569;font-size:10px;font-weight:800;letter-spacing:.5px}
+tbody td.rank{color:#334155;font-size:11px;font-weight:700;text-align:center}
+.stat-hi{color:#10b981;font-weight:700}
+.stat-lo{color:#ef4444}
+.play-type{color:#64748b;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+
+/* ── Empty / loading states ── */
+.state-msg{padding:48px 24px;text-align:center;color:#334155;font-size:13px;font-weight:600}
+
+/* ── Player & team photos (desktop only) ── */
+.player-cell{display:flex;align-items:center;gap:8px;min-width:0}
+.player-photo{width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:top center;background:#1e293b;flex-shrink:0;border:1px solid rgba(255,255,255,0.06)}
+.player-photo-ph{width:32px;height:32px;border-radius:50%;background:#1e293b;flex-shrink:0;border:1px solid rgba(255,255,255,0.06)}
+.player-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-cell{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.team-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}
+.team-logo-ph{width:20px;height:20px;flex-shrink:0}
+@media(max-width:700px){
+  .player-photo,.player-photo-ph{display:none}
+  .team-logo,.team-logo-ph{display:none}
+}
+
+/* ── Column tooltips ── */
+.th-wrap{display:inline-flex;align-items:center;gap:3px;position:relative}
+.th-info{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.08);color:#475569;font-size:8px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:help;font-style:normal;line-height:1}
+thead th:hover .th-info{background:rgba(16,185,129,0.15);color:#10b981}
+.ngs-tip{position:fixed;z-index:9999;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 13px;max-width:280px;font-size:11px;color:#94a3b8;line-height:1.55;font-weight:500;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.5);display:none}
+.ngs-tip strong{color:#e2e8f0;display:block;margin-bottom:4px;font-size:11px;letter-spacing:.3px}
+
+/* ── Mobile ── */
+@media(max-width:700px){
+  .header{padding:12px 14px}
+  .page-title{font-size:20px}
+  .source-link{display:none}
+  .controls{padding:8px 14px}
+  .controls-inner{gap:8px}
+  .ctrl-group{flex:1;min-width:0}
+  select{width:100%;font-size:13px;padding:8px 28px 8px 10px}
+  .cat-tabs{padding:0 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .cat-tabs::-webkit-scrollbar{display:none}
+  .cat-tab{padding:10px 11px;font-size:10px;letter-spacing:.5px}
+  .page-body{padding:12px 14px}
+  .cat-desc{font-size:11px;padding:10px 12px;margin-bottom:12px}
+
+  /* Sticky first column on mobile */
+  .table-wrap{border-radius:8px}
+  table{font-size:11px}
+  thead th{padding:8px 8px;font-size:9px;letter-spacing:.5px}
+  tbody td{padding:7px 8px}
+  thead th:first-child,tbody td:first-child{
+    position:sticky;left:0;z-index:2;
+    background:#0f172a;
+  }
+  tbody td:first-child{background:#0b1120}
+  tbody tr:hover td:first-child{background:#111827}
+
+  /* Hide lower-priority columns on mobile */
+  .col-hide-mobile{display:none}
+
+  /* Tooltip: anchor to top on mobile */
+  .ngs-tip{max-width:calc(100vw - 28px);font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="shell">
+  <nav id="leftnav"></nav>
+  <div id="main">
+
+    <!-- Tooltip -->
+    <div class="ngs-tip" id="ngs-tip"></div>
+
+    <!-- Top bar (mobile) -->
+    <div id="ln-topbar">
+      <div class="ln-topbar-title">Next Gen Stats</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="page-title">Next Gen Stats</div>
+          <span class="nfl-badge" id="year-badge">2025</span>
+        </div>
+        <div class="source-link">Source: <a href="https://nextgenstats.nfl.com" target="_blank" rel="noopener">nextgenstats.nfl.com</a></div>
+      </div>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="cat-tabs">
+      <div class="cat-tabs-inner" id="cat-tabs"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="controls-inner">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Season</span>
+          <select id="year-sel"></select>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">Week</span>
+          <select id="week-sel"></select>
+        </div>
+        <div class="ctrl-group" id="pos-filter-wrap" style="display:none">
+          <span class="ctrl-label">Position</span>
+          <select id="pos-sel">
+            <option value="">All</option>
+            <option value="QB">QB</option>
+            <option value="RB">RB</option>
+            <option value="WR">WR</option>
+            <option value="TE">TE</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="page-body">
+      <div class="cat-desc" id="cat-desc"></div>
+      <div class="table-wrap">
+        <table id="ngs-table">
+          <thead id="ngs-thead"></thead>
+          <tbody id="ngs-tbody"></tbody>
+        </table>
+      </div>
+      <div class="state-msg" id="state-msg" style="display:none">Loading...</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="leftnav.js"></script>
+<script>
+initLeftNav('ngs-stats.html', {
+  leagueName: 'SBT Fantasy',
+  leagueSub:  'Sigma Beta Tau',
+  logo:       'sbt-logo.png',
+});
+</script>
+<script>
+// ── Glossary ─────────────────────────────────────────────────────────────────
+
+const GLOSSARY = {
+  // Passing
+  tt:         { name:'Time to Throw (TT)',           desc:'Average time elapsed from snap to throw on every pass attempt (sacks excluded).' },
+  cay:        { name:'Completed Air Yards (CAY)',     desc:'Average air yards a passer throws on completions only. Air yards = vertical distance at the moment the ball is caught, relative to the line of scrimmage.' },
+  iay:        { name:'Intended Air Yards (IAY)',      desc:'Average air yards a passer throws on all attempts (completions + incompletions). Shows how far the ball is being thrown downfield.' },
+  ayd:        { name:'Air Yards Differential (AYD)',  desc:'CAY minus IAY. Indicates whether the passer is completing passes as deep as he attempts them. Negative = completions shorter than attempts.' },
+  lcad:       { name:'Longest Completed Air Distance (LCAD)', desc:'Actual distance the ball travels from point of release to point of reception (as the crow flies), not just vertical air yards.' },
+  agg_pct:    { name:'Aggressiveness (AGG%)',          desc:'% of pass attempts thrown into tight coverage, where a defender is within 1 yard of the receiver at time of catch or incompletion.' },
+  ayts:       { name:'Air Yards to the Sticks (AYTS)',desc:'Air yards ahead or behind the first-down marker on all attempts. Positive = throwing past the sticks; negative = relying on YAC to convert.' },
+  comp_pct:   { name:'Completion % (CMP%)',            desc:'Completions divided by pass attempts.' },
+  x_comp_pct: { name:'Expected Completion % (xCMP%)', desc:"What the passer's completion % is expected to be, based on Completion Probability on every throw (separation, field position, pressure, etc.)." },
+  cpoe:       { name:'Completion % Above Expected (CPOE)', desc:"Actual completion % minus Expected completion %. Positive = outperforming expectations; negative = underperforming." },
+  att:        { name:'Attempts (ATT)',                 desc:'Total pass attempts (passing) or rush attempts (rushing).' },
+  yds:        { name:'Yards (YDS)',                    desc:'Total yards gained.' },
+  td:         { name:'Touchdowns (TD)',                desc:'Total touchdowns.' },
+  int:        { name:'Interceptions (INT)',             desc:'Total interceptions thrown.' },
+  rate:       { name:'Passer Rating (RTG)',             desc:'NFL passer rating formula based on completion %, yards per attempt, TD%, and INT%.' },
+  // Rushing
+  eff:        { name:'Efficiency (EFF)',               desc:'Total distance traveled per rushing yard gained. Lower = more north-south runner; higher = more lateral movement.' },
+  box8plus_pct:{ name:'8+ Defenders in Box (8+D%)',   desc:'How often the rusher faces 8 or more defenders in the box at snap. Higher % = defense loading up to stop the run.' },
+  tlos:       { name:'Avg Time Behind Line of Scrimmage (TLOS)', desc:'Average time (in tenths of a second) the ball carrier spends behind the line of scrimmage before crossing it.' },
+  ryoe:       { name:'Rush Yards Over Expected (RYOE)',desc:'Total rush yards gained minus expected rush yards based on pre-snap defensive alignment. Measures value created beyond the blocking scheme.' },
+  avg:        { name:'Avg Rush Yards (AVG)',            desc:'Rushing yards per carry.' },
+  ryoe_per_att:{ name:'RYOE per Attempt',              desc:'Rush Yards Over Expected divided by attempts. Best measure of per-carry rushing efficiency above expectation.' },
+  roe_pct:    { name:'Rush % Over Expected (ROE%)',    desc:'% of rush attempts where the player gained more yards than expected. Above 50% = consistently beating expectations.' },
+  // Receiving
+  cush:       { name:'Cushion (CUSH)',                 desc:'Distance (yards) between the receiver and their nearest defender at the time of snap on all targets.' },
+  sep:        { name:'Separation (SEP)',               desc:'Distance (yards) between the receiver and the nearest defender at the time of catch or incompletion.' },
+  tay:        { name:'Targeted Air Yards (TAY)',        desc:'Average passing air yards per target — how far downfield the receiver is being targeted on average.' },
+  tay_pct:    { name:'Team Air Yards Share (TAY%)',    desc:"Receiver's total intended air yards as a % of their team's total intended air yards. Shows how much of the team's downfield passing the player accounts for." },
+  rec:        { name:'Receptions (REC)',               desc:'Total receptions.' },
+  tar:        { name:'Targets (TAR)',                  desc:'Total times targeted on pass attempts.' },
+  ctch_pct:   { name:'Catch % (CTCH%)',               desc:'Receptions divided by targets.' },
+  yac_r:      { name:'YAC per Reception (YAC/R)',      desc:'Yards after catch per reception.' },
+  x_yac_r:    { name:'Expected YAC/Reception (xYAC/R)',desc:'Expected yards after catch per reception, based on tracking data: receiver openness, speed, defender/blocker proximity, etc.' },
+  yac_oe:     { name:'YAC Above Expected (YAC OE)',   desc:"Receiver's actual YAC compared to expected YAC. Positive = creating more after the catch than expected." },
+  // Top Plays
+  mph:        { name:'Speed (MPH)',                    desc:'Maximum speed recorded by the ball carrier on the play, measured in miles per hour.' },
+  distance_yds:{ name:'Distance (yds)',               desc:'Total distance the ball carrier traveled on the play — not yards gained, but actual distance covered on the field.' },
+  time_secs:  { name:'Time to Sack (secs)',           desc:'Time elapsed from snap to when the defender sacks the quarterback. Faster = better pass-rush instincts.' },
+  completion_pct:{ name:'Completion Probability %',  desc:'The probability of completion at the time of throw. Lower % = more improbable catch.' },
+  yac:        { name:'Yards After Catch (YAC)',        desc:'Total yards gained by the receiver after catching the ball on this play.' },
+  expected_yac:{ name:'Expected YAC',                 desc:'How many yards after catch an average receiver was expected to gain based on field position, speed, and defender proximity.' },
+  yac_above_expected:{ name:'YAC Above Expected',     desc:'Actual YAC minus Expected YAC. How many more yards after catch the player gained vs. expectations.' },
+  rush_yds:   { name:'Rush Yards',                    desc:'Actual yards gained on the rush.' },
+  expected_rush_yds:{ name:'Expected Rush Yards',     desc:'Expected yards based on pre-snap defensive alignment and blocking scheme.' },
+  rush_yds_over_expected:{ name:'Rush Yards Over Expected', desc:'Actual yards minus expected yards. Measures what the ball carrier created on their own beyond the blocking scheme.' },
+  // General
+  week:       { name:'Week',                          desc:'NFL week the play occurred.' },
+  play_type:  { name:'Play',                          desc:'Description of the play.' },
+  rank:       { name:'Rank',                          desc:'Ranking within this category for the selected week/season.' },
+  player:     { name:'Player',                        desc:'Player name.' },
+  qb:         { name:'Quarterback',                   desc:'The quarterback who threw the pass.' },
+  receiver:   { name:'Receiver',                      desc:'The receiver who caught the pass.' },
+  team:       { name:'Team',                          desc:'NFL team abbreviation.' },
+  pos:        { name:'Position',                      desc:'Player position.' },
+};
+
+// ── Config ──────────────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  // Main stats
+  { key:'passing',                label:'Passing',             group:'main' },
+  { key:'rushing',                label:'Rushing',             group:'main' },
+  { key:'receiving',              label:'Receiving',           group:'main' },
+  // Top Plays
+  { key:'fastest_ball_carriers',  label:'Fastest Ball Carriers', group:'top' },
+  { key:'longest_plays',          label:'Longest Plays',         group:'top' },
+  { key:'fastest_sacks',          label:'Fastest Sacks',         group:'top' },
+  { key:'longest_tackles',        label:'Longest Tackles',       group:'top' },
+  { key:'improbable_completions', label:'Improbable Completions',group:'top' },
+  { key:'incredible_yac',         label:'Incredible YAC',        group:'top' },
+  { key:'remarkable_rushes',      label:'Remarkable Rushes',     group:'top' },
+];
+
+const DESCRIPTIONS = {
+  passing: 'NGS passing metrics: Time to Throw (TT), Completed Air Yards (CAY), Intended Air Yards (IAY), Aggressiveness (AGG%), and Completion % Above Expected (CPOE).',
+  rushing: 'NGS rushing metrics: Efficiency (EFF), Rush Yards Over Expected (RYOE), Rush % Over Expected (ROE%), and Time Behind Line of Scrimmage (TLOS).',
+  receiving: 'NGS receiving metrics: Cushion (CUSH), Separation (SEP), Targeted Air Yards (TAY), YAC/Reception, and YAC Above Expected.',
+  fastest_ball_carriers: 'Maximum speed (MPH) recorded by any ball carrier — rusher, receiver, or returner — on each play.',
+  longest_plays: 'Total distance traveled (yards) by the ball carrier on a given play, including route/pursuit distance — not just yardage gained.',
+  fastest_sacks: 'Fastest time to sack (seconds) from snap to when the defender reaches the quarterback.',
+  longest_tackles: 'Total distance traveled (yards) by the defender from snap to tackle — measures how much ground a tackler covers.',
+  improbable_completions: 'Lowest completion probability completions — completions made with the smallest expected chance of being caught.',
+  incredible_yac: 'Highest yards after catch above expectation — how much extra YAC a receiver gained vs. what an average receiver was expected to gain on that play.',
+  remarkable_rushes: 'Highest rush yards over expected — how many more yards a rusher gained vs. what was expected based on the pre-snap defensive alignment.',
+};
+
+// Column display configs per category
+// m:false = hide on mobile
+const COLUMNS = {
+  passing: [
+    { key:'player',    label:'Player',   cls:'left',  sort:true  },
+    { key:'team',      label:'Team',     cls:'team',  sort:true  },
+    { key:'att',       label:'ATT',      sort:true  },
+    { key:'yds',       label:'YDS',      sort:true  },
+    { key:'td',        label:'TD',       sort:true  },
+    { key:'int',       label:'INT',      sort:true  },
+    { key:'rate',      label:'RTG',      sort:true  },
+    { key:'comp_pct',  label:'CMP%',     sort:true,  m:false },
+    { key:'x_comp_pct',label:'xCMP%',   sort:true,  m:false },
+    { key:'cpoe',      label:'CPOE',     sort:true,  highlight:true },
+    { key:'tt',        label:'TT',       sort:true,  m:false },
+    { key:'cay',       label:'CAY',      sort:true,  m:false },
+    { key:'iay',       label:'IAY',      sort:true,  m:false },
+    { key:'ayd',       label:'AYD',      sort:true,  m:false },
+    { key:'agg_pct',   label:'AGG%',     sort:true,  m:false },
+    { key:'lcad',      label:'LCAD',     sort:true,  m:false },
+    { key:'ayts',      label:'AYTS',     sort:true,  m:false },
+  ],
+  rushing: [
+    { key:'player',      label:'Player',   cls:'left', sort:true },
+    { key:'team',        label:'Team',     cls:'team', sort:true },
+    { key:'att',         label:'ATT',      sort:true },
+    { key:'yds',         label:'YDS',      sort:true },
+    { key:'avg',         label:'AVG',      sort:true },
+    { key:'td',          label:'TD',       sort:true },
+    { key:'ryoe',        label:'RYOE',     sort:true, highlight:true },
+    { key:'ryoe_per_att',label:'RYOE/Att', sort:true, m:false },
+    { key:'roe_pct',     label:'ROE%',     sort:true },
+    { key:'eff',         label:'EFF',      sort:true, m:false },
+    { key:'box8plus_pct',label:'8+D%',     sort:true, m:false },
+    { key:'tlos',        label:'TLOS',     sort:true, m:false },
+  ],
+  receiving: [
+    { key:'player',    label:'Player',  cls:'left', sort:true },
+    { key:'team',      label:'Team',    cls:'team', sort:true },
+    { key:'pos',       label:'POS',     cls:'pos',  sort:true },
+    { key:'rec',       label:'REC',     sort:true },
+    { key:'tar',       label:'TAR',     sort:true },
+    { key:'ctch_pct',  label:'CTCH%',   sort:true, m:false },
+    { key:'yds',       label:'YDS',     sort:true },
+    { key:'td',        label:'TD',      sort:true },
+    { key:'yac_r',     label:'YAC/R',   sort:true },
+    { key:'x_yac_r',   label:'xYAC/R',  sort:true, m:false },
+    { key:'yac_oe',    label:'YAC OE',  sort:true, highlight:true },
+    { key:'cush',      label:'CUSH',    sort:true, m:false },
+    { key:'sep',       label:'SEP',     sort:true, m:false },
+    { key:'tay',       label:'TAY',     sort:true, m:false },
+    { key:'tay_pct',   label:'TAY%',    sort:true, m:false },
+  ],
+  fastest_ball_carriers: [
+    { key:'rank',      label:'RK',       cls:'rank' },
+    { key:'player',    label:'Player',   cls:'left', sort:true },
+    { key:'team',      label:'Team',     cls:'team', sort:true },
+    { key:'pos',       label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'mph',       label:'MPH',      sort:true,  highlight:true },
+    { key:'week',      label:'Wk',       sort:true },
+    { key:'play_type', label:'Play',     cls:'play-type' },
+  ],
+  longest_plays: [
+    { key:'rank',         label:'RK',       cls:'rank' },
+    { key:'player',       label:'Player',   cls:'left', sort:true },
+    { key:'team',         label:'Team',     cls:'team', sort:true },
+    { key:'pos',          label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'distance_yds', label:'Dist (yds)',sort:true, highlight:true },
+    { key:'week',         label:'Wk',       sort:true },
+    { key:'play_type',    label:'Play',     cls:'play-type' },
+  ],
+  fastest_sacks: [
+    { key:'rank',      label:'RK',       cls:'rank' },
+    { key:'player',    label:'Player',   cls:'left', sort:true },
+    { key:'team',      label:'Team',     cls:'team', sort:true },
+    { key:'pos',       label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'time_secs', label:'Time (s)', sort:true,  highlight:true },
+    { key:'week',      label:'Wk',       sort:true },
+  ],
+  longest_tackles: [
+    { key:'rank',         label:'RK',       cls:'rank' },
+    { key:'player',       label:'Player',   cls:'left', sort:true },
+    { key:'team',         label:'Team',     cls:'team', sort:true },
+    { key:'pos',          label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'distance_yds', label:'Dist (yds)',sort:true, highlight:true },
+    { key:'week',         label:'Wk',       sort:true },
+    { key:'play_type',    label:'Play',     cls:'play-type' },
+  ],
+  improbable_completions: [
+    { key:'rank',           label:'RK',       cls:'rank' },
+    { key:'qb',             label:'QB',       cls:'left', sort:true },
+    { key:'receiver',       label:'Receiver', cls:'left', sort:true },
+    { key:'team',           label:'Team',     cls:'team', sort:true },
+    { key:'completion_pct', label:'Comp%',    sort:true,  highlight:true },
+    { key:'week',           label:'Wk',       sort:true },
+    { key:'play_type',      label:'Play',     cls:'play-type', m:false },
+  ],
+  incredible_yac: [
+    { key:'rank',               label:'RK',       cls:'rank' },
+    { key:'player',             label:'Player',   cls:'left', sort:true },
+    { key:'team',               label:'Team',     cls:'team', sort:true },
+    { key:'pos',                label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'yac',                label:'YAC',      sort:true,  highlight:true },
+    { key:'expected_yac',       label:'Exp YAC',  sort:true },
+    { key:'yac_above_expected', label:'YAC OE',   sort:true },
+    { key:'week',               label:'Wk',       sort:true },
+    { key:'play_type',          label:'Play',     cls:'play-type', m:false },
+  ],
+  remarkable_rushes: [
+    { key:'rank',                   label:'RK',       cls:'rank' },
+    { key:'player',                 label:'Player',   cls:'left', sort:true },
+    { key:'team',                   label:'Team',     cls:'team', sort:true },
+    { key:'pos',                    label:'POS',      cls:'pos',  sort:true, m:false },
+    { key:'rush_yds',               label:'Rush Yds', sort:true,  highlight:true },
+    { key:'expected_rush_yds',      label:'Exp Yds',  sort:true,  m:false },
+    { key:'rush_yds_over_expected', label:'Yds OE',   sort:true },
+    { key:'week',                   label:'Wk',       sort:true },
+  ],
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+
+let NGS = null;
+let activeYear = 2025;
+let activeCat = 'passing';
+let activeWeek = 'ALL';
+let sortCol = null;
+let sortDir = 1;
+let posFilter = '';
+
+// Years with data files available (2025 always available; others loaded lazily)
+const AVAILABLE_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019];
+const _yearLoaded = { 2025: true }; // 2025 is pre-loaded via <script> tag
+
+// ── Week options ─────────────────────────────────────────────────────────────
+
+const WEEK_ORDER = [
+  { key:'ALL',      label:'Full Season' },
+  ...Array.from({length:18},(_,i)=>({ key:`REG_${String(i+1).padStart(2,'0')}`, label:`Week ${i+1}` })),
+  { key:'POST_WC',   label:'Wild Card'  },
+  { key:'POST_DIV',  label:'Divisional' },
+  { key:'POST_CONF', label:'Conference' },
+  { key:'POST_SB',   label:'Super Bowl' },
+];
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+
+function boot() {
+  if (!window.NGS_DATA) {
+    showMsg('Stats data not found. Run parse_ngs.py to generate data/ngs_2025.js');
+    return;
+  }
+  NGS = window.NGS_DATA;
+  window['NGS_DATA_2025'] = window.NGS_DATA; // stash so year switching can restore it
+  hideMsg();
+  buildYearSel();
+  buildCatTabs();
+  buildWeekSel();
+  buildPosSel();
+  render();
+}
+
+// ── Year selector ─────────────────────────────────────────────────────────────
+
+function buildYearSel() {
+  const sel = document.getElementById('year-sel');
+  sel.innerHTML = AVAILABLE_YEARS.map(y =>
+    `<option value="${y}"${y === activeYear ? ' selected' : ''}>${y}</option>`
+  ).join('');
+  sel.addEventListener('change', e => setYear(parseInt(e.target.value, 10)));
+}
+
+function setYear(year) {
+  if (year === activeYear) return;
+  activeYear = year;
+  document.getElementById('year-badge').textContent = year;
+
+  if (_yearLoaded[year]) {
+    NGS = window['NGS_DATA_' + year] || window.NGS_DATA;
+    _afterYearLoad();
+    return;
+  }
+
+  // Lazy-load the JS file for this year
+  showMsg(`Loading ${year} data...`);
+  const s = document.createElement('script');
+  s.src = `data/ngs_${year}.js`;
+  s.onload = () => {
+    _yearLoaded[year] = true;
+    // Each year's JS file sets window.NGS_DATA — stash it under a year key
+    window['NGS_DATA_' + year] = window.NGS_DATA;
+    NGS = window.NGS_DATA;
+    hideMsg();
+    _afterYearLoad();
+  };
+  s.onerror = () => {
+    showMsg(`No data found for ${year}. Run: bash scrape_ngs_missing.sh ${year} && python parse_ngs.py ${year}`);
+  };
+  document.head.appendChild(s);
+}
+
+function _afterYearLoad() {
+  sortCol = null;
+  sortDir = 1;
+  posFilter = '';
+  activeWeek = 'ALL';
+  buildCatTabs();
+  buildWeekSel();
+  buildPosSel();
+  render();
+}
+
+// ── UI builders ──────────────────────────────────────────────────────────────
+
+function buildCatTabs() {
+  const el = document.getElementById('cat-tabs');
+  el.innerHTML = CATEGORIES.map(c => `
+    <button class="cat-tab${c.group==='top'?' top-play':''}${c.key===activeCat?' on':''}"
+            data-cat="${c.key}" onclick="setCat('${c.key}')">${c.label}</button>
+  `).join('');
+}
+
+function buildWeekSel() {
+  const sel = document.getElementById('week-sel');
+  // Only show weeks that exist for the current category
+  const avail = NGS[activeCat] ? Object.keys(NGS[activeCat]) : [];
+  sel.innerHTML = WEEK_ORDER
+    .filter(w => avail.includes(w.key))
+    .map(w => `<option value="${w.key}"${w.key===activeWeek?' selected':''}>${w.label}</option>`)
+    .join('');
+
+  // Fallback if activeWeek not available
+  if (!avail.includes(activeWeek)) {
+    activeWeek = avail[0] || 'ALL';
+    sel.value = activeWeek;
+  }
+}
+
+function buildPosSel() {
+  const isReceiving = activeCat === 'receiving';
+  const hasPos = ['receiving','fastest_ball_carriers','longest_plays','longest_tackles','incredible_yac','remarkable_rushes'].includes(activeCat);
+  document.getElementById('pos-filter-wrap').style.display = hasPos ? '' : 'none';
+}
+
+// ── Set active state ──────────────────────────────────────────────────────────
+
+function setCat(cat) {
+  activeCat = cat;
+  sortCol = null;
+  sortDir = 1;
+  posFilter = '';
+  document.getElementById('pos-sel').value = '';
+  buildCatTabs();
+  buildWeekSel();
+  buildPosSel();
+  render();
+}
+
+document.getElementById('week-sel').addEventListener('change', e => {
+  activeWeek = e.target.value;
+  render();
+});
+document.getElementById('pos-sel').addEventListener('change', e => {
+  posFilter = e.target.value;
+  render();
+});
+
+// ── Render ───────────────────────────────────────────────────────────────────
+
+function render() {
+  const cols = COLUMNS[activeCat];
+  if (!cols) return;
+
+  // Description
+  document.getElementById('cat-desc').textContent = DESCRIPTIONS[activeCat] || '';
+
+  const catData = NGS[activeCat];
+  let rows = catData ? (catData[activeWeek] || []) : [];
+
+  // Position filter
+  if (posFilter) {
+    rows = rows.filter(r => r.pos === posFilter || r.pos === posFilter);
+  }
+
+  // Sort
+  if (sortCol) {
+    rows = [...rows].sort((a, b) => {
+      const av = a[sortCol], bv = b[sortCol];
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir * (bv - av);
+      return sortDir * String(av||'').localeCompare(String(bv||''));
+    });
+  }
+
+  // Compute highlight thresholds (top/bottom 20%)
+  const hlCols = cols.filter(c => c.highlight).map(c => c.key);
+  const thresholds = {};
+  hlCols.forEach(k => {
+    const nums = rows.map(r => r[k]).filter(v => typeof v === 'number').sort((a,b)=>a-b);
+    if (nums.length > 4) {
+      thresholds[k] = { lo: nums[Math.floor(nums.length*0.2)], hi: nums[Math.floor(nums.length*0.8)] };
+    }
+  });
+
+  // Build thead
+  document.getElementById('ngs-thead').innerHTML = `<tr>${
+    cols.map(c => {
+      const isSorted = sortCol === c.key;
+      const cls = [c.cls||'', c.m===false?'col-hide-mobile':'', isSorted ? (sortDir===1?'sort-desc':'sort-asc') : ''].filter(Boolean).join(' ');
+      const hasGloss = GLOSSARY[c.key];
+      const info = hasGloss ? `<i class="th-info" data-tip="${c.key}">?</i>` : '';
+      return `<th class="${cls}" ${c.sort!==false?`onclick="doSort('${c.key}')"`:''}><span class="th-wrap">${c.label}${info}</span></th>`;
+    }).join('')
+  }</tr>`;
+
+  // Build tbody
+  if (!rows.length) {
+    document.getElementById('ngs-tbody').innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:32px;color:#334155">No data for this selection</td></tr>`;
+    return;
+  }
+
+  const PHOTOS = window.NFL_PHOTOS || {};
+  const LOGOS  = window.NFL_TEAM_LOGOS || {};
+
+  document.getElementById('ngs-tbody').innerHTML = rows.map(row => `
+    <tr>${cols.map(c => {
+      let val = row[c.key] ?? '';
+      let extra = '';
+      if (c.highlight && thresholds[c.key] && typeof val === 'number') {
+        if (val >= thresholds[c.key].hi) extra = ' stat-hi';
+        else if (val <= thresholds[c.key].lo) extra = ' stat-lo';
+      }
+      const hideCls = c.m === false ? ' col-hide-mobile' : '';
+      const cls = [(c.cls||''), extra].filter(Boolean).join(' ') + hideCls;
+
+      // Player name cell — add headshot
+      if (c.key === 'player' || c.key === 'qb' || c.key === 'receiver') {
+        const photoUrl = PHOTOS[val];
+        const img = photoUrl
+          ? `<img class="player-photo" src="${photoUrl}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<span class="player-photo-ph"></span>`;
+        return `<td class="${cls || 'left'}"><div class="player-cell">${img}<span class="player-name">${val || '—'}</span></div></td>`;
+      }
+
+      // Team cell — add logo
+      if (c.key === 'team') {
+        const logoUrl = LOGOS[val];
+        const img = logoUrl
+          ? `<img class="team-logo" src="${logoUrl}" alt="${val}" loading="lazy" onerror="this.style.display='none'">`
+          : `<span class="team-logo-ph"></span>`;
+        return `<td class="team${hideCls}"><div class="team-cell">${img}<span>${val || '—'}</span></div></td>`;
+      }
+
+      if (val === '' || val === null || val === undefined) val = '—';
+      return `<td class="${cls}">${val}</td>`;
+    }).join('')}</tr>
+  `).join('');
+}
+
+function doSort(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  render();
+}
+
+// ── Tooltip engine ───────────────────────────────────────────────────────────
+
+const tip = document.getElementById('ngs-tip');
+let tipTarget = null;
+
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest('[data-tip]');
+  if (!el) return;
+  const key = el.dataset.tip;
+  const g = GLOSSARY[key];
+  if (!g) return;
+  tipTarget = el;
+  tip.innerHTML = `<strong>${g.name}</strong>${g.desc}`;
+  tip.style.display = 'block';
+  positionTip(e);
+});
+
+document.addEventListener('mousemove', e => {
+  if (!tipTarget) return;
+  positionTip(e);
+});
+
+document.addEventListener('mouseout', e => {
+  if (!tipTarget) return;
+  if (!tipTarget.contains(e.relatedTarget)) {
+    tip.style.display = 'none';
+    tipTarget = null;
+  }
+});
+
+function positionTip(e) {
+  const pad = 14;
+  const tw = tip.offsetWidth || 280;
+  const th = tip.offsetHeight || 80;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - pad;
+  if (y + th > window.innerHeight - 8) y = e.clientY - th - pad;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+
+function showMsg(txt) {
+  document.getElementById('state-msg').textContent = txt;
+  document.getElementById('state-msg').style.display = '';
+  document.getElementById('ngs-table').style.display = 'none';
+}
+function hideMsg() {
+  document.getElementById('state-msg').style.display = 'none';
+  document.getElementById('ngs-table').style.display = '';
+}
+
+boot();
+</script>
+</body>
+</html>
