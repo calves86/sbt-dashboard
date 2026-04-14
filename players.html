@@ -616,33 +616,41 @@ function openPlayerModal(idx) {
     </div>`;
   }
 
-  // ── Advanced / Efficiency Stats (most recent season) ──
-  let advHtml = '';
-  if (recentStats) {
+  // ── Advanced / Efficiency Stats ──
+  {
     const pos = p.position;
     let metrics = [];
-    if (pos==='QB') {
+    const yr = recentStats ? recentStats.year : 2025;
+
+    if (recentStats && pos==='QB') {
       const cmpPct=recentStats.pass_att>0?(recentStats.pass_comp/recentStats.pass_att*100).toFixed(1)+'%':'—';
       const ypa=recentStats.pass_att>0?(recentStats.pass_yds/recentStats.pass_att).toFixed(1):'—';
       const tdInt=recentStats.pass_int>0?(recentStats.pass_td/recentStats.pass_int).toFixed(2):recentStats.pass_td>0?'∞':'—';
-      metrics=[{val:cmpPct,lbl:'CMP%',sub:'Completion rate'},{val:ypa,lbl:'YDS/ATT',sub:'Pass efficiency'},{val:recentStats.pass_td||'—',lbl:'PASS TD',sub:'Touchdowns'},{val:tdInt,lbl:'TD:INT',sub:'Quality ratio'}];
-    } else if (pos==='RB') {
+      metrics=[{val:cmpPct,lbl:'CMP%',sub:'Completion rate'},{val:ypa,lbl:'YDS/ATT',sub:'Pass efficiency'},{val:recentStats.pass_td!=null?recentStats.pass_td:'—',lbl:'PASS TD',sub:'Touchdowns'},{val:tdInt,lbl:'TD:INT',sub:'Quality ratio'}];
+    } else if (recentStats && pos==='RB') {
       const ypc=recentStats.rush_att>0?(recentStats.rush_yds/recentStats.rush_att).toFixed(1):'—';
       const ypr=recentStats.rec_rec>0?(recentStats.rec_yds/recentStats.rec_rec).toFixed(1):'—';
       const tds=(recentStats.rush_td||0)+(recentStats.rec_td||0);
-      metrics=[{val:ypc,lbl:'YDS/CARRY',sub:'Rushing efficiency'},{val:ypr,lbl:'YDS/REC',sub:'Receiving avg'},{val:(recentStats.rush_att||0)+(recentStats.rec_rec||0)||'—',lbl:'TOUCHES',sub:'Rush att + rec'},{val:tds||'—',lbl:'TOTAL TD',sub:'All touchdowns'}];
-    } else if (pos==='WR'||pos==='TE') {
+      metrics=[{val:ypc,lbl:'YDS/CARRY',sub:'Rushing efficiency'},{val:ypr,lbl:'YDS/REC',sub:'Receiving avg'},{val:(recentStats.rush_att||0)+(recentStats.rec_rec||0)||'—',lbl:'TOUCHES',sub:'Rush att + rec'},{val:tds||'—',lbl:'TOTAL TD',sub:'All TDs'}];
+    } else if (recentStats && (pos==='WR'||pos==='TE')) {
       const catchPct=recentStats.rec_tar>0?(recentStats.rec_rec/recentStats.rec_tar*100).toFixed(1)+'%':'—';
       const ypr=recentStats.rec_rec>0?(recentStats.rec_yds/recentStats.rec_rec).toFixed(1):'—';
       const ypt=recentStats.rec_tar>0?(recentStats.rec_yds/recentStats.rec_tar).toFixed(1):'—';
-      metrics=[{val:catchPct,lbl:'CATCH%',sub:'Rec / Targets'},{val:ypr,lbl:'YDS/REC',sub:'After the catch'},{val:ypt,lbl:'YDS/TGT',sub:'Target efficiency'},{val:recentStats.rec_td||'—',lbl:'REC TD',sub:'Touchdowns'}];
+      metrics=[{val:catchPct,lbl:'CATCH%',sub:'Rec / Targets'},{val:ypr,lbl:'YDS/REC',sub:'After catch'},{val:ypt,lbl:'YDS/TGT',sub:'Target efficiency'},{val:recentStats.rec_td!=null?recentStats.rec_td:'—',lbl:'REC TD',sub:'Touchdowns'}];
+    } else {
+      // K, DST, or no career data — use player-level season stats
+      const seasonPts = p.season_pts != null ? (+p.season_pts).toFixed(1) : '—';
+      const avgPts = p.avg_pts != null ? (+p.avg_pts).toFixed(1) : '—';
+      const gp = p.weeks_played != null ? p.weeks_played : '—';
+      const bestWk = weekArr.length ? weekArr.filter(w=>(w.fpts||0)>0).reduce((b,w)=>(w.fpts||0)>(b.fpts||0)?w:b, weekArr[0]) : null;
+      const bestWkPts = bestWk ? (bestWk.fpts||0).toFixed(1) : '—';
+      metrics=[{val:seasonPts,lbl:'SEASON PTS',sub:'2025 total'},{val:avgPts,lbl:'AVG / GAME',sub:'Points per week'},{val:gp,lbl:'GAMES',sub:'Weeks played'},{val:bestWkPts,lbl:'BEST WEEK',sub:'Single-game high'}];
     }
-    if (metrics.length) {
-      advHtml=`<div class="modal-section">
-        <div class="modal-section-title">ADVANCED STATS <span style="font-size:9px;color:#334155;font-weight:400;letter-spacing:.5px">${recentStats.year}</span></div>
-        <div class="adv-grid">${metrics.map(m=>`<div class="adv-card"><div class="adv-val" style="color:${ACCENT}">${m.val}</div><div class="adv-lbl">${m.lbl}</div><div class="adv-sub">${m.sub}</div></div>`).join('')}</div>
-      </div>`;
-    }
+
+    advHtml=`<div class="modal-section">
+      <div class="modal-section-title">ADVANCED STATS <span style="font-size:9px;color:#334155;font-weight:400;letter-spacing:.5px">${yr}</span></div>
+      <div class="adv-grid">${metrics.map(m=>`<div class="adv-card"><div class="adv-val" style="color:${ACCENT}">${m.val}</div><div class="adv-lbl">${m.lbl}</div><div class="adv-sub">${m.sub}</div></div>`).join('')}</div>
+    </div>`;
   }
 
   // Year-by-year table — last 3 seasons only in popup
