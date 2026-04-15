@@ -238,6 +238,8 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 
+<script src="data/auth-sbt.js"></script>
+<script src="commissioner-auth.js"></script>
 <script>
 const ACCENT = '#10b981';
 const POS_COLOR = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc15',DST:'#a78bfa'};
@@ -523,7 +525,12 @@ function renderSettings() {
     </div>`).join('');
 }
 
-init();
+// Require auth before loading the page
+initAuth(function(session) {
+  renderUserBadge(session);
+  applyRolePermissions(session);
+  init();
+});
 </script>
 <script src="leftnav.js"></script>
 <script>initLeftNav('commissioner.html');</script>
