@@ -302,7 +302,7 @@ async function init() {
 
   DATA.teams       = teamData.teams || [];
   DATA.rosters     = rosters;
-  DATA.transactions= transactions;
+  DATA.transactions= transactions.filter(t => t.season === 2025);
   DATA.adjustments = adjustments;
   DATA.rules       = rules;
 
