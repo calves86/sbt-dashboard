@@ -120,15 +120,36 @@ a{color:#10b981;text-decoration:none}
 .adj-sum-item span{font-weight:800;color:#f59e0b}
 
 /* ===== SETTINGS ===== */
+.settings-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.settings-toolbar-btn{padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#64748b;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.settings-toolbar-btn:hover{color:#e2e8f0;border-color:rgba(255,255,255,0.2)}
+.settings-toolbar-btn.primary{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.35);color:#10b981}
+.settings-toolbar-btn.primary:hover{background:rgba(16,185,129,0.2)}
+.settings-toolbar-btn.danger{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444}
+.settings-toolbar-btn.danger:hover{background:rgba(239,68,68,0.15)}
+.settings-modified-badge{font-size:10px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:3px 10px;border-radius:20px;font-weight:700;display:none}
+.settings-modified-badge.show{display:inline-block}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.settings-grid{grid-template-columns:1fr}}
 .settings-section{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden}
-.settings-section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#475569;text-transform:uppercase;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02)}
-.settings-row{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03);gap:12px}
+.settings-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02)}
+.settings-section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#475569;text-transform:uppercase}
+.settings-section-add{font-size:18px;color:#334155;cursor:pointer;background:none;border:none;padding:0 4px;line-height:1;transition:color .12s}
+.settings-section-add:hover{color:#10b981}
+.settings-row{display:flex;align-items:center;padding:7px 16px;border-bottom:1px solid rgba(255,255,255,0.03);gap:10px}
 .settings-row:last-child{border-bottom:none}
 .settings-row:hover{background:rgba(255,255,255,0.02)}
-.settings-lbl{font-size:11px;color:#64748b;flex:1}
-.settings-val{font-size:11px;font-weight:700;color:#e2e8f0;text-align:right;flex-shrink:0;max-width:55%}
+.settings-lbl-wrap{flex:1;min-width:0}
+.settings-lbl{font-size:11px;color:#64748b}
+.settings-lbl-input{font-size:11px;color:#64748b;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 8px;outline:none;font-family:'DM Sans',sans-serif;width:100%}
+.settings-val-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:55%}
+.settings-val{font-size:11px;font-weight:700;color:#e2e8f0;text-align:right;cursor:pointer;padding:3px 6px;border-radius:5px;border:1px solid transparent;transition:all .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.settings-val:hover{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);color:#10b981}
+.settings-val-input{font-size:11px;font-weight:700;color:#e2e8f0;background:rgba(255,255,255,0.06);border:1px solid rgba(16,185,129,0.4);border-radius:5px;padding:3px 8px;outline:none;font-family:'DM Sans',sans-serif;text-align:right;width:140px}
+.settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
+.settings-row-del:hover{color:#ef4444}
+.settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.settings-new-section-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.03)}
 
 /* ===== MOBILE ===== */
 @media(max-width:700px){
@@ -234,7 +255,18 @@ a{color:#10b981;text-decoration:none}
 
   <!-- ===== SETTINGS ===== -->
   <div id="tab-settings" class="tab-panel">
+    <div class="settings-toolbar">
+      <button class="settings-toolbar-btn primary" onclick="saveSettings()">&#10003; Save Changes</button>
+      <button class="settings-toolbar-btn" onclick="exportSettings()">&#8659; Export JSON</button>
+      <button class="settings-toolbar-btn" onclick="importSettingsPrompt()">&#8657; Import JSON</button>
+      <button class="settings-toolbar-btn danger" onclick="resetSettings()">&#8635; Reset to Original</button>
+      <span class="settings-modified-badge" id="settings-modified-badge">&#9679; Unsaved changes</span>
+    </div>
+    <div style="font-size:11px;color:#334155;margin-bottom:16px;line-height:1.5">
+      Click any value to edit it. Changes are saved to this browser until you export and commit the updated JSON file.
+    </div>
     <div class="settings-grid" id="settings-grid">Loading...</div>
+    <input type="file" id="settings-import-input" accept=".json" style="display:none" onchange="handleSettingsImport(event)">
   </div>
 </div>
 
@@ -508,21 +540,234 @@ function renderAdjustments() {
   </tr>`).join('');
 }
 
-/* ===== SETTINGS ===== */
+/* ===== SETTINGS (EDITABLE) ===== */
+const SETTINGS_LS_KEY = 'comm_settings_' + (window.COMM_AUTH?.leagueKey || 'default');
+let _settingsModified = false;
+
+function _getWorkingSettings() {
+  // localStorage overrides the JSON if saved
+  const stored = localStorage.getItem(SETTINGS_LS_KEY);
+  if (stored) { try { return JSON.parse(stored); } catch {} }
+  return JSON.parse(JSON.stringify(DATA.rules)); // deep clone
+}
+
+function _markModified() {
+  _settingsModified = true;
+  document.getElementById('settings-modified-badge')?.classList.add('show');
+}
+
 function renderSettings() {
-  const rules = DATA.rules;
+  const rules = _getWorkingSettings();
   const grid = document.getElementById('settings-grid');
   const sections = Object.entries(rules);
-  if (!sections.length) { grid.innerHTML = '<div style="color:#334155">No settings data available.</div>'; return; }
+  if (!sections.length) {
+    grid.innerHTML = `<div style="color:#334155;padding:20px">No settings yet. Add a section to get started.</div>`;
+  } else {
+    grid.innerHTML = sections.map(([title, rows], si) => `
+      <div class="settings-section" data-section="${si}">
+        <div class="settings-section-hdr">
+          <span class="settings-section-title" contenteditable="true" onblur="onSectionTitleEdit(${si},this)">${title}</span>
+          <button class="settings-section-add" title="Add row" onclick="addSettingRow(${si})">&#43;</button>
+        </div>
+        ${(rows||[]).map((r, ri) => settingRowHTML(si, ri, r)).join('')}
+      </div>`).join('') +
+      `<button class="settings-new-section-btn" onclick="addSettingsSection()">&#43; Add New Section</button>`;
+  }
+  // If no sections, still show Add
+  if (!sections.length) {
+    grid.innerHTML += `<button class="settings-new-section-btn" onclick="addSettingsSection()">&#43; Add New Section</button>`;
+  }
+}
 
-  grid.innerHTML = sections.map(([title, rows]) => `
-    <div class="settings-section">
-      <div class="settings-section-title">${title}</div>
-      ${rows.map(r => `<div class="settings-row">
-        <div class="settings-lbl">${r.description}</div>
-        <div class="settings-val">${r.setting || '—'}</div>
-      </div>`).join('')}
-    </div>`).join('');
+function settingRowHTML(si, ri, r) {
+  return `<div class="settings-row" data-si="${si}" data-ri="${ri}">
+    <div class="settings-lbl-wrap">
+      <span class="settings-lbl" contenteditable="true" onblur="onSettingLblEdit(${si},${ri},this)">${r.description||'Description'}</span>
+    </div>
+    <div class="settings-val-wrap">
+      <span class="settings-val" title="Click to edit" onclick="startEditVal(this,${si},${ri})">${r.setting||'—'}</span>
+    </div>
+    <button class="settings-row-del" title="Delete row" onclick="deleteSettingRow(${si},${ri})">&#10005;</button>
+  </div>`;
+}
+
+function startEditVal(span, si, ri) {
+  if (span.dataset.editing) return;
+  span.dataset.editing = '1';
+  const cur = span.textContent === '—' ? '' : span.textContent;
+  const input = document.createElement('input');
+  input.className = 'settings-val-input';
+  input.value = cur;
+  input.placeholder = 'Enter value...';
+  span.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = input.value.trim() || '—';
+    const newSpan = document.createElement('span');
+    newSpan.className = 'settings-val';
+    newSpan.title = 'Click to edit';
+    newSpan.textContent = val;
+    newSpan.onclick = () => startEditVal(newSpan, si, ri);
+    input.replaceWith(newSpan);
+    _applySettingChange(si, ri, 'setting', val);
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = cur; input.blur(); }
+  });
+}
+
+function onSectionTitleEdit(si, el) {
+  const rules = _getWorkingSettings();
+  const sections = Object.entries(rules);
+  if (!sections[si]) return;
+  const [oldTitle, rows] = sections[si];
+  const newTitle = el.textContent.trim() || oldTitle;
+  if (newTitle === oldTitle) return;
+  // Rename key in rules object
+  const newRules = {};
+  Object.entries(rules).forEach(([k, v], i) => { newRules[i === si ? newTitle : k] = v; });
+  DATA.rules = newRules;
+  _saveToLS(newRules);
+  _markModified();
+}
+
+function onSettingLblEdit(si, ri, el) {
+  _applySettingChange(si, ri, 'description', el.textContent.trim());
+}
+
+function _applySettingChange(si, ri, field, value) {
+  const rules = _getWorkingSettings();
+  const rows = Object.values(rules)[si];
+  if (!rows || !rows[ri]) return;
+  rows[ri][field] = value;
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+}
+
+function addSettingRow(si) {
+  const rules = _getWorkingSettings();
+  const rows = Object.values(rules)[si];
+  if (!rows) return;
+  rows.push({ description: 'New Setting', setting: '' });
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+  renderSettings();
+  // Focus the new row's label
+  const section = document.querySelector(`[data-section="${si}"]`);
+  const lastLbl = section?.querySelectorAll('.settings-lbl');
+  if (lastLbl?.length) {
+    const el = lastLbl[lastLbl.length-1];
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+}
+
+function deleteSettingRow(si, ri) {
+  const rules = _getWorkingSettings();
+  const rows = Object.values(rules)[si];
+  if (!rows) return;
+  rows.splice(ri, 1);
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+  renderSettings();
+}
+
+function addSettingsSection() {
+  const rules = _getWorkingSettings();
+  let name = 'New Section';
+  let i = 2;
+  while (rules[name]) { name = `New Section ${i++}`; }
+  rules[name] = [{ description: 'Setting', setting: '' }];
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+  renderSettings();
+}
+
+function _saveToLS(rules) {
+  try { localStorage.setItem(SETTINGS_LS_KEY, JSON.stringify(rules)); } catch {}
+}
+
+function saveSettings() {
+  _saveToLS(_getWorkingSettings());
+  _settingsModified = false;
+  document.getElementById('settings-modified-badge')?.classList.remove('show');
+  showToast('Settings saved to this browser.');
+}
+
+function exportSettings() {
+  const rules = _getWorkingSettings();
+  const json = JSON.stringify(rules, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rules.json';
+  a.click();
+  showToast('Downloaded rules.json — commit it to your data/ folder to make it permanent.');
+}
+
+function importSettingsPrompt() {
+  document.getElementById('settings-import-input').click();
+}
+
+function handleSettingsImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const rules = JSON.parse(ev.target.result);
+      DATA.rules = rules;
+      _saveToLS(rules);
+      _markModified();
+      renderSettings();
+      showToast('Settings imported successfully.');
+    } catch {
+      showToast('Invalid JSON file.', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetSettings() {
+  if (!confirm('Reset settings to the original rules.json? Your local edits will be lost.')) return;
+  localStorage.removeItem(SETTINGS_LS_KEY);
+  // Reload from original file
+  fetch('data/rules.json').then(r=>r.json()).then(rules => {
+    DATA.rules = rules;
+    _settingsModified = false;
+    document.getElementById('settings-modified-badge')?.classList.remove('show');
+    renderSettings();
+    showToast('Settings reset to original.');
+  });
+}
+
+/* Toast notification */
+function showToast(msg, isError=false) {
+  const existing = document.getElementById('comm-toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.id = 'comm-toast';
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9000;
+    background:${isError?'#ef4444':'#10b981'};color:${isError?'#fff':'#0b1120'};
+    font-size:12px;font-weight:700;padding:10px 20px;border-radius:8px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;
+    animation:fadeInUp .2s ease`;
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity='0', 2500);
+  setTimeout(() => t.remove(), 2800);
 }
 
 // Require auth before loading the page
