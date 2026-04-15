@@ -57,7 +57,7 @@ function buildNgsChartsSection(playerName) {
 
   return `<div class="modal-section ngs-charts-section">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="modal-section-title" style="margin-bottom:0">NGS CHARTS <span style="font-size:9px;color:#334155;font-weight:400;letter-spacing:.5px">2025</span></div>
+      <div class="modal-section-title" style="margin-bottom:0">NGS CHARTS <span style="font-size:9px;color:#334155;font-weight:400;letter-spacing:.5px">2025 &middot; featured weeks only</span></div>
     </div>
     <div class="ngs-wk-pills">${pillsHtml}</div>
     ${panelsHtml}
