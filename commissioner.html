@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner Tools · SBT Fantasy Football</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leftnav.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;background:#0b1120;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:#10b981;text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+
+#main{flex:1;min-width:0;display:flex;flex-direction:column;padding-bottom:80px}
+
+/* ===== PAGE HEADER ===== */
+#page-header{padding:24px 28px 0;flex-shrink:0}
+.page-title{font-size:32px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:#f1f5f9;line-height:1;margin-bottom:4px}
+.page-sub{font-size:13px;color:#475569;margin-bottom:0}
+
+/* ===== TAB BAR ===== */
+#tab-bar{display:flex;gap:4px;padding:20px 28px 0;flex-wrap:wrap;flex-shrink:0}
+.tab-btn{padding:8px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#475569;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,0.04)}
+.tab-btn.active{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.35);color:#10b981}
+
+/* ===== TAB PANELS ===== */
+.tab-panel{display:none;padding:24px 28px}
+.tab-panel.active{display:block}
+
+/* ===== CARD ===== */
+.card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+.card-title{font-size:10px;font-weight:800;letter-spacing:2px;color:#334155;text-transform:uppercase;margin-bottom:14px}
+
+/* ===== HUB STATS STRIP ===== */
+#hub-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.hub-stat{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 20px;flex:1;min-width:120px}
+.hub-stat-val{font-size:28px;font-weight:800;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:#10b981;line-height:1}
+.hub-stat-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+/* ===== HUB GRID ===== */
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.hub-grid{grid-template-columns:1fr}}
+
+/* ===== QUICK LINKS ===== */
+.quick-links{display:flex;flex-direction:column;gap:6px}
+.quick-link{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
+.quick-link:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.04)}
+.quick-link-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.quick-link-arrow{margin-left:auto;color:#334155;font-size:10px}
+
+/* ===== ACTIVITY FEED ===== */
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:7px;height:7px;border-radius:50%;background:#10b981;flex-shrink:0;margin-top:5px}
+.activity-dot.trade{background:#a78bfa}
+.activity-dot.add{background:#10b981}
+.activity-dot.drop{background:#ef4444}
+.activity-dot.adj{background:#f59e0b}
+.activity-body{flex:1;min-width:0}
+.activity-team{font-size:11px;font-weight:800;color:#e2e8f0}
+.activity-desc{font-size:11px;color:#64748b;margin-top:1px;line-height:1.4}
+.activity-meta{font-size:10px;color:#334155;margin-top:2px}
+
+/* ===== ROSTER TABLE ===== */
+#roster-search-wrap{display:flex;align-items:center;gap:8px;background:#0d1526;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 14px;max-width:280px;margin-bottom:18px}
+#roster-search-wrap input{background:transparent;border:none;outline:none;color:#e2e8f0;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;width:100%}
+#roster-search-wrap input::placeholder{color:#334155}
+.team-roster-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.team-roster-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;user-select:none}
+.team-roster-hdr:hover{background:rgba(255,255,255,0.02)}
+.team-name-big{font-size:15px;font-weight:800;color:#f1f5f9}
+.team-owner{font-size:11px;color:#475569;margin-top:1px}
+.team-record{font-size:11px;font-weight:700;color:#10b981;margin-left:auto;white-space:nowrap}
+.team-roster-body{padding:10px 16px 14px}
+.roster-section-lbl{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;margin:8px 0 6px}
+.roster-player-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.025)}
+.roster-player-row:last-child{border-bottom:none}
+.rpr-slot{font-size:9px;font-weight:800;color:#334155;width:46px;flex-shrink:0;letter-spacing:.5px}
+.rpr-name{font-size:12px;color:#94a3b8;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpr-pos{font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.rpr-team{font-size:10px;color:#475569;flex-shrink:0;width:28px;text-align:right}
+.rpr-status{font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.status-rs{background:rgba(100,116,139,0.15);color:#64748b}
+.status-inj{background:rgba(239,68,68,0.15);color:#ef4444}
+
+/* ===== TRANSACTIONS ===== */
+.tx-filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tx-filter-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#475569;font-size:10px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:all .15s}
+.tx-filter-btn:hover{color:#94a3b8}
+.tx-filter-btn.on{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981}
+.tx-table{width:100%;border-collapse:collapse}
+.tx-table th{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:left;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.tx-table td{font-size:11px;color:#64748b;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top}
+.tx-table tr:last-child td{border-bottom:none}
+.tx-table tr:hover td{background:rgba(255,255,255,0.02)}
+.tx-type-badge{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.tx-add{background:rgba(16,185,129,0.12);color:#10b981}
+.tx-drop{background:rgba(239,68,68,0.12);color:#ef4444}
+.tx-trade{background:rgba(167,139,250,0.12);color:#a78bfa}
+.tx-add-drop{background:rgba(16,185,129,0.08);color:#64748b}
+.tx-player-add{color:#10b981;font-weight:700}
+.tx-player-drop{color:#ef4444;font-weight:700}
+
+/* ===== ADJUSTMENTS ===== */
+.adj-table{width:100%;border-collapse:collapse}
+.adj-table th{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;text-align:left;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.adj-table td{font-size:12px;color:#64748b;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.adj-table tr:last-child td{border-bottom:none}
+.adj-table tr:hover td{background:rgba(255,255,255,0.02)}
+.adj-pts{font-weight:800;color:#f59e0b}
+.adj-reason{color:#94a3b8}
+.adj-team{color:#e2e8f0;font-weight:700}
+.adj-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.adj-sum-item{font-size:12px;color:#64748b}
+.adj-sum-item span{font-weight:800;color:#f59e0b}
+
+/* ===== SETTINGS ===== */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
+.settings-section{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden}
+.settings-section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#475569;text-transform:uppercase;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02)}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03);gap:12px}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:rgba(255,255,255,0.02)}
+.settings-lbl{font-size:11px;color:#64748b;flex:1}
+.settings-val{font-size:11px;font-weight:700;color:#e2e8f0;text-align:right;flex-shrink:0;max-width:55%}
+
+/* ===== MOBILE ===== */
+@media(max-width:700px){
+  #page-header{padding:16px 16px 0}
+  .page-title{font-size:26px}
+  #tab-bar{padding:14px 16px 0;gap:6px}
+  .tab-btn{padding:6px 12px;font-size:11px}
+  .tab-panel{padding:16px}
+  #hub-stats .hub-stat{min-width:100px}
+  .tx-table th:nth-child(3),.tx-table td:nth-child(3){display:none}
+  .adj-table th:nth-child(4),.adj-table td:nth-child(4){display:none}
+}
+</style>
+</head>
+<body>
+<nav id="leftnav"></nav>
+<div id="main">
+  <div id="page-header">
+    <div class="page-title">Commissioner Tools</div>
+    <div class="page-sub" id="league-sub">Loading league info...</div>
+  </div>
+
+  <div id="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('hub')">&#9672; Hub</button>
+    <button class="tab-btn" onclick="switchTab('rosters')">&#128101; Rosters</button>
+    <button class="tab-btn" onclick="switchTab('transactions')">&#8646; Transactions</button>
+    <button class="tab-btn" onclick="switchTab('adjustments')">&#9881; Adjustments</button>
+    <button class="tab-btn" onclick="switchTab('settings')">&#9965; Settings</button>
+  </div>
+
+  <!-- ===== HUB ===== -->
+  <div id="tab-hub" class="tab-panel active">
+    <div id="hub-stats">
+      <div class="hub-stat"><div class="hub-stat-val" id="hs-teams">—</div><div class="hub-stat-lbl">Teams</div></div>
+      <div class="hub-stat"><div class="hub-stat-val" id="hs-transactions">—</div><div class="hub-stat-lbl">Transactions</div></div>
+      <div class="hub-stat"><div class="hub-stat-val" id="hs-adjustments">—</div><div class="hub-stat-lbl">Score Adjustments</div></div>
+      <div class="hub-stat"><div class="hub-stat-val" id="hs-trades">—</div><div class="hub-stat-lbl">Trades</div></div>
+      <div class="hub-stat"><div class="hub-stat-val" id="hs-fee" style="color:#a78bfa">—</div><div class="hub-stat-lbl">Entry Fee</div></div>
+    </div>
+    <div class="hub-grid">
+      <div>
+        <div class="card">
+          <div class="card-title">Recent Activity</div>
+          <div id="hub-activity">Loading...</div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">Quick Links</div>
+          <div class="quick-links">
+            <a href="standings.html" class="quick-link"><span class="quick-link-icon">&#9776;</span>League Standings<span class="quick-link-arrow">&#9654;</span></a>
+            <a href="transactions.html" class="quick-link"><span class="quick-link-icon">&#8646;</span>Transaction Log<span class="quick-link-arrow">&#9654;</span></a>
+            <a href="trade.html" class="quick-link"><span class="quick-link-icon">&#8652;</span>Trade Builder<span class="quick-link-arrow">&#9654;</span></a>
+            <a href="playoff.html" class="quick-link"><span class="quick-link-icon">&#127942;</span>Playoff Bracket<span class="quick-link-arrow">&#9654;</span></a>
+            <a href="draft-room.html" class="quick-link"><span class="quick-link-icon">&#128203;</span>Draft Room<span class="quick-link-arrow">&#9654;</span></a>
+            <a id="cbs-link" href="#" target="_blank" class="quick-link" style="border-color:rgba(59,130,246,0.2);color:#60a5fa"><span class="quick-link-icon">&#8599;</span>Manage on CBS Sports<span class="quick-link-arrow">&#9654;</span></a>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">Adjustment Summary</div>
+          <div id="hub-adj-summary">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROSTERS ===== -->
+  <div id="tab-rosters" class="tab-panel">
+    <div id="roster-search-wrap">
+      <span style="color:#334155;font-size:13px">&#128269;</span>
+      <input type="text" id="roster-search" placeholder="Search player..." oninput="filterRosters()">
+    </div>
+    <div id="roster-list">Loading...</div>
+  </div>
+
+  <!-- ===== TRANSACTIONS ===== -->
+  <div id="tab-transactions" class="tab-panel">
+    <div class="tx-filters">
+      <button class="tx-filter-btn on" onclick="txFilter(this,'all')">All</button>
+      <button class="tx-filter-btn" onclick="txFilter(this,'add_drop')">Add/Drop</button>
+      <button class="tx-filter-btn" onclick="txFilter(this,'trade')">Trades</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tx-table">
+        <thead><tr><th>Week</th><th>Team</th><th>Date</th><th>Type</th><th>Details</th></tr></thead>
+        <tbody id="tx-body">Loading...</tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== ADJUSTMENTS ===== -->
+  <div id="tab-adjustments" class="tab-panel">
+    <div class="adj-summary" id="adj-summary-strip"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="adj-table">
+          <thead><tr><th>Week</th><th>Team</th><th>Points</th><th>Manager</th><th>Reason</th></tr></thead>
+          <tbody id="adj-body">Loading...</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div id="tab-settings" class="tab-panel">
+    <div class="settings-grid" id="settings-grid">Loading...</div>
+  </div>
+</div>
+
+<script>
+const ACCENT = '#10b981';
+const POS_COLOR = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc15',DST:'#a78bfa'};
+
+let DATA = { teams:[], rosters:[], transactions:[], adjustments:[], rules:{} };
+let txActiveFilter = 'all';
+
+/* ===== TAB SWITCHING ===== */
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const ids = ['hub','rosters','transactions','adjustments','settings'];
+    b.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-'+id);
+  });
+}
+
+/* ===== LOAD DATA ===== */
+async function init() {
+  const [teamData, rosters, transactions, adjustments, rules] = await Promise.all([
+    fetch('data/team_data_2025.json').then(r=>r.json()).catch(()=>({})),
+    fetch('data/rosters.json').then(r=>r.json()).catch(()=>[]),
+    fetch('data/transactions.json').then(r=>r.json()).catch(()=>[]),
+    fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
+    fetch('data/rules.json').then(r=>r.json()).catch(()=>({})),
+  ]);
+
+  DATA.teams       = teamData.teams || [];
+  DATA.rosters     = rosters;
+  DATA.transactions= transactions;
+  DATA.adjustments = adjustments;
+  DATA.rules       = rules;
+
+  // Build team id → name lookup
+  DATA.teamById = {};
+  DATA.teams.forEach(t => { if (t.team_id) DATA.teamById[t.team_id] = t; });
+
+  renderHub();
+  renderRosters();
+  renderTransactions();
+  renderAdjustments();
+  renderSettings();
+
+  // League sub + CBS link
+  const leagueName = (rules['League Identity']||[]).find(r=>r.description==='League Name');
+  const leagueUrl  = (rules['League Identity']||[]).find(r=>r.description==='League URL');
+  if (leagueName) document.getElementById('league-sub').textContent = leagueName.setting + ' · Commissioner View';
+  if (leagueUrl) {
+    const cbsLink = document.getElementById('cbs-link');
+    cbsLink.href = leagueUrl.setting + '/setup';
+  }
+}
+
+/* ===== HUB ===== */
+function renderHub() {
+  const teams = DATA.teams;
+  const txs = DATA.transactions;
+  const adjs = DATA.adjustments;
+
+  // Stats
+  document.getElementById('hs-teams').textContent = teams.length || '—';
+  document.getElementById('hs-transactions').textContent = txs.length;
+  document.getElementById('hs-adjustments').textContent = adjs.reduce((s,a)=>s+(a.adjustments||[]).length,0);
+  document.getElementById('hs-trades').textContent = txs.filter(t=>t.type==='trade').length;
+
+  const fee = (DATA.rules['League Identity']||[]).find(r=>r.description==='League Entry Fee');
+  document.getElementById('hs-fee').textContent = fee ? fee.setting : '—';
+
+  // Recent activity — last 10 transactions + adjustments merged, sorted by week desc
+  const items = [];
+  txs.slice(-30).reverse().slice(0,15).forEach(t => {
+    let desc = '';
+    if (t.type === 'add_drop') {
+      const adds  = (t.adds||[]).map(p=>p.name).join(', ');
+      const drops = (t.drops||[]).map(p=>p.name).join(', ');
+      if (adds && drops) desc = `Added ${adds} · Dropped ${drops}`;
+      else if (adds) desc = `Added ${adds}`;
+      else if (drops) desc = `Dropped ${drops}`;
+    } else if (t.type === 'trade') {
+      desc = 'Trade processed';
+    } else {
+      desc = t.type;
+    }
+    items.push({ type: t.type==='trade'?'trade':t.adds?.length?'add':'drop', team: t.team, desc, meta: `Week ${t.week} · ${t.timestamp||''}` });
+  });
+
+  const el = document.getElementById('hub-activity');
+  if (!items.length) { el.innerHTML = '<div style="color:#334155;font-size:12px;padding:8px 0">No recent activity.</div>'; return; }
+  el.innerHTML = items.map(i => `
+    <div class="activity-item">
+      <div class="activity-dot ${i.type}"></div>
+      <div class="activity-body">
+        <div class="activity-team">${i.team}</div>
+        <div class="activity-desc">${i.desc}</div>
+        <div class="activity-meta">${i.meta}</div>
+      </div>
+    </div>`).join('');
+
+  // Adjustment summary
+  const totalAdj = adjs.reduce((s,a)=>s+(a.adjustments||[]).reduce((ss,x)=>ss+(x.points||0),0),0);
+  const teamsAffected = new Set(adjs.map(a=>a.team_id)).size;
+  const adjEl = document.getElementById('hub-adj-summary');
+  if (!adjs.length) {
+    adjEl.innerHTML = '<div style="color:#334155;font-size:12px">No adjustments recorded.</div>';
+  } else {
+    adjEl.innerHTML = `
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px">
+        <div><div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#f59e0b">${adjs.reduce((s,a)=>s+(a.adjustments||[]).length,0)}</div><div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Total</div></div>
+        <div><div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#f59e0b">+${totalAdj.toFixed(1)}</div><div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Points Added</div></div>
+        <div><div style="font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;color:#f59e0b">${teamsAffected}</div><div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px">Teams Affected</div></div>
+      </div>
+      ${adjs.slice(-3).reverse().map(a => {
+        const t = DATA.teamById[a.team_id];
+        return (a.adjustments||[]).map(x=>`<div style="font-size:11px;color:#64748b;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#f59e0b;font-weight:700">Wk ${a.week}</span> &nbsp;·&nbsp;
+          <span style="color:#e2e8f0;font-weight:600">${t?t.team_name:'Team '+a.team_id}</span> &nbsp;·&nbsp;
+          +${x.points} pts &nbsp;·&nbsp; ${x.reason}
+        </div>`).join('')
+      }).join('')}
+      <div style="margin-top:8px"><button class="tab-btn" onclick="switchTab('adjustments')" style="font-size:10px;padding:5px 10px">View All Adjustments &#9654;</button></div>`;
+  }
+}
+
+/* ===== ROSTERS ===== */
+function renderRosters(filter='') {
+  const el = document.getElementById('roster-list');
+  const q = filter.toLowerCase();
+  let html = '';
+
+  DATA.rosters.forEach(team => {
+    const starters = team.players.filter(p => p.status === 'A');
+    const reserves = team.players.filter(p => p.status !== 'A');
+    // Filter check
+    if (q) {
+      const hit = team.players.some(p => p.name.toLowerCase().includes(q));
+      if (!hit && !team.team_name.toLowerCase().includes(q) && !team.manager.toLowerCase().includes(q)) return;
+    }
+
+    // Find record from team data
+    const td = DATA.teams.find(t => t.team_name === team.team_name);
+    const record = td ? `${td.wins}-${td.losses}${td.ties?'-'+td.ties:''}` : '';
+
+    html += `<div class="team-roster-card">
+      <div class="team-roster-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        <div>
+          <div class="team-name-big">${team.team_name}</div>
+          <div class="team-owner">${team.manager}</div>
+        </div>
+        <div class="team-record">${record}</div>
+      </div>
+      <div class="team-roster-body">
+        <div class="roster-section-lbl">Starters (${starters.length})</div>
+        ${starters.map(p => rosterPlayerRow(p, q)).join('')}
+        ${reserves.length ? `<div class="roster-section-lbl" style="margin-top:12px">Reserves (${reserves.length})</div>
+        ${reserves.map(p => rosterPlayerRow(p, q)).join('')}` : ''}
+      </div>
+    </div>`;
+  });
+
+  el.innerHTML = html || '<div style="color:#334155;padding:20px;text-align:center">No teams match your search.</div>';
+}
+
+function rosterPlayerRow(p, q='') {
+  const pc = POS_COLOR[p.position] || '#64748b';
+  const nameHl = q && p.name.toLowerCase().includes(q)
+    ? p.name.replace(new RegExp(`(${q})`, 'gi'), '<mark style="background:rgba(16,185,129,0.25);color:#10b981;border-radius:2px">$1</mark>')
+    : p.name;
+  const inj = p.status !== 'A' ? `<span class="rpr-status status-rs">RS</span>` : '';
+  const injStatus = p.injury_status ? `<span class="rpr-status status-inj">${p.injury_status}</span>` : '';
+  return `<div class="roster-player-row">
+    <div class="rpr-slot">${p.slot}</div>
+    <div class="rpr-name">${nameHl}</div>
+    <div class="rpr-pos" style="background:${pc}18;color:${pc}">${p.position}</div>
+    <div class="rpr-team">${p.nfl_team||''}</div>
+    ${injStatus}${inj}
+  </div>`;
+}
+
+function filterRosters() {
+  renderRosters(document.getElementById('roster-search').value);
+}
+
+/* ===== TRANSACTIONS ===== */
+function renderTransactions() {
+  const sorted = [...DATA.transactions].reverse();
+  renderTxRows(sorted, txActiveFilter);
+}
+
+function txFilter(btn, type) {
+  document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  txActiveFilter = type;
+  renderTxRows([...DATA.transactions].reverse(), type);
+}
+
+function renderTxRows(sorted, filter) {
+  const rows = sorted.filter(t => filter === 'all' || t.type === filter);
+  const body = document.getElementById('tx-body');
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#334155">No transactions found.</td></tr>'; return; }
+
+  body.innerHTML = rows.map(t => {
+    let typeBadge = '';
+    let details = '';
+    if (t.type === 'add_drop') {
+      const adds  = (t.adds||[]).map(p=>`<div class="tx-player-add">+ ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
+      const drops = (t.drops||[]).map(p=>`<div class="tx-player-drop">– ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
+      typeBadge = (t.adds||[]).length && (t.drops||[]).length
+        ? `<span class="tx-type-badge tx-add-drop">Add/Drop</span>`
+        : (t.adds||[]).length ? `<span class="tx-type-badge tx-add">Add</span>`
+        : `<span class="tx-type-badge tx-drop">Drop</span>`;
+      details = adds + drops;
+    } else if (t.type === 'trade') {
+      typeBadge = `<span class="tx-type-badge tx-trade">Trade</span>`;
+      details = (t.sides||[]).map(s=>`<div style="margin-bottom:2px"><span style="color:#a78bfa;font-weight:700">${s.team}</span> received: ${(s.received||[]).map(p=>p.name).join(', ')}</div>`).join('');
+      if (!details && t.teams) details = t.teams.join(' ↔ ');
+    } else {
+      typeBadge = `<span class="tx-type-badge tx-add-drop">${t.type}</span>`;
+      details = JSON.stringify(t).slice(0,60);
+    }
+    const faab = (t.adds||[]).find(p=>p.faab>0);
+    return `<tr>
+      <td style="color:#e2e8f0;font-weight:700;white-space:nowrap">${t.week||'—'}</td>
+      <td style="color:#94a3b8;font-weight:600;white-space:nowrap">${t.team||'—'}</td>
+      <td style="color:#475569;white-space:nowrap">${t.timestamp||'—'}</td>
+      <td>${typeBadge}${faab?`<div style="font-size:9px;color:#f59e0b;margin-top:3px">FAAB: $${faab.faab}</div>`:''}</td>
+      <td>${details}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ===== ADJUSTMENTS ===== */
+function renderAdjustments() {
+  const adjs = DATA.adjustments;
+  const body = document.getElementById('adj-body');
+  const strip = document.getElementById('adj-summary-strip');
+
+  if (!adjs.length) {
+    body.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#334155">No adjustments recorded.</td></tr>';
+    strip.innerHTML = '';
+    return;
+  }
+
+  const total = adjs.reduce((s,a)=>s+(a.adjustments||[]).reduce((ss,x)=>ss+(x.points||0),0),0);
+  const count = adjs.reduce((s,a)=>s+(a.adjustments||[]).length,0);
+  strip.innerHTML = `
+    <div class="adj-sum-item">Total adjustments: <span>${count}</span></div>
+    <div class="adj-sum-item">Total points added: <span>+${total.toFixed(1)}</span></div>
+    <div class="adj-sum-item">Teams affected: <span>${new Set(adjs.map(a=>a.team_id)).size}</span></div>`;
+
+  const rows = [];
+  adjs.forEach(a => {
+    const t = DATA.teamById[a.team_id];
+    (a.adjustments||[]).forEach(x => {
+      rows.push({ week: a.week, team_id: a.team_id, teamName: t ? t.team_name : 'Team '+a.team_id, manager: t ? t.owner : '—', points: x.points, reason: x.reason });
+    });
+  });
+  rows.sort((a,b) => b.week - a.week);
+
+  body.innerHTML = rows.map(r => `<tr>
+    <td style="color:#e2e8f0;font-weight:700">Week ${r.week}</td>
+    <td class="adj-team">${r.teamName}</td>
+    <td class="adj-pts">+${r.points}</td>
+    <td style="color:#64748b">${r.manager}</td>
+    <td class="adj-reason">${r.reason}</td>
+  </tr>`).join('');
+}
+
+/* ===== SETTINGS ===== */
+function renderSettings() {
+  const rules = DATA.rules;
+  const grid = document.getElementById('settings-grid');
+  const sections = Object.entries(rules);
+  if (!sections.length) { grid.innerHTML = '<div style="color:#334155">No settings data available.</div>'; return; }
+
+  grid.innerHTML = sections.map(([title, rows]) => `
+    <div class="settings-section">
+      <div class="settings-section-title">${title}</div>
+      ${rows.map(r => `<div class="settings-row">
+        <div class="settings-lbl">${r.description}</div>
+        <div class="settings-val">${r.setting || '—'}</div>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+init();
+</script>
+<script src="leftnav.js"></script>
+<script>initLeftNav('commissioner.html');</script>
+</body>
+</html>

@@ -71,6 +71,7 @@ function _buildNavHTML(activePage, opts) {
     { href: 'trade.html',        label: 'Trade Builder' },
     { href: 'playoff.html',      label: 'Playoffs'      },
     { href: 'index.html?tab=Rules', label: 'Rules'         },
+    { href: 'commissioner.html',   label: 'Commissioner',  badge: 'NEW' },
   ];
 
   // Stats nav items
