@@ -151,6 +151,53 @@ a{color:#10b981;text-decoration:none}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .settings-new-section-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.03)}
 
+/* ===== ROSTER ACTIONS ===== */
+.roster-tab-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.roster-action-btn{padding:6px 14px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#64748b;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.roster-action-btn:hover{color:#e2e8f0;border-color:rgba(255,255,255,0.15)}
+.roster-action-btn.danger:hover{color:#ef4444;border-color:rgba(239,68,68,0.3)}
+.roster-modified-badge{font-size:10px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:3px 10px;border-radius:20px;font-weight:700;display:none;margin-left:auto}
+.roster-modified-badge.show{display:inline-block}
+.rpr-release{background:none;border:none;color:transparent;cursor:pointer;font-size:11px;padding:2px 5px;border-radius:4px;transition:all .12s;flex-shrink:0;line-height:1}
+.roster-player-row:hover .rpr-release{color:#334155}
+.rpr-release:hover{color:#ef4444 !important;background:rgba(239,68,68,0.1)}
+.rpr-add-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid rgba(16,185,129,0.25);background:rgba(16,185,129,0.06);color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;margin-left:auto;flex-shrink:0}
+.rpr-add-btn:hover{background:rgba(16,185,129,0.14);border-color:rgba(16,185,129,0.45)}
+
+/* ===== TRANSACTION ACTIONS ===== */
+.tx-reverse-btn{display:inline-block;margin-top:5px;padding:2px 9px;border-radius:5px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);color:#334155;font-size:9px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:.3px}
+.tx-reverse-btn:hover{border-color:rgba(239,68,68,0.35);color:#ef4444;background:rgba(239,68,68,0.07)}
+tr.tx-reversed td{opacity:.35;text-decoration:line-through}
+tr.tx-reversed .tx-type-badge{text-decoration:none}
+.tx-badge-reversed{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:3px;background:rgba(100,116,139,0.18);color:#64748b;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle;margin-left:4px;text-decoration:none}
+.tx-badge-comm{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:3px;background:rgba(167,139,250,0.15);color:#a78bfa;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle;margin-left:4px}
+.tx-comm{background:rgba(167,139,250,0.08);color:#a78bfa}
+tr.tx-comm-row td{background:rgba(167,139,250,0.03)}
+
+/* ===== ADD PLAYER MODAL ===== */
+.comm-modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(7,11,24,0.95);display:flex;align-items:center;justify-content:center;padding:20px}
+.comm-modal{width:100%;max-width:460px;background:#0d1526;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-height:80vh;display:flex;flex-direction:column;position:relative}
+.comm-modal-title{font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:3px}
+.comm-modal-sub{font-size:11px;color:#475569;margin-bottom:16px}
+.comm-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#475569;font-size:18px;cursor:pointer;line-height:1;transition:color .12s}
+.comm-modal-close:hover{color:#e2e8f0}
+.fa-search{width:100%;background:#0b1120;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;padding:9px 14px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:10px;flex-shrink:0}
+.fa-list{flex:1;overflow-y:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.05);min-height:0}
+.fa-player-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background .1s}
+.fa-player-row:last-child{border-bottom:none}
+.fa-player-row:hover{background:rgba(255,255,255,0.04)}
+.fa-player-name{font-size:12px;color:#94a3b8;font-weight:600;flex:1}
+.fa-player-pos{font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.fa-player-nfl{font-size:10px;color:#475569;flex-shrink:0;width:26px}
+.fa-empty{text-align:center;padding:28px 16px;color:#334155;font-size:12px}
+.fa-manual{padding-top:12px;margin-top:12px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+.fa-manual-lbl{font-size:9px;font-weight:800;letter-spacing:1px;color:#334155;text-transform:uppercase;margin-bottom:8px}
+.fa-manual-row{display:flex;gap:6px;align-items:center}
+.fa-manual-input{flex:1;background:#0b1120;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;padding:8px 12px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none}
+.fa-pos-sel{background:#0b1120;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;padding:8px 8px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+.fa-confirm-btn{padding:8px 14px;border-radius:7px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s}
+.fa-confirm-btn:hover{background:rgba(16,185,129,0.22)}
+
 /* ===== MOBILE ===== */
 @media(max-width:700px){
   #page-header{padding:16px 16px 0}
@@ -218,9 +265,14 @@ a{color:#10b981;text-decoration:none}
 
   <!-- ===== ROSTERS ===== -->
   <div id="tab-rosters" class="tab-panel">
-    <div id="roster-search-wrap">
-      <span style="color:#334155;font-size:13px">&#128269;</span>
-      <input type="text" id="roster-search" placeholder="Search player..." oninput="filterRosters()">
+    <div class="roster-tab-toolbar">
+      <div id="roster-search-wrap">
+        <span style="color:#334155;font-size:13px">&#128269;</span>
+        <input type="text" id="roster-search" placeholder="Search player or team..." oninput="filterRosters()">
+      </div>
+      <button class="roster-action-btn" onclick="exportRosterChanges()">&#8659; Export Rosters JSON</button>
+      <button class="roster-action-btn danger" onclick="resetRosters()">&#8635; Reset</button>
+      <span class="roster-modified-badge" id="roster-modified-badge">&#9679; Unsaved changes</span>
     </div>
     <div id="roster-list">Loading...</div>
   </div>
@@ -231,6 +283,7 @@ a{color:#10b981;text-decoration:none}
       <button class="tx-filter-btn on" onclick="txFilter(this,'all')">All</button>
       <button class="tx-filter-btn" onclick="txFilter(this,'add_drop')">Add/Drop</button>
       <button class="tx-filter-btn" onclick="txFilter(this,'trade')">Trades</button>
+      <button class="tx-filter-btn" onclick="txFilter(this,'commissioner')">Commissioner</button>
     </div>
     <div style="overflow-x:auto">
       <table class="tx-table">
@@ -301,10 +354,21 @@ async function init() {
   ]);
 
   DATA.teams       = teamData.teams || [];
-  DATA.rosters     = rosters;
-  DATA.transactions= transactions.filter(t => t.season === 2025);
   DATA.adjustments = adjustments;
   DATA.rules       = rules;
+
+  // Use locally-saved rosters if commissioner made changes
+  const savedRosters = _loadSavedRosters();
+  DATA.rosters = savedRosters !== null ? savedRosters : rosters;
+  if (savedRosters !== null) {
+    document.getElementById('roster-modified-badge')?.classList.add('show');
+  }
+
+  // Merge season transactions with saved commissioner actions
+  const commActions = _loadCommActions();
+  DATA.transactions = [...transactions.filter(t => t.season === 2025), ...commActions];
+  // Assign stable _id for reverse lookups
+  DATA.transactions.forEach((t, i) => { t._id = i; });
 
   // Build team id → name lookup
   DATA.teamById = {};
@@ -396,6 +460,194 @@ function renderHub() {
   }
 }
 
+/* ===== ROSTER MANAGEMENT ===== */
+const ROSTERS_LS_KEY  = 'comm_rosters_'  + (window.COMM_AUTH?.leagueKey || 'default');
+const COMM_TX_LS_KEY  = 'comm_tx_'       + (window.COMM_AUTH?.leagueKey || 'default');
+const REVERSED_TX_KEY = 'comm_reversed_' + (window.COMM_AUTH?.leagueKey || 'default');
+
+function _loadSavedRosters() {
+  try { const s = localStorage.getItem(ROSTERS_LS_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+function _saveRosters() {
+  localStorage.setItem(ROSTERS_LS_KEY, JSON.stringify(DATA.rosters));
+  document.getElementById('roster-modified-badge')?.classList.add('show');
+}
+function _loadCommActions() {
+  try { const s = localStorage.getItem(COMM_TX_LS_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
+}
+function _saveCommAction(tx) {
+  const list = _loadCommActions();
+  list.push(tx);
+  localStorage.setItem(COMM_TX_LS_KEY, JSON.stringify(list));
+}
+function _getReversedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(REVERSED_TX_KEY) || '[]')); } catch { return new Set(); }
+}
+function _txFP(t) { return `${t.team}||${t.week}||${t.timestamp}`; }
+
+function exportRosterChanges() {
+  const json = JSON.stringify(DATA.rosters, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'rosters.json'; a.click();
+  showToast('Downloaded rosters.json — commit it to data/ to make it permanent.');
+}
+function resetRosters() {
+  if (!confirm('Reset rosters to the original rosters.json? All local changes will be lost.')) return;
+  localStorage.removeItem(ROSTERS_LS_KEY);
+  localStorage.removeItem(COMM_TX_LS_KEY);
+  localStorage.removeItem(REVERSED_TX_KEY);
+  fetch('data/rosters.json').then(r=>r.json()).then(rosters => {
+    DATA.rosters = rosters;
+    // Strip commissioner actions from in-memory transactions
+    DATA.transactions = DATA.transactions.filter(t => !t._comm);
+    document.getElementById('roster-modified-badge')?.classList.remove('show');
+    renderRosters(); renderTransactions();
+    showToast('Rosters reset to original.');
+  });
+}
+
+/* Release a player */
+function releasePlayer(teamName, playerName) {
+  if (!confirm(`Release ${playerName} from ${teamName}?`)) return;
+  const team = DATA.rosters.find(t => t.team_name === teamName);
+  if (!team) return;
+  const player = team.players.find(p => p.name === playerName);
+  if (!player) return;
+  team.players = team.players.filter(p => p.name !== playerName);
+  _saveRosters();
+  const ts = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'}) + ' (Commish)';
+  const tx = { season:2025, week:'Commish', timestamp:ts, type:'commissioner_drop', team:teamName, _comm:true,
+    adds:[], drops:[{name:player.name, pos:player.position, nfl_team:player.nfl_team||''}], _id:DATA.transactions.length };
+  DATA.transactions.push(tx); _saveCommAction(tx);
+  renderRosters(); renderTransactions();
+  showToast(`${playerName} released from ${teamName}.`);
+}
+
+/* Add player modal */
+let _addTarget = null;
+function openAddPlayerModal(teamName) {
+  _addTarget = teamName;
+  const pool = _buildFreeAgentPool();
+  const overlay = document.createElement('div');
+  overlay.className = 'comm-modal-overlay'; overlay.id = 'add-player-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  overlay._pool = pool;
+  overlay.innerHTML = `
+    <div class="comm-modal">
+      <button class="comm-modal-close" onclick="document.getElementById('add-player-overlay').remove()">&#10005;</button>
+      <div class="comm-modal-title">Add Player to ${teamName}</div>
+      <div class="comm-modal-sub">Select a free agent or add manually below</div>
+      <input class="fa-search" id="fa-search" placeholder="&#128269;  Search name, position, or NFL team..." oninput="filterFaList()">
+      <div class="fa-list" id="fa-list">${pool.length ? pool.map(_faRowHTML).join('') : '<div class="fa-empty">No free agents found in 2025 transaction history.</div>'}</div>
+      <div class="fa-manual">
+        <div class="fa-manual-lbl">Or add manually</div>
+        <div class="fa-manual-row">
+          <input class="fa-manual-input" id="fa-name" placeholder="Player name..." onkeydown="if(event.key==='Enter')_addManualPlayer()">
+          <select class="fa-pos-sel" id="fa-pos"><option>QB</option><option>RB</option><option selected>WR</option><option>TE</option><option>K</option><option>DST</option></select>
+          <button class="fa-confirm-btn" onclick="_addManualPlayer()">+ Add</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('fa-search')?.focus(), 80);
+}
+
+function _buildFreeAgentPool() {
+  const rostered = new Set();
+  DATA.rosters.forEach(t => t.players.forEach(p => rostered.add(p.name.toLowerCase())));
+  const seen = new Set(); const pool = [];
+  DATA.transactions.forEach(t => {
+    [...(t.adds||[]), ...(t.drops||[])].forEach(p => {
+      const k = p.name.toLowerCase();
+      if (!rostered.has(k) && !seen.has(k)) { seen.add(k); pool.push({name:p.name, position:p.pos||p.position||'', nfl_team:p.nfl_team||''}); }
+    });
+  });
+  return pool.sort((a,b) => a.name.localeCompare(b.name));
+}
+
+function _faRowHTML(p) {
+  const pc = POS_COLOR[p.position] || '#64748b';
+  const esc = s => s.replace(/'/g,"\\'");
+  return `<div class="fa-player-row" onclick="addPlayerToTeam('${esc(p.name)}','${p.position}','${p.nfl_team||''}')">
+    <span class="fa-player-name">${p.name}</span>
+    <span class="fa-player-pos" style="background:${pc}18;color:${pc}">${p.position}</span>
+    <span class="fa-player-nfl">${p.nfl_team||''}</span>
+  </div>`;
+}
+
+function filterFaList() {
+  const q = (document.getElementById('fa-search')?.value || '').toLowerCase();
+  const overlay = document.getElementById('add-player-overlay');
+  if (!overlay) return;
+  const filtered = q ? (overlay._pool||[]).filter(p =>
+    p.name.toLowerCase().includes(q) || p.position.toLowerCase().includes(q) || (p.nfl_team||'').toLowerCase().includes(q)
+  ) : (overlay._pool||[]);
+  const el = document.getElementById('fa-list');
+  if (el) el.innerHTML = filtered.length ? filtered.map(_faRowHTML).join('') : '<div class="fa-empty">No players match.</div>';
+}
+
+function _addManualPlayer() {
+  const name = document.getElementById('fa-name')?.value.trim();
+  if (!name) { document.getElementById('fa-name')?.focus(); return; }
+  const pos = document.getElementById('fa-pos')?.value || 'WR';
+  addPlayerToTeam(name, pos, '');
+}
+
+function addPlayerToTeam(playerName, position, nflTeam) {
+  const teamName = _addTarget;
+  if (!teamName) return;
+  const team = DATA.rosters.find(t => t.team_name === teamName);
+  if (!team) return;
+  if (team.players.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
+    showToast(`${playerName} is already on ${teamName}.`, true); return;
+  }
+  const slotMap = {QB:'QB',RB:'RB',WR:'WR',TE:'TE',K:'K',DST:'DEF'};
+  team.players.push({name:playerName, position, nfl_team:nflTeam, slot:slotMap[position]||position, status:'A'});
+  _saveRosters();
+  const ts = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'}) + ' (Commish)';
+  const tx = { season:2025, week:'Commish', timestamp:ts, type:'commissioner_add', team:teamName, _comm:true,
+    adds:[{name:playerName, pos:position, nfl_team:nflTeam}], drops:[], _id:DATA.transactions.length };
+  DATA.transactions.push(tx); _saveCommAction(tx);
+  document.getElementById('add-player-overlay')?.remove();
+  renderRosters(); renderTransactions();
+  showToast(`${playerName} added to ${teamName}.`);
+}
+
+/* Reverse a transaction */
+function reverseTransaction(txId) {
+  const tx = DATA.transactions.find(t => t._id === txId);
+  if (!tx) return;
+  const reversed = _getReversedSet();
+  if (reversed.has(_txFP(tx))) return;
+  const adds  = (tx.adds||[]).map(p=>p.name).join(', ');
+  const drops = (tx.drops||[]).map(p=>p.name).join(', ');
+  let msg = `Reverse this transaction for ${tx.team}?`;
+  if (adds)  msg += `\n\nWill REMOVE from roster:\n${adds}`;
+  if (drops) msg += `\n\nWill RE-ADD to roster:\n${drops}`;
+  if (!confirm(msg)) return;
+
+  const team = DATA.rosters.find(t => t.team_name === tx.team);
+  if (team) {
+    (tx.adds||[]).forEach(p => { team.players = team.players.filter(pl => pl.name.toLowerCase() !== p.name.toLowerCase()); });
+    (tx.drops||[]).forEach(p => {
+      if (!team.players.some(pl => pl.name.toLowerCase() === p.name.toLowerCase())) {
+        const slotMap = {QB:'QB',RB:'RB',WR:'WR',TE:'TE',K:'K',DST:'DEF'};
+        team.players.push({name:p.name, position:p.pos, nfl_team:p.nfl_team||'', slot:slotMap[p.pos]||p.pos, status:'A'});
+      }
+    });
+    _saveRosters();
+  }
+  reversed.add(_txFP(tx));
+  localStorage.setItem(REVERSED_TX_KEY, JSON.stringify([...reversed]));
+
+  const ts = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'}) + ' (Commish)';
+  const revTx = { season:2025, week:tx.week, timestamp:ts, type:'commissioner_reversal', team:tx.team, _comm:true,
+    adds:tx.drops||[], drops:tx.adds||[], _id:DATA.transactions.length };
+  DATA.transactions.push(revTx); _saveCommAction(revTx);
+  renderTransactions(); renderRosters();
+  showToast(`Transaction reversed for ${tx.team}.`);
+}
+
 /* ===== ROSTERS ===== */
 function renderRosters(filter='') {
   const el = document.getElementById('roster-list');
@@ -405,29 +657,28 @@ function renderRosters(filter='') {
   DATA.rosters.forEach(team => {
     const starters = team.players.filter(p => p.status === 'A');
     const reserves = team.players.filter(p => p.status !== 'A');
-    // Filter check
     if (q) {
       const hit = team.players.some(p => p.name.toLowerCase().includes(q));
       if (!hit && !team.team_name.toLowerCase().includes(q) && !team.manager.toLowerCase().includes(q)) return;
     }
-
-    // Find record from team data
     const td = DATA.teams.find(t => t.team_name === team.team_name);
     const record = td ? `${td.wins}-${td.losses}${td.ties?'-'+td.ties:''}` : '';
+    const tn = team.team_name;
 
     html += `<div class="team-roster-card">
       <div class="team-roster-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
-        <div>
-          <div class="team-name-big">${team.team_name}</div>
+        <div style="flex:1;min-width:0">
+          <div class="team-name-big">${tn}</div>
           <div class="team-owner">${team.manager}</div>
         </div>
         <div class="team-record">${record}</div>
+        <button class="rpr-add-btn" onclick="event.stopPropagation();openAddPlayerModal(${JSON.stringify(tn)})">&#43; Add Player</button>
       </div>
       <div class="team-roster-body">
         <div class="roster-section-lbl">Starters (${starters.length})</div>
-        ${starters.map(p => rosterPlayerRow(p, q)).join('')}
+        ${starters.map(p => rosterPlayerRow(p, tn, q)).join('')}
         ${reserves.length ? `<div class="roster-section-lbl" style="margin-top:12px">Reserves (${reserves.length})</div>
-        ${reserves.map(p => rosterPlayerRow(p, q)).join('')}` : ''}
+        ${reserves.map(p => rosterPlayerRow(p, tn, q)).join('')}` : ''}
       </div>
     </div>`;
   });
@@ -435,7 +686,7 @@ function renderRosters(filter='') {
   el.innerHTML = html || '<div style="color:#334155;padding:20px;text-align:center">No teams match your search.</div>';
 }
 
-function rosterPlayerRow(p, q='') {
+function rosterPlayerRow(p, teamName, q='') {
   const pc = POS_COLOR[p.position] || '#64748b';
   const nameHl = q && p.name.toLowerCase().includes(q)
     ? p.name.replace(new RegExp(`(${q})`, 'gi'), '<mark style="background:rgba(16,185,129,0.25);color:#10b981;border-radius:2px">$1</mark>')
@@ -448,6 +699,7 @@ function rosterPlayerRow(p, q='') {
     <div class="rpr-pos" style="background:${pc}18;color:${pc}">${p.position}</div>
     <div class="rpr-team">${p.nfl_team||''}</div>
     ${injStatus}${inj}
+    <button class="rpr-release" title="Release player" onclick="releasePlayer(${JSON.stringify(teamName)},${JSON.stringify(p.name)})">&#10005;</button>
   </div>`;
 }
 
@@ -469,31 +721,51 @@ function txFilter(btn, type) {
 }
 
 function renderTxRows(sorted, filter) {
-  const rows = sorted.filter(t => filter === 'all' || t.type === filter);
+  const reversed = _getReversedSet();
+  let rows = sorted;
+  if (filter === 'commissioner') rows = sorted.filter(t => t._comm);
+  else if (filter !== 'all')     rows = sorted.filter(t => t.type === filter && !t._comm);
+
   const body = document.getElementById('tx-body');
   if (!rows.length) { body.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#334155">No transactions found.</td></tr>'; return; }
 
   body.innerHTML = rows.map(t => {
-    let typeBadge = '';
-    let details = '';
-    if (t.type === 'add_drop') {
+    const isReversed = reversed.has(_txFP(t));
+    const isComm = !!t._comm;
+    let typeBadge = '', details = '';
+
+    if (t.type === 'commissioner_reversal') {
+      typeBadge = `<span class="tx-type-badge tx-comm">Reversal</span><span class="tx-badge-comm">Commish</span>`;
+      const adds  = (t.adds||[]).map(p=>`<div class="tx-player-add">+ ${p.name} <span style="color:#334155">(${p.pos||p.position})</span></div>`).join('');
+      const drops = (t.drops||[]).map(p=>`<div class="tx-player-drop">– ${p.name} <span style="color:#334155">(${p.pos||p.position})</span></div>`).join('');
+      details = adds + drops;
+    } else if (t.type === 'commissioner_add') {
+      typeBadge = `<span class="tx-type-badge tx-add">Add</span><span class="tx-badge-comm">Commish</span>`;
+      details = (t.adds||[]).map(p=>`<div class="tx-player-add">+ ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
+    } else if (t.type === 'commissioner_drop') {
+      typeBadge = `<span class="tx-type-badge tx-drop">Release</span><span class="tx-badge-comm">Commish</span>`;
+      details = (t.drops||[]).map(p=>`<div class="tx-player-drop">– ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
+    } else if (t.type === 'add_drop') {
       const adds  = (t.adds||[]).map(p=>`<div class="tx-player-add">+ ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
       const drops = (t.drops||[]).map(p=>`<div class="tx-player-drop">– ${p.name} <span style="color:#334155">(${p.pos})</span></div>`).join('');
       typeBadge = (t.adds||[]).length && (t.drops||[]).length
         ? `<span class="tx-type-badge tx-add-drop">Add/Drop</span>`
         : (t.adds||[]).length ? `<span class="tx-type-badge tx-add">Add</span>`
         : `<span class="tx-type-badge tx-drop">Drop</span>`;
+      if (isReversed) typeBadge += `<span class="tx-badge-reversed">Reversed</span>`;
       details = adds + drops;
+      if (!isReversed) details += `<button class="tx-reverse-btn" onclick="reverseTransaction(${t._id})">&#8635; Reverse</button>`;
     } else if (t.type === 'trade') {
       typeBadge = `<span class="tx-type-badge tx-trade">Trade</span>`;
       details = (t.sides||[]).map(s=>`<div style="margin-bottom:2px"><span style="color:#a78bfa;font-weight:700">${s.team}</span> received: ${(s.received||[]).map(p=>p.name).join(', ')}</div>`).join('');
       if (!details && t.teams) details = t.teams.join(' ↔ ');
     } else {
       typeBadge = `<span class="tx-type-badge tx-add-drop">${t.type}</span>`;
-      details = JSON.stringify(t).slice(0,60);
+      details = JSON.stringify(t).slice(0, 60);
     }
+
     const faab = (t.adds||[]).find(p=>p.faab>0);
-    return `<tr>
+    return `<tr${isReversed?' class="tx-reversed"':''}${isComm?' class="tx-comm-row"':''}>
       <td style="color:#e2e8f0;font-weight:700;white-space:nowrap">${t.week||'—'}</td>
       <td style="color:#94a3b8;font-weight:600;white-space:nowrap">${t.team||'—'}</td>
       <td style="color:#475569;white-space:nowrap">${t.timestamp||'—'}</td>
