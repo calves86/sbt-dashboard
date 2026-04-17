@@ -1,0 +1,4 @@
+.claude/
+.firecrawl/
+*.cookie
+cbs-cookie.txt
