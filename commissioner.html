@@ -332,6 +332,8 @@ const POS_COLOR = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc1
 let DATA = { teams:[], rosters:[], transactions:[], adjustments:[], rules:{} };
 let txActiveFilter = 'all';
 
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+
 /* ===== TAB SWITCHING ===== */
 function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
@@ -854,10 +856,10 @@ function renderSettings() {
 function settingRowHTML(si, ri, r) {
   return `<div class="settings-row" data-si="${si}" data-ri="${ri}">
     <div class="settings-lbl-wrap">
-      <span class="settings-lbl" contenteditable="true" onblur="onSettingLblEdit(${si},${ri},this)">${r.description||'Description'}</span>
+      <span class="settings-lbl" contenteditable="true" onblur="onSettingLblEdit(${si},${ri},this)">${escapeHTML(r.description||'Description')}</span>
     </div>
     <div class="settings-val-wrap">
-      <span class="settings-val" title="Click to edit" onclick="startEditVal(this,${si},${ri})">${r.setting||'—'}</span>
+      <span class="settings-val" title="Click to edit" onclick="startEditVal(this,${si},${ri})">${escapeHTML(r.setting||'—')}</span>
     </div>
     <button class="settings-row-del" title="Delete row" onclick="deleteSettingRow(${si},${ri})">&#10005;</button>
   </div>`;

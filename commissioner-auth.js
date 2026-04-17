@@ -21,6 +21,8 @@
  *  - Paste the result into data/auth-{league}.js as the pin_hash value
  * ===================================================================== */
 
+const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 hours
+
 /* SHA-256 via Web Crypto (built into all modern browsers) */
 async function _sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -37,7 +39,13 @@ function getSession() {
   if (!cfg) return null;
   try {
     const raw = sessionStorage.getItem(cfg.leagueKey);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const sess = JSON.parse(raw);
+    if (!sess.ts || Date.now() - sess.ts > SESSION_MAX_AGE_MS) {
+      sessionStorage.removeItem(cfg.leagueKey);
+      return null;
+    }
+    return sess;
   } catch { return null; }
 }
 
