@@ -32,7 +32,7 @@
     },
     {
       "description": "Bench",
-      "setting": "0"
+      "setting": "8"
     },
     {
       "description": "Injured Players",
@@ -44,7 +44,7 @@
     },
     {
       "description": "Total Players",
-      "setting": "9"
+      "setting": "17"
     },
     {
       "description": "QB",
@@ -379,12 +379,6 @@
       "code": "TK",
       "name": "Tackle (ID/DT/DST)",
       "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "TK",
-      "name": "Tackle (ID/DT/DST)",
-      "points": "0 points"
     }
   ],
   "Scoring Policies": [
@@ -407,12 +401,20 @@
       "setting": "1"
     },
     {
+      "description": "Regular Season Weeks",
+      "setting": "Weeks 1 - 14"
+    },
+    {
       "description": "Playoffs Start",
       "setting": "Week 15"
     },
     {
       "description": "Playoffs Last",
-      "setting": "3 Weeks"
+      "setting": "3 Weeks (Weeks 15 - 17)"
+    },
+    {
+      "description": "Playoff Teams",
+      "setting": "6"
     },
     {
       "description": "Automatic Playoffs",
