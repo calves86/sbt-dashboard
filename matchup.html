@@ -17,7 +17,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{display:flex;background:#080e1c;color:#e2e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
 #shell{display:flex;flex:1;min-height:100vh}
-#main{flex:1;min-width:0;overflow-y:auto;background:#080e1c;display:flex;flex-direction:column}
+#main{flex:1;min-width:0;width:0;overflow-y:auto;background:#080e1c;display:flex;flex-direction:column}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#0b1120}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
 a{color:#10b981;text-decoration:none}
 
@@ -66,7 +66,7 @@ a{color:#10b981;text-decoration:none}
 .mu-content{flex:1;display:flex;justify-content:center;gap:0;min-height:0;overflow-y:auto;overflow-x:hidden}
 .mu-main{flex:0 1 860px;min-width:0;overflow-y:visible;padding:12px 16px 20px}
 .mu-sidebar{width:520px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.05);overflow-y:visible;padding:14px 18px}
-@media(max-width:1600px){.mu-sidebar{display:none}.mu-content{justify-content:flex-start}.mu-main{flex:1;max-width:none}}
+@media(max-width:1600px){.mu-sidebar{display:none}.mu-content{justify-content:flex-start}.mu-main{flex:1;min-width:0;overflow-x:hidden}.mu-main>*{max-width:100%}}
 
 /* Score banner */
 .score-banner{background:linear-gradient(135deg,rgba(16,185,129,0.04),rgba(255,255,255,0.02));border:1px solid rgba(16,185,129,0.1);border-radius:16px;padding:18px 22px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:16px}
