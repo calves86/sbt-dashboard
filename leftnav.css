@@ -94,6 +94,27 @@ body.nav-col .team-item-logo,.team-item-logo-ph{width:30px;height:30px}
 .bn-tab.active{color:#10b981}
 .bn-tab:not(.active):active{color:#64748b}
 
+/* ===== MEDIUM SCREENS (≤1280px) — auto-collapse left nav so content doesn't clip ===== */
+@media(min-width:701px) and (max-width:1280px){
+  #leftnav{width:52px}
+  .ln-brand{padding:12px 8px;justify-content:center}
+  .ln-logo{width:30px;height:30px}
+  .ln-brand-text{display:none}
+  .ln-section{opacity:0;padding:6px 0}
+  .ln-item{justify-content:center;padding:10px 4px;margin:2px 3px;width:calc(100% - 6px)}
+  .ln-item>span{display:none}
+  .ln-badge{display:none}
+  .ln-chev{display:none}
+  .ln-sub{display:none}
+  .ln-divider{margin:5px 6px}
+  #ln-collapse-btn{display:none}
+  .ln-footer{display:none}
+  .ln-team-section{display:none}
+  .team-item{padding:8px 4px;margin:2px 3px;justify-content:center}
+  .team-item-info,.team-item-pts{display:none}
+  .team-item-logo,.team-item-logo-ph{width:30px;height:30px}
+}
+
 /* ===== MOBILE BREAKPOINT ===== */
 @media(max-width:700px){
   body{flex-direction:column;padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
