@@ -1,5 +1,5 @@
 /* ===== SBT Fantasy Football — Service Worker ===== */
-const CACHE = 'sbt-v21';
+const CACHE = 'sbt-v22';
 
 const STATIC_ASSETS = [
   './leftnav.js',

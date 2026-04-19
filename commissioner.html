@@ -913,9 +913,9 @@ function renderSettings() {
 }
 
 function _renderRosterSection(title, data, si) {
-  const cats  = data.categories || [];
-  const pos   = data.positions  || [];
-  const notes = data.notes      || [];
+  const cats     = data.categories || [];
+  const pos      = data.positions  || [];
+  const policies = data.policies   || [];
   const H = escapeHTML;
   const catRows = cats.map((c, ri) =>
     '<tr><td>' + H(c.status) + '</td>' +
@@ -928,8 +928,19 @@ function _renderRosterSection(title, data, si) {
     '<td style="text-align:center"><span class="sc-val" onclick="startEditTypedVal(this,' + si + ',\'positions\',' + ri + ',\'active_max\')">' + p.active_max + '</span></td>' +
     '<td style="text-align:center"><span class="sc-val" onclick="startEditTypedVal(this,' + si + ',\'positions\',' + ri + ',\'roster_total\')">' + p.roster_total + '</span></td></tr>'
   ).join('');
-  const notesHTML = notes.length
-    ? '<p style="font-size:10px;color:#475569;padding:8px 0 2px;font-style:italic">' + notes.map(H).join('<br>') + '</p>' : '';
+  const policiesHTML = policies.length
+    ? '<div class="sc-sub-hdr" style="margin-top:14px">Roster Policies</div>' +
+      policies.map((pl, pi) => {
+        const chk = pl.setting === true ? ' checked' : '';
+        return '<div class="settings-row">' +
+          '<div class="settings-lbl-wrap"><span class="settings-lbl">' + H(pl.description) + '</span></div>' +
+          '<div class="settings-val-wrap settings-chk-wrap">' +
+          '<label class="settings-chk-lbl"><input type="checkbox" class="settings-chk"' + chk +
+          ' onchange="_toggleRosterPolicy(' + si + ',' + pi + ',this.checked)">' +
+          '<span class="settings-chk-slider"></span></label></div>' +
+          '<div style="width:22px;flex-shrink:0"></div>' +
+          '</div>';
+      }).join('') : '';
   return '<div class="settings-section" data-section="' + si + '">' +
     '<div class="settings-section-hdr">' +
       '<span class="settings-section-title" contenteditable="true" onblur="onSectionTitleEdit(' + si + ',this)">' + H(title) + '</span>' +
@@ -939,7 +950,7 @@ function _renderRosterSection(title, data, si) {
       '<table class="sc-table"><thead><tr><th>Status</th><th style="text-align:center">Min</th><th style="text-align:center">Max</th></tr></thead><tbody>' + catRows + '</tbody></table>' +
       '<div class="sc-sub-hdr" style="margin-top:14px">Starting Lineup by Position</div>' +
       '<table class="sc-table"><thead><tr><th>Position</th><th style="text-align:center">Active Min</th><th style="text-align:center">Active Max</th><th style="text-align:center">Roster Total</th></tr></thead><tbody>' + posRows + '</tbody></table>' +
-      notesHTML +
+      policiesHTML +
     '</div></div>';
 }
 
@@ -1154,6 +1165,16 @@ function _setRadioGroupItem(si, ri, optIdx) {
   const row = rows[ri];
   if (!Array.isArray(row.options) || optIdx >= row.options.length) return;
   row.setting = row.options[optIdx];
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+}
+
+function _toggleRosterPolicy(si, pi, isChecked) {
+  const rules = _getWorkingSettings();
+  const sectionData = Object.values(rules)[si];
+  if (!sectionData || !Array.isArray(sectionData.policies) || sectionData.policies[pi] === undefined) return;
+  sectionData.policies[pi].setting = isChecked;
   DATA.rules = rules;
   _saveToLS(rules);
   _markModified();

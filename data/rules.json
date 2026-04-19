@@ -26,8 +26,12 @@
       { "position": "K",        "active_min": 1, "active_max": 1, "roster_total": 3  },
       { "position": "DST",      "active_min": 1, "active_max": 1, "roster_total": 4  }
     ],
-    "notes": [
-      "Illegal rosters score zero points in standings."
+    "policies": [
+      { "description": "Do not enforce In-Season Positional Roster Limits for the Draft", "setting": false },
+      { "description": "Illegal rosters score zero points in standings", "setting": true },
+      { "description": "Injured players do not count against positional roster limits", "setting": false },
+      { "description": "Practice squad players do not count against positional roster limits", "setting": false },
+      { "description": "Enforce strict roster limits during Add/Drops", "setting": false }
     ]
   },
 
@@ -154,11 +158,42 @@
   ],
 
   "Draft Settings": [
-    { "description": "Draft Format",     "setting": "Live Draft" },
-    { "description": "Draft Order Type", "setting": "Snake" },
-    { "description": "Draft Date/Time",  "setting": "9/3/25 08:30 pm ET" },
-    { "description": "Draft Rounds",     "setting": "16 Rounds, with 150 seconds between picks." },
-    { "description": "Draft Robot",      "setting": "Enabled — picks are made automatically for teams that let the clock expire." }
+    {
+      "description": "Draft Type",
+      "type": "radiogroup",
+      "setting": "Online Live Draft (Standard Draft Format)",
+      "options": [
+        "Wait to select a draft type (return here at any time to select and configure your draft type)",
+        "Offline Draft (enter rosters manually)",
+        "Online Live Draft (Standard Draft Format)",
+        "Online Extended Live Draft (Standard Draft Format conducted over multiple days)",
+        "Online Live Salary Cap Draft (Managers make offers for players and highest offer is awarded player)",
+        "Automated Draft (Players will be automatically drafted based on managers' player ratings)",
+        "My League will not use any of these options (complete draft process for this season)"
+      ]
+    },
+    { "description": "Draft Name", "setting": "SBT" },
+    { "description": "Do not enforce In-Season Positional Roster Limits for the Draft", "type": "checkbox", "setting": false },
+    {
+      "description": "Draft Rounds",
+      "setting": "16 Rounds",
+      "type": "select",
+      "options": ["8 Rounds","9 Rounds","10 Rounds","11 Rounds","12 Rounds","13 Rounds","14 Rounds","15 Rounds","16 Rounds","17 Rounds","18 Rounds","19 Rounds","20 Rounds"]
+    },
+    { "description": "Use Timer Between Picks (in Seconds)", "type": "checkbox", "setting": true },
+    { "description": "Time in seconds", "type": "number", "setting": 150 },
+    {
+      "description": "Draft Scheduling",
+      "type": "radiogroup",
+      "setting": "Enter a date & time for your league's draft",
+      "options": [
+        "Wait to schedule the draft (return here at any time to enter a draft time)",
+        "Enter a date & time for your league's draft"
+      ]
+    },
+    { "description": "Draft Date", "setting": "9/3/2025" },
+    { "description": "Draft Time", "setting": "8:30 PM ET" },
+    { "description": "Draft Order Type", "setting": "Snake" }
   ],
 
   "Scoring System": {
