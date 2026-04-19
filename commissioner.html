@@ -1147,12 +1147,13 @@ function _renderScoringSection(title, data, si) {
     '<div class="sc-group-hdr">' + H(label) + '</div>' +
     '<table class="sc-cbs-table">' + tblHdr + '<tbody>' + mkCategoryRows(arr, group) + '</tbody></table>';
 
+  const escJS = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   const mkAdditionalGroups = (groupsObj, destGroup) => Object.entries(groupsObj).map(([grp, cats]) =>
     '<div>' +
       '<div class="sc-additional-group-hdr">' + H(grp) + '</div>' +
       cats.map((c, ci) =>
         '<label class="sc-additional-item">' +
-          '<input type="checkbox" onchange="_scActivateAdditional(' + si + ',' + JSON.stringify(destGroup) + ',' + JSON.stringify(grp) + ',' + ci + ')">' +
+          '<input type="checkbox" onchange="_scActivateAdditional(' + si + ',\'' + escJS(destGroup) + '\',\'' + escJS(grp) + '\',' + ci + ')">' +
           '<span class="sc-code">' + H(c.code) + '</span>' +
           '<span>' + H(c.name) + '</span>' +
         '</label>'
