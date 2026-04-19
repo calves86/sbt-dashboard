@@ -463,6 +463,7 @@ const POS_COLOR = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc1
 
 let DATA = { teams:[], rosters:[], transactions:[], adjustments:[], rules:{} };
 let txActiveFilter = 'all';
+let _scAdditionalOpen = false;
 
 function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
 
@@ -1152,7 +1153,7 @@ function _renderScoringSection(title, data, si) {
   const hasAddOff = Object.keys(addOff).length > 0;
   const hasAddDef = Object.keys(addDef).length > 0;
   const additionalHTML = (hasAddOff || hasAddDef)
-    ? '<details class="sc-additional-wrap">' +
+    ? '<details class="sc-additional-wrap"' + (_scAdditionalOpen ? ' open' : '') + ' ontoggle="_scAdditionalOpen=this.open">' +
       '<summary class="sc-additional-hdr">Additional Scoring Categories — check to activate</summary>' +
       '<div class="sc-additional-body">' +
         (hasAddOff ? mkAdditionalGroups(addOff, 'offensive') : '') +
@@ -1487,6 +1488,7 @@ function _scActivateAdditional(si, destGroup, sourceGroupName, catIdx) {
   DATA.rules = rules;
   _saveToLS(rules);
   _markModified();
+  _scAdditionalOpen = true; // keep additional panel open so user sees the removal
   renderSettings();
 }
 
