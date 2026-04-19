@@ -203,6 +203,8 @@ a{color:#10b981;text-decoration:none}
 .sc-del-btn{background:none;border:none;color:#475569;cursor:pointer;font-size:14px;padding:2px}
 .sc-del-btn:hover{color:#ef4444}
 .sc-group-hdr{font-size:13px;font-weight:700;color:#94a3b8;padding:16px 4px 8px;letter-spacing:1.5px;font-family:'Bebas Neue',sans-serif}
+.sc-subgroup-row td{background:none!important;border:none!important;padding:8px 4px 2px!important}
+.sc-subgroup-hdr{font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1.2px;padding:0 4px 4px;border-bottom:1px solid rgba(255,255,255,0.05)}
 /* Additional scoring categories (collapsible) */
 .sc-additional-wrap{margin-top:16px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;grid-column:1/-1}
 .sc-additional-hdr{font-size:11px;font-weight:700;color:#475569;padding:10px 14px;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.02)}
@@ -1059,7 +1061,14 @@ function _renderScoringSection(title, data, si) {
 
   const mkCategoryRows = (arr, group) => {
     if (!arr || !arr.length) return '<tr><td colspan="7" style="text-align:center;color:#334155;padding:14px;font-size:10px">No categories.</td></tr>';
+    let lastSubGroup = null;
     return arr.map((r, ri) => {
+      const sub = r.group || '';
+      let subHdr = '';
+      if (sub && sub !== lastSubGroup) {
+        subHdr = '<tr class="sc-subgroup-row"><td colspan="7"><div class="sc-subgroup-hdr">' + H(sub) + '</div></td></tr>';
+        lastSubGroup = sub;
+      }
       const enChk   = r.enabled !== false ? ' checked' : '';
       const diffChk = r.score_by_position === true ? ' checked' : '';
       const rngChk  = r.use_ranges === true ? ' checked' : '';
@@ -1121,7 +1130,7 @@ function _renderScoringSection(title, data, si) {
         });
         rowHTML += '<tr class="sc-sub-row"><td></td><td colspan="6"><button class="sc-add-btn" onclick="_scAddBonus(' + si + ',\'' + group + '\',' + ri + ')">&#43; Additional Bonus</button></td></tr>';
       }
-      return rowHTML;
+      return subHdr + rowHTML;
     }).join('');
   };
 
@@ -1479,12 +1488,19 @@ function _scActivateAdditional(si, destGroup, sourceGroupName, catIdx) {
   if (catList.length === 0) delete sourceGroupsObj[sourceGroupName];
   // Insert into the active section with sensible defaults
   if (!Array.isArray(sectionData[destGroup])) sectionData[destGroup] = [];
-  sectionData[destGroup].push({
+  const newCat = {
     code: srcCat.code,
     name: srcCat.name,
+    group: sourceGroupName,
     enabled: true,
     points: 0
-  });
+  };
+  // Find insertion index: after the last existing category with the same group
+  let insertIdx = sectionData[destGroup].length;
+  for (let i = sectionData[destGroup].length - 1; i >= 0; i--) {
+    if (sectionData[destGroup][i].group === sourceGroupName) { insertIdx = i + 1; break; }
+  }
+  sectionData[destGroup].splice(insertIdx, 0, newCat);
   DATA.rules = rules;
   _saveToLS(rules);
   _markModified();
