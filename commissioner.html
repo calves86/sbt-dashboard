@@ -181,6 +181,16 @@ a{color:#10b981;text-decoration:none}
 .sc-radio-item:has(input:checked) span{color:#94a3b8}
 .settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
 .settings-row-del:hover{color:#ef4444}
+/* Additional scoring categories (collapsible) */
+.sc-additional-wrap{margin-top:16px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;grid-column:1/-1}
+.sc-additional-hdr{font-size:11px;font-weight:700;color:#475569;padding:10px 14px;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.02)}
+.sc-additional-hdr::-webkit-details-marker{display:none}
+.sc-additional-hdr::before{content:'▶';font-size:9px;transition:transform .15s;flex-shrink:0;color:#334155}
+details[open]>.sc-additional-hdr::before{transform:rotate(90deg)}
+.sc-additional-body{padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;border-top:1px solid rgba(255,255,255,0.06)}
+.sc-additional-group-hdr{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.sc-additional-item{font-size:10px;color:#334155;padding:2px 0;display:flex;align-items:baseline;gap:5px}
+.sc-additional-item .sc-code{opacity:0.45;font-size:9px}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .settings-new-section-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.03)}
 
@@ -958,10 +968,12 @@ function _renderRosterSection(title, data, si) {
 
 function _renderScoringSection(title, data, si) {
   const H = escapeHTML;
-  const policies = data.policies || [];
-  const off   = data.offensive   || [];
-  const def   = data.defensive   || [];
-  const dstSp = data.dst_special || [];
+  const policies    = data.policies         || [];
+  const off         = data.offensive        || [];
+  const def         = data.defensive        || [];
+  const dstSp       = data.dst_special      || [];
+  const addOff      = data.additional_offense || {};
+  const addDef      = data.additional_defense || {};
   const mkRows = (arr, group) => arr.map((r, ri) =>
     '<tr>' +
     '<td style="white-space:nowrap"><span class="sc-code">' + H(r.code) + '</span></td>' +
@@ -981,6 +993,23 @@ function _renderScoringSection(title, data, si) {
           ' onchange="_toggleScoringPolicy(' + si + ',' + pi + ',this.checked)">' +
           '<span style="font-size:11px;color:#64748b">' + H(pl.description) + '</span></label>';
       }).join('') + '</div>' : '';
+  const mkAdditionalGroups = (groupsObj) => Object.entries(groupsObj).map(([grp, cats]) =>
+    '<div>' +
+      '<div class="sc-additional-group-hdr">' + H(grp) + '</div>' +
+      cats.map(c =>
+        '<div class="sc-additional-item"><span class="sc-code">' + H(c.code) + '</span><span>' + H(c.name) + '</span></div>'
+      ).join('') +
+    '</div>'
+  ).join('');
+  const hasAddOff = Object.keys(addOff).length > 0;
+  const hasAddDef = Object.keys(addDef).length > 0;
+  const additionalHTML = (hasAddOff || hasAddDef)
+    ? '<details class="sc-additional-wrap">' +
+      '<summary class="sc-additional-hdr">Additional Scoring Categories (not currently active)</summary>' +
+      '<div class="sc-additional-body">' +
+        (hasAddOff ? mkAdditionalGroups(addOff) : '') +
+        (hasAddDef ? mkAdditionalGroups(addDef) : '') +
+      '</div></details>' : '';
   return '<div class="settings-section" data-section="' + si + '" style="grid-column:1/-1">' +
     '<div class="settings-section-hdr">' +
       '<span class="settings-section-title" contenteditable="true" onblur="onSectionTitleEdit(' + si + ',this)">' + H(title) + '</span>' +
@@ -998,6 +1027,7 @@ function _renderScoringSection(title, data, si) {
           dstBlock +
         '</div>' +
       '</div>' +
+      additionalHTML +
     '</div></div>';
 }
 

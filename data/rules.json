@@ -241,7 +241,57 @@
     ],
     "dst_special": [
       { "code": "TK", "name": "Tackle (DST unit)", "points": "0 pts" }
-    ]
+    ],
+    "additional_offense": {
+      "Passing": [
+        { "code": "CmpPct",    "name": "Completion Percentage" },
+        { "code": "CmpPctMin", "name": "Completion Percentage, 10+ Pass Attempts" },
+        { "code": "Pa20",      "name": "Pass Completion 20+ Yards" },
+        { "code": "Pa40",      "name": "Pass Completion 40+ Yards" },
+        { "code": "PaAtt",     "name": "Passing Attempt" },
+        { "code": "PaCmp",     "name": "Passing Completion" },
+        { "code": "PaFD",      "name": "Passing First Down" },
+        { "code": "Rate",      "name": "Passer Rating" },
+        { "code": "RateMin",   "name": "Passer Rating, 10+ Pass Attempts" },
+        { "code": "Sacked",    "name": "Times Sacked Passer" },
+        { "code": "YAtt",      "name": "Yards per Attempt" },
+        { "code": "YLS",       "name": "Yards Lost on Sacks (QBs)" }
+      ],
+      "Rushing": [
+        { "code": "Ru20",      "name": "Rush for 20+ Yards" },
+        { "code": "RuAvg",     "name": "Rushing Average per Attempt" },
+        { "code": "RuAvgMin",  "name": "Rushing Average, 5+ Rushes" },
+        { "code": "RuFD",      "name": "Rushing First Down" }
+      ],
+      "Receiving": [
+        { "code": "Re20",      "name": "Reception of 20+ Yards" },
+        { "code": "Re40",      "name": "Reception of 40+ Yards" },
+        { "code": "ReAvg",     "name": "Average per Reception" },
+        { "code": "ReAvgMin",  "name": "Average per Reception, 3+ Receptions" },
+        { "code": "ReFD",      "name": "Receiving First Down" },
+        { "code": "ReFDPct",   "name": "Receiving FD Pct" },
+        { "code": "Tar",       "name": "Target" }
+      ],
+      "Misc. Offense": [
+        { "code": "Fum2PK",    "name": "Fumble Recovery Two-point Conversion, Kicking formation" },
+        { "code": "Fum2PT",    "name": "Fumble Recovery Two-point Conversion, Two-point formation" },
+        { "code": "IKRYd",     "name": "Individual Kick Return Yards" },
+        { "code": "IPRYd",     "name": "Individual Punt Return Yards" },
+        { "code": "OFR",       "name": "Offensive Fumble Recovered" },
+        { "code": "OFRTD",     "name": "Offensive Fumble Recovery TD" },
+        { "code": "PaRuYd",    "name": "Passing and Rushing Yards" },
+        { "code": "RuReYd",    "name": "Rushing and Receiving Yards" },
+        { "code": "TF",        "name": "Total Fumbles" },
+        { "code": "TotYd",     "name": "Passing, Rushing & Receiving Yards" }
+      ],
+      "Place Kicking": [
+        { "code": "FG50",      "name": "Field Goals 50+ Yards Made" },
+        { "code": "FGA",       "name": "Field Goals Att" },
+        { "code": "FGB",       "name": "Field Goals Blocked (Kicker)" },
+        { "code": "XPAtt",     "name": "Extra Point Att" },
+        { "code": "XPB",       "name": "Extra Point Blocked (Kicker)" }
+      ]
+    }
   },
 
   "Scoring Policies": [
