@@ -1470,7 +1470,24 @@ function _scDeleteBonus(si, group, idx, bnsIdx) {
 }
 function _scDeleteCategory(si, group, idx) {
   const r = _scGetCat(si, group, idx); if (!r) return;
-  if (!confirm('Delete scoring category "' + (r.cat.name || r.cat.code) + '"?')) return;
+  const catName = r.cat.name || r.cat.code;
+  if (!confirm('Remove "' + catName + '" from scoring?\n\nIt will move back to the Additional Scoring Categories section where you can re-activate it later.')) return;
+  // Move back into additional_offense / additional_defense under its sub-group
+  const srcGroup = r.cat.group;
+  if (srcGroup && (group === 'offensive' || group === 'defensive')) {
+    const additionalKey = group === 'offensive' ? 'additional_offense' : 'additional_defense';
+    if (!r.sectionData[additionalKey] || typeof r.sectionData[additionalKey] !== 'object') {
+      r.sectionData[additionalKey] = {};
+    }
+    if (!Array.isArray(r.sectionData[additionalKey][srcGroup])) {
+      r.sectionData[additionalKey][srcGroup] = [];
+    }
+    r.sectionData[additionalKey][srcGroup].push({
+      code: r.cat.code,
+      name: r.cat.name
+    });
+    _scAdditionalOpen = true; // auto-open so user sees where it went
+  }
   r.sectionData[group].splice(idx, 1);
   _scCommit(r.rules, true);
 }
