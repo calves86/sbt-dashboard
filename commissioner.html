@@ -173,6 +173,10 @@ a{color:#10b981;text-decoration:none}
 .sc-cbx-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:#64748b;white-space:nowrap;user-select:none}
 .sc-cbx-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px}
 .sc-cbx-item:has(input:checked) span{color:#94a3b8}
+/* Radio group */
+.sc-radio-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:#64748b;white-space:normal;user-select:none;line-height:1.4}
+.sc-radio-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px;flex-shrink:0}
+.sc-radio-item:has(input:checked) span{color:#94a3b8}
 .settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
 .settings-row-del:hover{color:#ef4444}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
@@ -1073,6 +1077,15 @@ function settingRowHTML(si, ri, r) {
       ' onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',Number(this.value))">' +
       '</div>';
 
+  } else if (t === 'radiogroup' && Array.isArray(r.options)) {
+    const items = r.options.map((o, oi) => {
+      const isChk = o === r.setting ? ' checked' : '';
+      return '<label class="sc-radio-item"><input type="radio" name="rg_' + si + '_' + ri + '"' + isChk +
+        ' onchange="_setRadioGroupItem(' + si + ',' + ri + ',' + oi + ')">' +
+        '<span>' + H(o) + '</span></label>';
+    }).join('');
+    valHTML = '<div class="settings-val-wrap settings-cbxgrp-wrap">' + items + '</div>';
+
   } else if (t === 'checkboxgroup' && Array.isArray(r.options)) {
     const checked = Array.isArray(r.setting) ? r.setting : [];
     const items = r.options.map((o, oi) => {
@@ -1129,6 +1142,18 @@ function _toggleCheckboxGroupItem(si, ri, optIdx, isChecked) {
   if (!Array.isArray(row.setting)) row.setting = [];
   if (isChecked) { if (!row.setting.includes(val)) row.setting.push(val); }
   else { row.setting = row.setting.filter(v => v !== val); }
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+}
+
+function _setRadioGroupItem(si, ri, optIdx) {
+  const rules = _getWorkingSettings();
+  const rows = Object.values(rules)[si];
+  if (!rows || !rows[ri]) return;
+  const row = rows[ri];
+  if (!Array.isArray(row.options) || optIdx >= row.options.length) return;
+  row.setting = row.options[optIdx];
   DATA.rules = rules;
   _saveToLS(rules);
   _markModified();
