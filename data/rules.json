@@ -291,6 +291,39 @@
         { "code": "XPAtt",     "name": "Extra Point Att" },
         { "code": "XPB",       "name": "Extra Point Blocked (Kicker)" }
       ]
+    },
+    "additional_defense": {
+      "Defense": [
+        { "code": "ATK",    "name": "Assisted Tackles (ID only)" },
+        { "code": "DFRTD",  "name": "Defensive Fumble Recovery TD (ID/DT/DST)" },
+        { "code": "DFRYd",  "name": "Defensive/ST Fumble Recovery Yards (ID/DT/DST)" },
+        { "code": "DPA",    "name": "Defensive Points Against" },
+        { "code": "DTD",    "name": "Total Defensive and Special Teams TD" },
+        { "code": "IntTD",  "name": "Interception TD" },
+        { "code": "IntYd",  "name": "Interception Yards" },
+        { "code": "PA",     "name": "Points Against, Total Points Scored" },
+        { "code": "PDef",   "name": "Pass Defensed (ID only)" },
+        { "code": "PaNetA", "name": "Net Passing Yards Against" },
+        { "code": "PaYdA",  "name": "Passing Yards Allowed" },
+        { "code": "RuYdA",  "name": "Rushing Yards Allowed" },
+        { "code": "TFL",    "name": "Tackle for Loss (ID/DT/DST)" },
+        { "code": "TOD",    "name": "Turnover on Downs" },
+        { "code": "YDS",    "name": "Yards Allowed" }
+      ],
+      "Special Teams": [
+        { "code": "BFTD",   "name": "Blocked Field Goal Touchdown (ID/ST/DST)" },
+        { "code": "BPTD",   "name": "Blocked Punt Touchdown (ID/ST/DST)" },
+        { "code": "KRAvg",  "name": "Kick Return Average (ST/DST)" },
+        { "code": "KRTD",   "name": "Kick Return TD (ID/ST/DST)" },
+        { "code": "KRYd",   "name": "Kick Return Yards (ID/ST/DST)" },
+        { "code": "PRAvg",  "name": "Punt Return Average (ST/DST)" },
+        { "code": "PRTD",   "name": "Punt Return TD (ID/ST/DST)" },
+        { "code": "PRTDA",  "name": "Punt Return TD Against" },
+        { "code": "PRYd",   "name": "Punt Return Yards (ID/ST/DST)" },
+        { "code": "SFRTD",  "name": "Special Team Fumble Recovery for TD" },
+        { "code": "STPA",   "name": "Special Teams Points Against" },
+        { "code": "STY1PT", "name": "Special Teams One-point Safety (ID/ST/DST)" }
+      ]
     }
   },
 
