@@ -202,45 +202,108 @@
       { "description": "Score categories different by position", "setting": true, "type": "checkbox" }
     ],
     "offensive": [
-      { "code": "FG",      "name": "Field Goals",                        "points": "3 pts  |  +2 pts for 50+ Yds" },
-      { "code": "FL",      "name": "Fumble Lost (incl. ST plays)",        "points": "-2 pts" },
-      { "code": "IFRTD",   "name": "Individual Fumble Recovery TD",       "points": "6 pts" },
-      { "code": "IKRTD",   "name": "Individual Kick Return TD",           "points": "6 pts" },
-      { "code": "IPRTD",   "name": "Individual Punt Return TD",           "points": "6 pts" },
-      { "code": "MFG",     "name": "Missed Field Goal",                   "points": "-3 pts  |  +3 pts for 50+ Yds miss" },
-      { "code": "MXP",     "name": "Missed Extra Point",                  "points": "-2 pts" },
-      { "code": "Pa2P",    "name": "Passing Two-Point Conversion",        "points": "2 pts" },
-      { "code": "PaInt",   "name": "Passing Interception",                "points": "-2 pts" },
-      { "code": "PaIntTD", "name": "Passing Interception for TD",         "points": "-6 pts" },
-      { "code": "PaTD",    "name": "Passing TD",                          "points": "5 pts  |  +3 pts for 50–100 Yds" },
-      { "code": "PaYd",    "name": "Passing Yards",                       "points": "0.04 pts/yd  |  +2 @250  +3 @300  +3 @350  +4 @400  +3 @500" },
-      { "code": "Re2P",    "name": "Receiving Two-Point Conversion",      "points": "2 pts" },
-      { "code": "ReTD",    "name": "Receiving TD",                        "points": "6 pts  |  +3 pts for 50+ Yds" },
-      { "code": "ReYd",    "name": "Receiving Yards",                     "points": "0.1 pts/yd  |  +3 @100  +3 @125  +5 @150  +5 @200  +3 @250" },
-      { "code": "Recpt",   "name": "Reception",                           "points": "1 pt each" },
-      { "code": "Ru2P",    "name": "Rushing Two-Point Conversion",        "points": "2 pts" },
-      { "code": "RuAtt",   "name": "Rushing Attempts",                    "points": "+2 @20  +3 @25  +5 @30" },
-      { "code": "RuTD",    "name": "Rushing TD",                          "points": "6 pts  |  +5 pts for 50+ Yds" },
-      { "code": "RuYd",    "name": "Rushing Yards",                       "points": "0.1 pts/yd  |  +3 @100  +3 @150  +5 @200  +5 @250  +5 @300" },
-      { "code": "XP",      "name": "Extra Point",                         "points": "1 pt" }
+      { "code": "Pa2P",    "name": "Passing Two-Point Conversion", "enabled": true, "points": 2 },
+      { "code": "PaInt",   "name": "Passing Interception",         "enabled": true, "points": -2 },
+      { "code": "PaIntTD", "name": "Passing Interception for TD",  "enabled": true, "points": -6 },
+      { "code": "PaTD",    "name": "Passing TD",                   "enabled": true, "points": 5,
+        "use_bonuses": true,
+        "bonuses": [ { "points": 3, "min": 50, "max": 100, "unit": "Yds" } ]
+      },
+      { "code": "PaYd",    "name": "Passing Yards",                "enabled": true, "points": 0,
+        "use_ranges": true, "use_bonuses": true,
+        "ranges":  [ { "from": 0, "to": null, "points": 0.04, "per": 1 } ],
+        "bonuses": [
+          { "points": 2, "at": 250 },
+          { "points": 3, "at": 300 },
+          { "points": 3, "at": 350 },
+          { "points": 4, "at": 400 },
+          { "points": 3, "at": 500 }
+        ]
+      },
+      { "code": "Ru2P",    "name": "Rushing Two-Point Conversion", "enabled": true, "points": 2 },
+      { "code": "RuAtt",   "name": "Rushing Attempts",             "enabled": true, "points": 0,
+        "use_ranges": true, "use_bonuses": true,
+        "bonuses": [
+          { "points": 2, "at": 20 },
+          { "points": 3, "at": 25 },
+          { "points": 5, "at": 30 }
+        ]
+      },
+      { "code": "RuTD",    "name": "Rushing TD",                   "enabled": true, "points": 6,
+        "use_bonuses": true,
+        "bonuses": [ { "points": 5, "min": 50, "max": null, "unit": "Yds" } ]
+      },
+      { "code": "RuYd",    "name": "Rushing Yards",                "enabled": true, "points": 0,
+        "use_ranges": true, "use_bonuses": true,
+        "ranges":  [ { "from": 0, "to": null, "points": 0.1, "per": 1 } ],
+        "bonuses": [
+          { "points": 3, "at": 100 },
+          { "points": 3, "at": 150 },
+          { "points": 5, "at": 200 },
+          { "points": 5, "at": 250 },
+          { "points": 5, "at": 300 }
+        ]
+      },
+      { "code": "Re2P",    "name": "Receiving Two-Point Conversion","enabled": true, "points": 2 },
+      { "code": "Recpt",   "name": "Reception",                    "enabled": true, "points": 1 },
+      { "code": "ReTD",    "name": "Receiving TD",                 "enabled": true, "points": 6,
+        "use_bonuses": true,
+        "bonuses": [ { "points": 3, "min": 50, "max": null, "unit": "Yds" } ]
+      },
+      { "code": "ReYd",    "name": "Receiving Yards",              "enabled": true, "points": 0,
+        "use_ranges": true, "use_bonuses": true,
+        "ranges":  [ { "from": 0, "to": null, "points": 0.1, "per": 1 } ],
+        "bonuses": [
+          { "points": 3, "at": 100 },
+          { "points": 3, "at": 125 },
+          { "points": 5, "at": 150 },
+          { "points": 5, "at": 200 },
+          { "points": 3, "at": 250 }
+        ]
+      },
+      { "code": "FG",      "name": "Field Goals",                  "enabled": true, "points": 3,
+        "use_bonuses": true,
+        "bonuses": [ { "points": 2, "min": 50, "max": null, "unit": "Yds" } ]
+      },
+      { "code": "MFG",     "name": "Missed Field Goal",            "enabled": true, "points": -3,
+        "use_bonuses": true,
+        "bonuses": [ { "points": 3, "min": 50, "max": null, "unit": "Yds miss" } ]
+      },
+      { "code": "XP",      "name": "Extra Point",                  "enabled": true, "points": 1 },
+      { "code": "MXP",     "name": "Missed Extra Point",           "enabled": true, "points": -2 },
+      { "code": "FL",      "name": "Fumble Lost (incl. ST plays)", "enabled": true, "points": -2 },
+      { "code": "IFRTD",   "name": "Individual Fumble Recovery TD","enabled": true, "points": 6 },
+      { "code": "IKRTD",   "name": "Individual Kick Return TD",    "enabled": true, "points": 6 },
+      { "code": "IPRTD",   "name": "Individual Punt Return TD",    "enabled": true, "points": 6 }
     ],
     "defensive": [
-      { "code": "BFB",    "name": "Blocked Field Goal (ID/ST/DST)",        "points": "1 pt" },
-      { "code": "BP",     "name": "Blocked Punt (ID/ST/DST)",              "points": "1 pt" },
-      { "code": "BXP",    "name": "Blocked Extra Point (ID/ST/DST)",       "points": "1 pt" },
-      { "code": "DFR",    "name": "Defensive/ST Fumble Recovered",         "points": "1 pt" },
-      { "code": "DFTD",   "name": "Defensive TD",                          "points": "6 pts" },
-      { "code": "DSTPA",  "name": "Points Against (Defense/ST)",           "points": "0 pts: 10  |  1–3: 8  |  4–14: 6  |  15–24: 4  |  25–35: 0  |  36–41: -4  |  42+: -8" },
-      { "code": "FF",     "name": "Forced Fumble",                         "points": "1 pt" },
-      { "code": "Int",    "name": "Interception",                          "points": "2 pts" },
-      { "code": "SACK",   "name": "Sack",                                  "points": "2 pts" },
-      { "code": "ST2PT",  "name": "Special Teams 2-Pt Conversion Return",  "points": "2 pts" },
-      { "code": "STTD",   "name": "Special Teams TD",                      "points": "6 pts" },
-      { "code": "STY",    "name": "Safety",                                "points": "5 pts" },
-      { "code": "TK",     "name": "Tackle (Individual — ID/DT)",           "points": "1 pt" }
+      { "code": "SACK",   "name": "Sack",                                 "enabled": true, "points": 2 },
+      { "code": "Int",    "name": "Interception",                         "enabled": true, "points": 2 },
+      { "code": "FF",     "name": "Forced Fumble",                        "enabled": true, "points": 1 },
+      { "code": "DFR",    "name": "Defensive/ST Fumble Recovered",        "enabled": true, "points": 1 },
+      { "code": "DFTD",   "name": "Defensive TD",                         "enabled": true, "points": 6 },
+      { "code": "STY",    "name": "Safety",                               "enabled": true, "points": 5 },
+      { "code": "TK",     "name": "Tackle (Individual — ID/DT)",          "enabled": true, "points": 1 },
+      { "code": "BFB",    "name": "Blocked Field Goal (ID/ST/DST)",       "enabled": true, "points": 1 },
+      { "code": "BP",     "name": "Blocked Punt (ID/ST/DST)",             "enabled": true, "points": 1 },
+      { "code": "BXP",    "name": "Blocked Extra Point (ID/ST/DST)",      "enabled": true, "points": 1 },
+      { "code": "ST2PT",  "name": "Special Teams 2-Pt Conversion Return", "enabled": true, "points": 2 },
+      { "code": "STTD",   "name": "Special Teams TD",                     "enabled": true, "points": 6 },
+      { "code": "DSTPA",  "name": "Points Against (Defense/ST)",          "enabled": true, "points": 0,
+        "use_ranges": true,
+        "ranges": [
+          { "from": 0,  "to": 0,    "points": 10 },
+          { "from": 1,  "to": 3,    "points": 8  },
+          { "from": 4,  "to": 14,   "points": 6  },
+          { "from": 15, "to": 24,   "points": 4  },
+          { "from": 25, "to": 35,   "points": 0  },
+          { "from": 36, "to": 41,   "points": -4 },
+          { "from": 42, "to": null, "points": -8 }
+        ]
+      }
     ],
     "dst_special": [
-      { "code": "TK", "name": "Tackle (DST unit)", "points": "0 pts" }
+      { "code": "TK", "name": "Tackle (DST unit)", "enabled": true, "points": 0 }
     ],
     "additional_offense": {
       "Passing": [

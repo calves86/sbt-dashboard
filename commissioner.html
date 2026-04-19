@@ -181,6 +181,28 @@ a{color:#10b981;text-decoration:none}
 .sc-radio-item:has(input:checked) span{color:#94a3b8}
 .settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
 .settings-row-del:hover{color:#ef4444}
+/* CBS-style scoring category editor */
+.sc-cbs-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}
+.sc-cbs-table thead th{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;background:rgba(255,255,255,0.01)}
+.sc-cbs-table tbody td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.sc-cat-row td{background:rgba(255,255,255,0.015)}
+.sc-col-add,.sc-col-chk,.sc-col-del{width:44px;text-align:center}
+.sc-col-pts{width:88px}
+.sc-col-cat{min-width:220px}
+.sc-cbs-table input[type="checkbox"]{accent-color:#10b981;cursor:pointer;width:14px;height:14px}
+.sc-pts-input{width:66px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#e2e8f0;font-size:11px;font-weight:700;padding:3px 6px;text-align:right;outline:none;font-family:'DM Sans',sans-serif}
+.sc-pts-input:focus{border-color:#10b981}
+.sc-mini-input{width:58px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#e2e8f0;font-size:10px;padding:2px 5px;outline:none;text-align:right;font-family:'DM Sans',sans-serif}
+.sc-mini-input:focus{border-color:#10b981}
+.sc-sub-row td{padding:3px 6px!important;background:rgba(255,255,255,0.003)!important;border-top:none!important;border-bottom:1px solid rgba(255,255,255,0.02)!important}
+.sc-range-line,.sc-bonus-line{font-size:10px;color:#64748b;display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:1px 0 1px 16px}
+.sc-sub-del{background:none;border:none;color:#475569;cursor:pointer;font-size:10px;padding:2px 6px;margin-left:auto;border-radius:4px}
+.sc-sub-del:hover{color:#ef4444;background:rgba(239,68,68,0.06)}
+.sc-add-btn{background:none;border:1px dashed rgba(255,255,255,0.1);color:#10b981;font-size:10px;font-weight:700;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;margin:3px 0 4px 16px}
+.sc-add-btn:hover{background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.3)}
+.sc-del-btn{background:none;border:none;color:#475569;cursor:pointer;font-size:14px;padding:2px}
+.sc-del-btn:hover{color:#ef4444}
+.sc-group-hdr{font-size:13px;font-weight:700;color:#94a3b8;padding:16px 4px 8px;letter-spacing:1.5px;font-family:'Bebas Neue',sans-serif}
 /* Additional scoring categories (collapsible) */
 .sc-additional-wrap{margin-top:16px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;grid-column:1/-1}
 .sc-additional-hdr{font-size:11px;font-weight:700;color:#475569;padding:10px 14px;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.02)}
@@ -1016,23 +1038,13 @@ function _renderRosterSection(title, data, si) {
 
 function _renderScoringSection(title, data, si) {
   const H = escapeHTML;
-  const policies    = data.policies         || [];
-  const off         = data.offensive        || [];
-  const def         = data.defensive        || [];
-  const dstSp       = data.dst_special      || [];
-  const addOff      = data.additional_offense || {};
-  const addDef      = data.additional_defense || {};
-  const mkRows = (arr, group) => arr.map((r, ri) =>
-    '<tr>' +
-    '<td style="white-space:nowrap"><span class="sc-code">' + H(r.code) + '</span></td>' +
-    '<td style="color:#94a3b8;font-size:11px">' + H(r.name) + '</td>' +
-    '<td><span class="sc-val" style="white-space:normal;max-width:none" onclick="startEditTypedVal(this,' + si + ',\'' + group + '\',' + ri + ',\'points\')">' + H(r.points) + '</span></td>' +
-    '</tr>'
-  ).join('');
-  const dstBlock = dstSp.length
-    ? '<div class="sc-sub-hdr" style="margin-top:14px">Special — DST Unit Tackles</div>' +
-      '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(dstSp, 'dst_special') + '</tbody></table>'
-    : '';
+  const policies = data.policies         || [];
+  const off      = data.offensive        || [];
+  const def      = data.defensive        || [];
+  const dstSp    = data.dst_special      || [];
+  const addOff   = data.additional_offense || {};
+  const addDef   = data.additional_defense || {};
+
   const policiesHTML = policies.length
     ? '<div style="margin-bottom:14px;display:flex;flex-direction:column;gap:5px">' +
       policies.map((pl, pi) => {
@@ -1041,6 +1053,88 @@ function _renderScoringSection(title, data, si) {
           ' onchange="_toggleScoringPolicy(' + si + ',' + pi + ',this.checked)">' +
           '<span style="font-size:11px;color:#64748b">' + H(pl.description) + '</span></label>';
       }).join('') + '</div>' : '';
+
+  const mkCategoryRows = (arr, group) => {
+    if (!arr || !arr.length) return '<tr><td colspan="7" style="text-align:center;color:#334155;padding:14px;font-size:10px">No categories.</td></tr>';
+    return arr.map((r, ri) => {
+      const enChk   = r.enabled !== false ? ' checked' : '';
+      const diffChk = r.score_by_position === true ? ' checked' : '';
+      const rngChk  = r.use_ranges === true ? ' checked' : '';
+      const bnsChk  = r.use_bonuses === true ? ' checked' : '';
+      const ptsVal  = (r.points !== undefined && r.points !== null) ? r.points : 0;
+      let rowHTML = '<tr class="sc-cat-row">' +
+        '<td class="sc-col-add"><input type="checkbox"' + enChk + ' onchange="_scToggleField(' + si + ',\'' + group + '\',' + ri + ',\'enabled\',this.checked)"></td>' +
+        '<td class="sc-col-cat"><span class="sc-code">(' + H(r.code) + ')</span> <span style="color:#cbd5e1;font-size:11px">' + H(r.name) + '</span></td>' +
+        '<td class="sc-col-pts"><input type="number" step="0.01" class="sc-pts-input" value="' + ptsVal + '" onchange="_scUpdateField(' + si + ',\'' + group + '\',' + ri + ',\'points\',this.value)"></td>' +
+        '<td class="sc-col-chk"><input type="checkbox"' + diffChk + ' onchange="_scToggleField(' + si + ',\'' + group + '\',' + ri + ',\'score_by_position\',this.checked)"></td>' +
+        '<td class="sc-col-chk"><input type="checkbox"' + rngChk + ' onchange="_scToggleField(' + si + ',\'' + group + '\',' + ri + ',\'use_ranges\',this.checked)"></td>' +
+        '<td class="sc-col-chk"><input type="checkbox"' + bnsChk + ' onchange="_scToggleField(' + si + ',\'' + group + '\',' + ri + ',\'use_bonuses\',this.checked)"></td>' +
+        '<td class="sc-col-del"><button class="sc-del-btn" onclick="_scDeleteCategory(' + si + ',\'' + group + '\',' + ri + ')" title="Delete">&#10005;</button></td>' +
+      '</tr>';
+      if (r.use_ranges) {
+        const ranges = r.ranges || [];
+        ranges.forEach((rng, rngIdx) => {
+          const toVal = (rng.to === null || rng.to === undefined) ? '+' : rng.to;
+          const hasPer = rng.per !== undefined;
+          rowHTML += '<tr class="sc-sub-row"><td></td><td colspan="6"><div class="sc-range-line">' +
+            '<span>From</span>' +
+            '<input type="number" value="' + (rng.from != null ? rng.from : 0) + '" class="sc-mini-input" onchange="_scUpdateRange(' + si + ',\'' + group + '\',' + ri + ',' + rngIdx + ',\'from\',this.value)">' +
+            '<span>to</span>' +
+            '<input type="text" value="' + H(String(toVal)) + '" class="sc-mini-input" style="width:44px" onchange="_scUpdateRange(' + si + ',\'' + group + '\',' + ri + ',' + rngIdx + ',\'to\',this.value)">' +
+            '<span>' + H(r.code) + '(s), award</span>' +
+            '<input type="number" step="0.01" value="' + (rng.points != null ? rng.points : 0) + '" class="sc-mini-input" onchange="_scUpdateRange(' + si + ',\'' + group + '\',' + ri + ',' + rngIdx + ',\'points\',this.value)">' +
+            '<span>point(s)</span>' +
+            (hasPer ? ('<span>for every</span>' +
+              '<input type="number" value="' + rng.per + '" class="sc-mini-input" onchange="_scUpdateRange(' + si + ',\'' + group + '\',' + ri + ',' + rngIdx + ',\'per\',this.value)">' +
+              '<span>' + H(r.code) + '(s)</span>') : '') +
+            '<button class="sc-sub-del" onclick="_scDeleteRange(' + si + ',\'' + group + '\',' + ri + ',' + rngIdx + ')" title="Delete range">&#10005;</button>' +
+          '</div></td></tr>';
+        });
+        rowHTML += '<tr class="sc-sub-row"><td></td><td colspan="6"><button class="sc-add-btn" onclick="_scAddRange(' + si + ',\'' + group + '\',' + ri + ')">&#43; Additional Range</button></td></tr>';
+      }
+      if (r.use_bonuses) {
+        const bonuses = r.bonuses || [];
+        bonuses.forEach((bns, bnsIdx) => {
+          let bnsHTML = '<tr class="sc-sub-row"><td></td><td colspan="6"><div class="sc-bonus-line">' +
+            '<span>Award a bonus of</span>' +
+            '<input type="number" step="0.01" value="' + (bns.points != null ? bns.points : 0) + '" class="sc-mini-input" onchange="_scUpdateBonus(' + si + ',\'' + group + '\',' + ri + ',' + bnsIdx + ',\'points\',this.value)">' +
+            '<span>point(s)</span>';
+          if (bns.at !== undefined) {
+            bnsHTML += '<span>@</span>' +
+              '<input type="number" value="' + bns.at + '" class="sc-mini-input" onchange="_scUpdateBonus(' + si + ',\'' + group + '\',' + ri + ',' + bnsIdx + ',\'at\',this.value)">' +
+              '<span>' + H(r.code) + '(s)</span>';
+          } else {
+            const maxVal = (bns.max === null || bns.max === undefined) ? '+' : bns.max;
+            const unit = bns.unit || 'Yds';
+            bnsHTML += '<span>for a ' + H(r.code) + ' between</span>' +
+              '<input type="number" value="' + (bns.min != null ? bns.min : 50) + '" class="sc-mini-input" onchange="_scUpdateBonus(' + si + ',\'' + group + '\',' + ri + ',' + bnsIdx + ',\'min\',this.value)">' +
+              '<span>and</span>' +
+              '<input type="text" value="' + H(String(maxVal)) + '" class="sc-mini-input" style="width:44px" onchange="_scUpdateBonus(' + si + ',\'' + group + '\',' + ri + ',' + bnsIdx + ',\'max\',this.value)">' +
+              '<span>' + H(unit) + '</span>';
+          }
+          bnsHTML += '<button class="sc-sub-del" onclick="_scDeleteBonus(' + si + ',\'' + group + '\',' + ri + ',' + bnsIdx + ')" title="Delete bonus">&#10005;</button>' +
+            '</div></td></tr>';
+          rowHTML += bnsHTML;
+        });
+        rowHTML += '<tr class="sc-sub-row"><td></td><td colspan="6"><button class="sc-add-btn" onclick="_scAddBonus(' + si + ',\'' + group + '\',' + ri + ')">&#43; Additional Bonus</button></td></tr>';
+      }
+      return rowHTML;
+    }).join('');
+  };
+
+  const tblHdr = '<thead><tr>' +
+    '<th class="sc-col-add">Add</th>' +
+    '<th>Scoring Category</th>' +
+    '<th class="sc-col-pts">Pt Value</th>' +
+    '<th class="sc-col-chk" title="Score different by position">Diff/Pos</th>' +
+    '<th class="sc-col-chk">Ranges</th>' +
+    '<th class="sc-col-chk">Bonuses</th>' +
+    '<th class="sc-col-del"></th>' +
+  '</tr></thead>';
+  const mkSection = (label, arr, group) =>
+    '<div class="sc-group-hdr">' + H(label) + '</div>' +
+    '<table class="sc-cbs-table">' + tblHdr + '<tbody>' + mkCategoryRows(arr, group) + '</tbody></table>';
+
   const mkAdditionalGroups = (groupsObj) => Object.entries(groupsObj).map(([grp, cats]) =>
     '<div>' +
       '<div class="sc-additional-group-hdr">' + H(grp) + '</div>' +
@@ -1058,23 +1152,16 @@ function _renderScoringSection(title, data, si) {
         (hasAddOff ? mkAdditionalGroups(addOff) : '') +
         (hasAddDef ? mkAdditionalGroups(addDef) : '') +
       '</div></details>' : '';
+
   return '<div class="settings-section" data-section="' + si + '" style="grid-column:1/-1">' +
     '<div class="settings-section-hdr">' +
       '<span class="settings-section-title" contenteditable="true" onblur="onSectionTitleEdit(' + si + ',this)">' + H(title) + '</span>' +
     '</div>' +
     '<div class="sc-body">' +
       policiesHTML +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">' +
-        '<div>' +
-          '<div class="sc-sub-hdr">Offensive</div>' +
-          '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(off, 'offensive') + '</tbody></table>' +
-        '</div>' +
-        '<div>' +
-          '<div class="sc-sub-hdr">Defensive / Special Teams</div>' +
-          '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(def, 'defensive') + '</tbody></table>' +
-          dstBlock +
-        '</div>' +
-      '</div>' +
+      mkSection('Offensive', off, 'offensive') +
+      mkSection('Defensive / Special Teams', def, 'defensive') +
+      (dstSp.length ? mkSection('Special — DST Unit Tackles', dstSp, 'dst_special') : '') +
       additionalHTML +
     '</div></div>';
 }
@@ -1292,6 +1379,83 @@ function _toggleScoringPolicy(si, pi, isChecked) {
   DATA.rules = rules;
   _saveToLS(rules);
   _markModified();
+}
+
+/* ===== CBS-style scoring category editors ===== */
+function _scGetCat(si, group, idx) {
+  const rules = _getWorkingSettings();
+  const sectionData = Object.values(rules)[si];
+  if (!sectionData || !sectionData[group] || !sectionData[group][idx]) return null;
+  return { rules, sectionData, cat: sectionData[group][idx] };
+}
+function _scCommit(rules, reRender) {
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+  if (reRender) renderSettings();
+}
+function _scToggleField(si, group, idx, field, value) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  r.cat[field] = value;
+  const structural = (field === 'use_ranges' || field === 'use_bonuses');
+  _scCommit(r.rules, structural);
+}
+function _scUpdateField(si, group, idx, field, value) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  r.cat[field] = Number(value);
+  _scCommit(r.rules, false);
+}
+function _scUpdateRange(si, group, idx, rangeIdx, field, value) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.ranges || !r.cat.ranges[rangeIdx]) return;
+  let parsed;
+  if (field === 'to') parsed = (value === '+' || value === '') ? null : Number(value);
+  else parsed = Number(value);
+  r.cat.ranges[rangeIdx][field] = parsed;
+  _scCommit(r.rules, false);
+}
+function _scAddRange(si, group, idx) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.ranges) r.cat.ranges = [];
+  r.cat.ranges.push({ from: 0, to: null, points: 0.1, per: 1 });
+  _scCommit(r.rules, true);
+}
+function _scDeleteRange(si, group, idx, rangeIdx) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.ranges) return;
+  r.cat.ranges.splice(rangeIdx, 1);
+  _scCommit(r.rules, true);
+}
+function _scUpdateBonus(si, group, idx, bnsIdx, field, value) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.bonuses || !r.cat.bonuses[bnsIdx]) return;
+  let parsed;
+  if (field === 'max') parsed = (value === '+' || value === '') ? null : Number(value);
+  else if (field === 'unit') parsed = value;
+  else parsed = Number(value);
+  r.cat.bonuses[bnsIdx][field] = parsed;
+  _scCommit(r.rules, false);
+}
+function _scAddBonus(si, group, idx) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.bonuses) r.cat.bonuses = [];
+  const newBonus = r.cat.use_ranges
+    ? { points: 1, at: 100 }
+    : { points: 1, min: 50, max: null, unit: 'Yds' };
+  r.cat.bonuses.push(newBonus);
+  _scCommit(r.rules, true);
+}
+function _scDeleteBonus(si, group, idx, bnsIdx) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!r.cat.bonuses) return;
+  r.cat.bonuses.splice(bnsIdx, 1);
+  _scCommit(r.rules, true);
+}
+function _scDeleteCategory(si, group, idx) {
+  const r = _scGetCat(si, group, idx); if (!r) return;
+  if (!confirm('Delete scoring category "' + (r.cat.name || r.cat.code) + '"?')) return;
+  r.sectionData[group].splice(idx, 1);
+  _scCommit(r.rules, true);
 }
 
 function startEditVal(span, si, ri) {
