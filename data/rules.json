@@ -198,6 +198,9 @@
 
   "Scoring System": {
     "_type": "scoring",
+    "policies": [
+      { "description": "Score categories different by position", "setting": true, "type": "checkbox" }
+    ],
     "offensive": [
       { "code": "FG",      "name": "Field Goals",                        "points": "3 pts  |  +2 pts for 50+ Yds" },
       { "code": "FL",      "name": "Fumble Lost (incl. ST plays)",        "points": "-2 pts" },
@@ -242,9 +245,27 @@
   },
 
   "Scoring Policies": [
-    { "description": "Scoring System",      "setting": "Head-to-Head, Points" },
-    { "description": "Scoring per Period",  "setting": "Scoring based on total stats each period." },
-    { "description": "Matchup Tiebreaker", "setting": "Ties go to the team with more points from Reserves." }
+    {
+      "description": "Scoring System Type",
+      "setting": "Head-to-Head",
+      "type": "select",
+      "options": [
+        "Head-to-Head",
+        "Rotisserie (Total Points)",
+        "Points Only"
+      ]
+    },
+    {
+      "description": "Regular Season Matchup Tiebreaker",
+      "setting": "Team w/ Better Reserves Wins",
+      "type": "select",
+      "options": [
+        "Team w/ Better Reserves Wins",
+        "Team w/ More Total Points (Season) Wins",
+        "No Tiebreaker — Count as a Tie"
+      ]
+    },
+    { "description": "Scoring per Period", "setting": "Scoring based on total stats each period." }
   ],
 
   "Schedule & Playoffs": [

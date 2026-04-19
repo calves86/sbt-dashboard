@@ -958,6 +958,7 @@ function _renderRosterSection(title, data, si) {
 
 function _renderScoringSection(title, data, si) {
   const H = escapeHTML;
+  const policies = data.policies || [];
   const off   = data.offensive   || [];
   const def   = data.defensive   || [];
   const dstSp = data.dst_special || [];
@@ -969,22 +970,33 @@ function _renderScoringSection(title, data, si) {
     '</tr>'
   ).join('');
   const dstBlock = dstSp.length
-    ? '<div class="sc-sub-hdr">Special — DST Unit Tackles</div>' +
+    ? '<div class="sc-sub-hdr" style="margin-top:14px">Special — DST Unit Tackles</div>' +
       '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(dstSp, 'dst_special') + '</tbody></table>'
     : '';
+  const policiesHTML = policies.length
+    ? '<div style="margin-bottom:14px;display:flex;flex-direction:column;gap:5px">' +
+      policies.map((pl, pi) => {
+        const chk = pl.setting === true ? ' checked' : '';
+        return '<label class="sc-cbx-item"><input type="checkbox" class="settings-chk"' + chk +
+          ' onchange="_toggleScoringPolicy(' + si + ',' + pi + ',this.checked)">' +
+          '<span style="font-size:11px;color:#64748b">' + H(pl.description) + '</span></label>';
+      }).join('') + '</div>' : '';
   return '<div class="settings-section" data-section="' + si + '" style="grid-column:1/-1">' +
     '<div class="settings-section-hdr">' +
       '<span class="settings-section-title" contenteditable="true" onblur="onSectionTitleEdit(' + si + ',this)">' + H(title) + '</span>' +
     '</div>' +
-    '<div class="sc-body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">' +
-      '<div>' +
-        '<div class="sc-sub-hdr">Offensive</div>' +
-        '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(off, 'offensive') + '</tbody></table>' +
-      '</div>' +
-      '<div>' +
-        '<div class="sc-sub-hdr">Defensive / Special Teams</div>' +
-        '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(def, 'defensive') + '</tbody></table>' +
-        dstBlock +
+    '<div class="sc-body">' +
+      policiesHTML +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">' +
+        '<div>' +
+          '<div class="sc-sub-hdr">Offensive</div>' +
+          '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(off, 'offensive') + '</tbody></table>' +
+        '</div>' +
+        '<div>' +
+          '<div class="sc-sub-hdr">Defensive / Special Teams</div>' +
+          '<table class="sc-table"><thead><tr><th>Code</th><th>Category</th><th>Points</th></tr></thead><tbody>' + mkRows(def, 'defensive') + '</tbody></table>' +
+          dstBlock +
+        '</div>' +
       '</div>' +
     '</div></div>';
 }
@@ -1185,6 +1197,16 @@ function _setRadioGroupItem(si, ri, optIdx) {
 }
 
 function _toggleRosterPolicy(si, pi, isChecked) {
+  const rules = _getWorkingSettings();
+  const sectionData = Object.values(rules)[si];
+  if (!sectionData || !Array.isArray(sectionData.policies) || sectionData.policies[pi] === undefined) return;
+  sectionData.policies[pi].setting = isChecked;
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+}
+
+function _toggleScoringPolicy(si, pi, isChecked) {
   const rules = _getWorkingSettings();
   const sectionData = Object.values(rules)[si];
   if (!sectionData || !Array.isArray(sectionData.policies) || sectionData.policies[pi] === undefined) return;
