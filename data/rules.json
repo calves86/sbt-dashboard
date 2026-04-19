@@ -415,16 +415,49 @@
   ],
 
   "Schedule & Playoffs": [
-    { "description": "Matchups Per Period",       "setting": "1" },
-    { "description": "Regular Season Weeks",      "setting": "Weeks 1–14" },
-    { "description": "Playoffs Start",            "setting": "Week 15" },
-    { "description": "Playoffs Last",             "setting": "3 Weeks (Weeks 15–17)" },
-    { "description": "Playoff Teams",             "setting": "8" },
-    { "description": "Automatic Playoffs",        "setting": "No" },
-    { "description": "Archive Standings",         "setting": "Yes" },
-    { "description": "Standings Tiebreaker",      "setting": "Winning Percentage → Head to Head Record → Total Points → Division Record → Points Against (Schedule Difficulty)." },
-    { "description": "Division Winner Tiebreaker","setting": "Ties for division winner are resolved using standings tiebreakers." },
-    { "description": "Playoffs Matchup Tiebreaker","setting": "Playoff ties go to the team with more points from Reserves." }
+    { "_type": "subheader", "label": "Schedule & Playoff Format" },
+    { "description": "Matchups Per Period", "setting": "1", "type": "select",
+      "options": ["1", "2"]
+    },
+    { "description": "Top Half get a Win/Bottom Half get a Loss", "setting": "No", "type": "select",
+      "options": ["No", "Yes"]
+    },
+    { "description": "Playoffs Start", "setting": "Period 15 (Dec 9 - Dec 15)", "type": "select",
+      "options": ["No Playoffs", "Period 14", "Period 15 (Dec 9 - Dec 15)", "Period 16", "Period 17"]
+    },
+    { "description": "Automatically Set My Playoff Matchups", "setting": "No", "type": "select",
+      "options": ["No", "Yes"]
+    },
+    { "description": "Playoffs Last", "setting": "3 Periods", "type": "select",
+      "options": ["1 Period", "2 Periods", "3 Periods", "4 Periods"]
+    },
+    { "description": "Season Ends", "setting": "Period 17" },
+    { "description": "Playoff Teams", "setting": "8" },
+    { "description": "Teams continue to accrue points during the playoffs even if no matchup is scheduled", "type": "checkbox", "setting": true },
+    { "description": "Archive standings with playoff results", "type": "checkbox", "setting": true },
+
+    { "_type": "subheader", "label": "Standings & Tiebreakers" },
+    { "description": "Standings Determination", "setting": "Winning Percentage", "type": "select",
+      "options": ["Winning Percentage", "Total Points", "Division Record"]
+    },
+    { "description": "1: Tiebreaker", "setting": "Head to Head Record", "type": "select",
+      "options": ["Head to Head Record", "Total Points", "Division Record", "Points Against (Schedule Difficulty)", "Winning Percentage", "Strength of Victory", "Strength of Schedule", "Random"]
+    },
+    { "description": "2: Tiebreaker", "setting": "Total Points", "type": "select",
+      "options": ["Head to Head Record", "Total Points", "Division Record", "Points Against (Schedule Difficulty)", "Winning Percentage", "Strength of Victory", "Strength of Schedule", "Random"]
+    },
+    { "description": "3: Tiebreaker", "setting": "Division Record", "type": "select",
+      "options": ["Head to Head Record", "Total Points", "Division Record", "Points Against (Schedule Difficulty)", "Winning Percentage", "Strength of Victory", "Strength of Schedule", "Random"]
+    },
+    { "description": "4: Tiebreaker", "setting": "Points Against (Schedule Difficulty)", "type": "select",
+      "options": ["Head to Head Record", "Total Points", "Division Record", "Points Against (Schedule Difficulty)", "Winning Percentage", "Strength of Victory", "Strength of Schedule", "Random"]
+    },
+    { "description": "Use Division Winner Tiebreakers", "type": "checkbox", "setting": false },
+
+    { "_type": "subheader", "label": "Playoff Tiebreakers" },
+    { "description": "Playoff Matchup Tiebreaker", "setting": "Team w/ Better Reserves Wins", "type": "select",
+      "options": ["None (leave them as ties)", "Home Team Wins", "Team w/ Better Reserves Wins", "Team w/ Better Category Wins (specify)"]
+    }
   ],
 
   "Commish Message": {
