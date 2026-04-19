@@ -150,6 +150,29 @@ a{color:#10b981;text-decoration:none}
 .settings-select:hover{border-color:rgba(16,185,129,0.3)}
 .settings-select:focus{border-color:rgba(16,185,129,0.5);color:#10b981}
 .settings-select option{background:#0d1526;color:#e2e8f0}
+/* Toggle switch */
+.settings-chk-wrap{display:flex;align-items:center;justify-content:flex-end}
+.settings-chk-lbl{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0;cursor:pointer}
+.settings-chk-lbl input{opacity:0;width:0;height:0;position:absolute}
+.settings-chk-slider{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:18px;transition:.2s}
+.settings-chk-slider:before{content:"";position:absolute;width:12px;height:12px;left:3px;top:3px;background:#475569;border-radius:50%;transition:.2s}
+.settings-chk-lbl input:checked + .settings-chk-slider{background:rgba(16,185,129,0.25)}
+.settings-chk-lbl input:checked + .settings-chk-slider:before{transform:translateX(14px);background:#10b981}
+/* Number input */
+.settings-num-input{font-size:11px;font-weight:700;color:#e2e8f0;background:#0d1526;border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:4px 8px;outline:none;font-family:'DM Sans',sans-serif;width:70px;text-align:right}
+.settings-num-input:focus{border-color:rgba(16,185,129,0.4)}
+.settings-num-input:disabled{opacity:.3;cursor:not-allowed}
+/* Date text input */
+.settings-date-input{font-size:11px;font-weight:600;color:#e2e8f0;background:#0d1526;border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:4px 8px;outline:none;font-family:'DM Sans',sans-serif;width:96px}
+.settings-date-input:focus{border-color:rgba(16,185,129,0.4)}
+/* Checkbox+date / checkbox+number combos */
+.settings-chkdate-wrap{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.settings-field-note{font-size:9px;color:#334155;font-style:italic;white-space:nowrap}
+/* Checkbox group */
+.settings-cbxgrp-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.sc-cbx-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:#64748b;white-space:nowrap;user-select:none}
+.sc-cbx-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px}
+.sc-cbx-item:has(input:checked) span{color:#94a3b8}
 .settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
 .settings-row-del:hover{color:#ef4444}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
@@ -1027,23 +1050,88 @@ function startEditTypedVal(span, si, groupKey, rowIdx, field) {
 function settingRowHTML(si, ri, r) {
   const H = escapeHTML;
   let valHTML;
-  if (r.type === 'select' && Array.isArray(r.options) && r.options.length) {
+  const t = r.type || '';
+
+  if (t === 'select' && Array.isArray(r.options) && r.options.length) {
     const opts = r.options.map(o =>
       '<option value="' + H(o) + '"' + (o === r.setting ? ' selected' : '') + '>' + H(o) + '</option>'
     ).join('');
     valHTML = '<div class="settings-val-wrap" style="max-width:60%">' +
       '<select class="settings-select" onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',this.value)">' + opts + '</select>' +
       '</div>';
+
+  } else if (t === 'checkbox') {
+    const chk = r.setting === true ? ' checked' : '';
+    valHTML = '<div class="settings-val-wrap settings-chk-wrap">' +
+      '<label class="settings-chk-lbl"><input type="checkbox" class="settings-chk"' + chk +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',this.checked)">' +
+      '<span class="settings-chk-slider"></span></label></div>';
+
+  } else if (t === 'number') {
+    valHTML = '<div class="settings-val-wrap">' +
+      '<input type="number" class="settings-num-input" value="' + H(String(r.setting != null ? r.setting : 0)) + '" min="0"' +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',Number(this.value))">' +
+      '</div>';
+
+  } else if (t === 'checkboxgroup' && Array.isArray(r.options)) {
+    const checked = Array.isArray(r.setting) ? r.setting : [];
+    const items = r.options.map((o, oi) => {
+      const isChk = checked.includes(o) ? ' checked' : '';
+      return '<label class="sc-cbx-item"><input type="checkbox"' + isChk +
+        ' onchange="_toggleCheckboxGroupItem(' + si + ',' + ri + ',' + oi + ',this.checked)">' +
+        '<span>' + H(o) + '</span></label>';
+    }).join('');
+    valHTML = '<div class="settings-val-wrap settings-cbxgrp-wrap">' + items + '</div>';
+
+  } else if (t === 'checkbox_date') {
+    const chk = r.setting === true ? ' checked' : '';
+    valHTML = '<div class="settings-val-wrap settings-chkdate-wrap">' +
+      '<label class="settings-chk-lbl"><input type="checkbox" class="settings-chk"' + chk +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',this.checked)">' +
+      '<span class="settings-chk-slider"></span></label>' +
+      '<input type="text" class="settings-date-input" placeholder="MM/DD/YYYY" value="' + H(r.date||'') + '"' +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'date\',this.value)">' +
+      '</div>';
+
+  } else if (t === 'checkbox_number') {
+    const chk = r.setting === true ? ' checked' : '';
+    const dis = r.setting ? '' : ' disabled';
+    const numVal = r.value != null ? H(String(r.value)) : '';
+    valHTML = '<div class="settings-val-wrap settings-chkdate-wrap">' +
+      '<label class="settings-chk-lbl"><input type="checkbox" class="settings-chk"' + chk +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'setting\',this.checked);this.closest(\'.settings-row\').querySelector(\'.settings-num-input\').disabled=!this.checked">' +
+      '<span class="settings-chk-slider"></span></label>' +
+      '<input type="number" class="settings-num-input"' + dis + ' value="' + numVal + '" min="0" placeholder="Max"' +
+      ' onchange="_applySettingChange(' + si + ',' + ri + ',\'value\',Number(this.value))">' +
+      (r.note ? '<span class="settings-field-note">' + H(r.note) + '</span>' : '') +
+      '</div>';
+
   } else {
     valHTML = '<div class="settings-val-wrap">' +
       '<span class="settings-val" title="Click to edit" onclick="startEditVal(this,' + si + ',' + ri + ')">' + H(r.setting||'—') + '</span>' +
       '</div>';
   }
+
   return '<div class="settings-row" data-si="' + si + '" data-ri="' + ri + '">' +
     '<div class="settings-lbl-wrap"><span class="settings-lbl" contenteditable="true" onblur="onSettingLblEdit(' + si + ',' + ri + ',this)">' + H(r.description||'Description') + '</span></div>' +
     valHTML +
     '<button class="settings-row-del" title="Delete row" onclick="deleteSettingRow(' + si + ',' + ri + ')">&#10005;</button>' +
   '</div>';
+}
+
+function _toggleCheckboxGroupItem(si, ri, optIdx, isChecked) {
+  const rules = _getWorkingSettings();
+  const rows = Object.values(rules)[si];
+  if (!rows || !rows[ri]) return;
+  const row = rows[ri];
+  const val = Array.isArray(row.options) ? row.options[optIdx] : null;
+  if (!val) return;
+  if (!Array.isArray(row.setting)) row.setting = [];
+  if (isChecked) { if (!row.setting.includes(val)) row.setting.push(val); }
+  else { row.setting = row.setting.filter(v => v !== val); }
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
 }
 
 function startEditVal(span, si, ri) {

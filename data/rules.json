@@ -64,18 +64,84 @@
         "Restrict managers from doing add/drops"
       ]
     },
-    { "description": "Add/Drop Deadline",   "setting": "Transactions will lock five minutes before gametime for each player." },
-    { "description": "Waivers Run",         "setting": "The waiver process runs on Wednesday, Thursday, Friday and Saturday night." },
-    { "description": "FAB/Free Agent Options", "setting": "Players only on FAB until first run has completed" },
-    { "description": "Free Agents Cost",    "setting": "Free Agents Transactions will have a cost of 0." },
-    { "description": "Waiver Reset",        "setting": "The waiver order resets after each weeks' games." },
-    { "description": "Waiver Period",       "setting": "Dropped players remain on waivers for at least 1 day(s)." },
-    { "description": "FAB Budget",          "setting": "Each team will have a starting budget of $1000." },
-    { "description": "Winning Offers",      "setting": "Do Not Save Winning Offers" },
-    { "description": "Zero Offers",         "setting": "Zero offers are not allowed." },
-    { "description": "Trade Policy",        "setting": "Trades must be approved by the commissioner." },
-    { "description": "Trade Deadline",      "setting": "No trades can be made after the trade deadline of 11:59 pm et 11/20/25." },
-    { "description": "Offseason Trades",    "setting": "Managers may not make trades during the offseason." }
+    {
+      "description": "Add/Drop Deadline",
+      "setting": "Five minutes before gametime for each player",
+      "type": "select",
+      "options": [
+        "Five minutes before gametime for each player",
+        "One hour before week's first game",
+        "Specify day/time"
+      ]
+    },
+    { "description": "Total free agents & waiver signings per season", "type": "checkbox_number", "setting": false, "value": null, "note": "This includes waiver offers" },
+    { "description": "Total free agents & waiver signings per period",  "type": "checkbox_number", "setting": false, "value": null, "note": "This includes waiver offers" },
+    {
+      "description": "Nights FAB Run",
+      "type": "checkboxgroup",
+      "setting": [
+        "Wednesday night ET / Thursday morning ET",
+        "Thursday night ET / Friday morning ET",
+        "Friday night ET / Saturday morning ET",
+        "Saturday night ET / Sunday morning ET"
+      ],
+      "options": [
+        "Tuesday night ET / Wednesday morning ET",
+        "Wednesday night ET / Thursday morning ET",
+        "Thursday night ET / Friday morning ET",
+        "Friday night ET / Saturday morning ET",
+        "Saturday night ET / Sunday morning ET",
+        "Sunday night ET / Monday morning ET"
+      ]
+    },
+    {
+      "description": "FAB Order Resets",
+      "setting": "Every week based on reverse order of standings",
+      "type": "select",
+      "options": [
+        "Every week based on reverse order of standings",
+        "Never (always based on prior FAB run)"
+      ]
+    },
+    { "description": "Provide League Full FAB Report", "type": "checkbox", "setting": true },
+    { "description": "Allow Zero Offers",              "type": "checkbox", "setting": false },
+    {
+      "description": "FAB/Free Agent Options",
+      "setting": "Players only on FAB until first run has completed (In-Season Only)",
+      "type": "select",
+      "options": [
+        "All players always on FAB",
+        "Players only on FAB until first run has completed (In-Season Only)",
+        "All players always on FAB, except Sunday/Monday's where eligible players will be Free Agents until five minutes before gametime for each player"
+      ]
+    },
+    { "description": "Free Agents Signing Cost", "type": "number", "setting": 0 },
+    {
+      "description": "Save Winning Offer as",
+      "setting": "Do Not Save",
+      "type": "select",
+      "options": ["Do Not Save", "Salary"]
+    },
+    { "description": "Starting Budget", "type": "number", "setting": 1000 },
+    {
+      "description": "Drop Period",
+      "setting": "1 day",
+      "type": "select",
+      "options": ["1 day", "2 days", "3 days"]
+    },
+    { "description": "Accelerated Drop", "type": "checkbox", "setting": true },
+    {
+      "description": "Trade Policy",
+      "setting": "Trades must be approved by the commissioner",
+      "type": "select",
+      "options": [
+        "Trades must be approved by the commissioner",
+        "Trades are approved automatically"
+      ]
+    },
+    { "description": "Use Trade Deadline",          "type": "checkbox_date", "setting": true, "date": "11/20/2025" },
+    { "description": "Allow offseason trades",       "type": "checkbox", "setting": false },
+    { "description": "Allow managers to trade draft picks", "type": "checkbox", "setting": false }
   ],
 
   "Player Policies and Keepers": [
