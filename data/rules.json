@@ -32,9 +32,38 @@
   },
 
   "Transaction Settings": [
-    { "description": "Lineup Policy",       "setting": "Managers may set lineups and change players' positions from a list of their eligible positions." },
-    { "description": "Lineup Deadline",     "setting": "Lineup deadline is five minutes before gametime for each player." },
-    { "description": "Add/Drop Policy",     "setting": "Add/Drops are handled by a waivers process." },
+    {
+      "description": "Lineup Policy",
+      "setting": "Allow managers to set lineups and change positions",
+      "type": "select",
+      "options": [
+        "Allow managers to set lineups and change positions",
+        "Restrict managers from setting their own lineups"
+      ]
+    },
+    {
+      "description": "Lineup Deadline",
+      "setting": "Five minutes before gametime for each player",
+      "type": "select",
+      "options": [
+        "Five minutes before gametime for each player",
+        "One hour before week's first game",
+        "Specify day/time"
+      ]
+    },
+    {
+      "description": "Add/Drop Policy",
+      "setting": "Automated offer process to do add/drops (FAB)",
+      "type": "select",
+      "options": [
+        "Automated offer process to do add/drops (FAB)",
+        "Add/Drops will process immediately",
+        "Use waiver process to do add/drops",
+        "Commish approve offer process to do add/drops (FAB)",
+        "Add/Drops must be approved by commissioner",
+        "Restrict managers from doing add/drops"
+      ]
+    },
     { "description": "Add/Drop Deadline",   "setting": "Transactions will lock five minutes before gametime for each player." },
     { "description": "Waivers Run",         "setting": "The waiver process runs on Wednesday, Thursday, Friday and Saturday night." },
     { "description": "FAB/Free Agent Options", "setting": "Players only on FAB until first run has completed" },
