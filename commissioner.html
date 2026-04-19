@@ -211,8 +211,10 @@ a{color:#10b981;text-decoration:none}
 details[open]>.sc-additional-hdr::before{transform:rotate(90deg)}
 .sc-additional-body{padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;border-top:1px solid rgba(255,255,255,0.06)}
 .sc-additional-group-hdr{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
-.sc-additional-item{font-size:10px;color:#334155;padding:2px 0;display:flex;align-items:baseline;gap:5px}
-.sc-additional-item .sc-code{opacity:0.45;font-size:9px}
+.sc-additional-item{font-size:10px;color:#475569;padding:3px 0;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;transition:color .12s}
+.sc-additional-item:hover{color:#cbd5e1}
+.sc-additional-item input[type="checkbox"]{accent-color:#10b981;width:12px;height:12px;cursor:pointer;flex-shrink:0}
+.sc-additional-item .sc-code{opacity:0.55;font-size:9px;min-width:44px}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .settings-new-section-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.03)}
 /* ===== SCORING TESTER ===== */
@@ -1135,11 +1137,15 @@ function _renderScoringSection(title, data, si) {
     '<div class="sc-group-hdr">' + H(label) + '</div>' +
     '<table class="sc-cbs-table">' + tblHdr + '<tbody>' + mkCategoryRows(arr, group) + '</tbody></table>';
 
-  const mkAdditionalGroups = (groupsObj) => Object.entries(groupsObj).map(([grp, cats]) =>
+  const mkAdditionalGroups = (groupsObj, destGroup) => Object.entries(groupsObj).map(([grp, cats]) =>
     '<div>' +
       '<div class="sc-additional-group-hdr">' + H(grp) + '</div>' +
-      cats.map(c =>
-        '<div class="sc-additional-item"><span class="sc-code">' + H(c.code) + '</span><span>' + H(c.name) + '</span></div>'
+      cats.map((c, ci) =>
+        '<label class="sc-additional-item">' +
+          '<input type="checkbox" onchange="_scActivateAdditional(' + si + ',' + JSON.stringify(destGroup) + ',' + JSON.stringify(grp) + ',' + ci + ')">' +
+          '<span class="sc-code">' + H(c.code) + '</span>' +
+          '<span>' + H(c.name) + '</span>' +
+        '</label>'
       ).join('') +
     '</div>'
   ).join('');
@@ -1147,10 +1153,10 @@ function _renderScoringSection(title, data, si) {
   const hasAddDef = Object.keys(addDef).length > 0;
   const additionalHTML = (hasAddOff || hasAddDef)
     ? '<details class="sc-additional-wrap">' +
-      '<summary class="sc-additional-hdr">Additional Scoring Categories (not currently active)</summary>' +
+      '<summary class="sc-additional-hdr">Additional Scoring Categories — check to activate</summary>' +
       '<div class="sc-additional-body">' +
-        (hasAddOff ? mkAdditionalGroups(addOff) : '') +
-        (hasAddDef ? mkAdditionalGroups(addDef) : '') +
+        (hasAddOff ? mkAdditionalGroups(addOff, 'offensive') : '') +
+        (hasAddDef ? mkAdditionalGroups(addDef, 'defensive') : '') +
       '</div></details>' : '';
 
   return '<div class="settings-section" data-section="' + si + '" style="grid-column:1/-1">' +
@@ -1456,6 +1462,32 @@ function _scDeleteCategory(si, group, idx) {
   if (!confirm('Delete scoring category "' + (r.cat.name || r.cat.code) + '"?')) return;
   r.sectionData[group].splice(idx, 1);
   _scCommit(r.rules, true);
+}
+
+function _scActivateAdditional(si, destGroup, sourceGroupName, catIdx) {
+  const rules = _getWorkingSettings();
+  const sectionData = Object.values(rules)[si];
+  if (!sectionData) return;
+  const sourceKey = destGroup === 'offensive' ? 'additional_offense' : 'additional_defense';
+  const sourceGroupsObj = sectionData[sourceKey];
+  if (!sourceGroupsObj || !Array.isArray(sourceGroupsObj[sourceGroupName])) return;
+  const catList = sourceGroupsObj[sourceGroupName];
+  if (catIdx < 0 || catIdx >= catList.length) return;
+  const srcCat = catList.splice(catIdx, 1)[0];
+  // Clean up empty group
+  if (catList.length === 0) delete sourceGroupsObj[sourceGroupName];
+  // Insert into the active section with sensible defaults
+  if (!Array.isArray(sectionData[destGroup])) sectionData[destGroup] = [];
+  sectionData[destGroup].push({
+    code: srcCat.code,
+    name: srcCat.name,
+    enabled: true,
+    points: 0
+  });
+  DATA.rules = rules;
+  _saveToLS(rules);
+  _markModified();
+  renderSettings();
 }
 
 function startEditVal(span, si, ri) {
