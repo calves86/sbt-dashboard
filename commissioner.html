@@ -168,13 +168,15 @@ a{color:#10b981;text-decoration:none}
 /* Checkbox+date / checkbox+number combos */
 .settings-chkdate-wrap{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .settings-field-note{font-size:9px;color:#334155;font-style:italic;white-space:nowrap}
-/* Checkbox group */
-.settings-cbxgrp-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
-.sc-cbx-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:#64748b;white-space:nowrap;user-select:none}
-.sc-cbx-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px}
+/* Checkbox group / Radio group — full-width left-aligned rows */
+.settings-cbxgrp-wrap{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.settings-row-fullopt{align-items:flex-start;padding-top:10px;padding-bottom:10px}
+.settings-fullopt-inner{flex:1;min-width:0}
+.settings-fullopt-lbl{font-size:10px;color:#475569;margin-bottom:6px;font-style:italic}
+.sc-cbx-item{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:#64748b;white-space:nowrap;user-select:none}
+.sc-cbx-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px;flex-shrink:0}
 .sc-cbx-item:has(input:checked) span{color:#94a3b8}
-/* Radio group */
-.sc-radio-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:#64748b;white-space:normal;user-select:none;line-height:1.4}
+.sc-radio-item{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:#64748b;white-space:normal;user-select:none;line-height:1.4}
 .sc-radio-item input{accent-color:#10b981;cursor:pointer;width:12px;height:12px;flex-shrink:0}
 .sc-radio-item:has(input:checked) span{color:#94a3b8}
 .settings-row-del{background:none;border:none;color:#1e293b;cursor:pointer;font-size:14px;padding:2px 4px;transition:color .12s;flex-shrink:0}
@@ -1095,7 +1097,13 @@ function settingRowHTML(si, ri, r) {
         ' onchange="_setRadioGroupItem(' + si + ',' + ri + ',' + oi + ')">' +
         '<span>' + H(o) + '</span></label>';
     }).join('');
-    valHTML = '<div class="settings-val-wrap settings-cbxgrp-wrap">' + items + '</div>';
+    return '<div class="settings-row settings-row-fullopt" data-si="' + si + '" data-ri="' + ri + '">' +
+      '<div class="settings-fullopt-inner">' +
+        '<div class="settings-fullopt-lbl">' + H(r.description||'') + '</div>' +
+        '<div class="settings-cbxgrp-wrap">' + items + '</div>' +
+      '</div>' +
+      '<button class="settings-row-del" title="Delete row" onclick="deleteSettingRow(' + si + ',' + ri + ')">&#10005;</button>' +
+    '</div>';
 
   } else if (t === 'checkboxgroup' && Array.isArray(r.options)) {
     const checked = Array.isArray(r.setting) ? r.setting : [];
@@ -1105,7 +1113,13 @@ function settingRowHTML(si, ri, r) {
         ' onchange="_toggleCheckboxGroupItem(' + si + ',' + ri + ',' + oi + ',this.checked)">' +
         '<span>' + H(o) + '</span></label>';
     }).join('');
-    valHTML = '<div class="settings-val-wrap settings-cbxgrp-wrap">' + items + '</div>';
+    return '<div class="settings-row settings-row-fullopt" data-si="' + si + '" data-ri="' + ri + '">' +
+      '<div class="settings-fullopt-inner">' +
+        '<div class="settings-fullopt-lbl">' + H(r.description||'') + '</div>' +
+        '<div class="settings-cbxgrp-wrap">' + items + '</div>' +
+      '</div>' +
+      '<button class="settings-row-del" title="Delete row" onclick="deleteSettingRow(' + si + ',' + ri + ')">&#10005;</button>' +
+    '</div>';
 
   } else if (t === 'checkbox_date') {
     const chk = r.setting === true ? ' checked' : '';
