@@ -193,6 +193,28 @@ details[open]>.sc-additional-hdr::before{transform:rotate(90deg)}
 .sc-additional-item .sc-code{opacity:0.45;font-size:9px}
 .settings-new-section-btn{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.01);color:#334155;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .settings-new-section-btn:hover{border-color:rgba(16,185,129,0.3);color:#10b981;background:rgba(16,185,129,0.03)}
+/* ===== SCORING TESTER ===== */
+.scoring-tester{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:16px;margin-top:24px;overflow:hidden}
+.stest-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.stest-title{font-size:13px;font-weight:800;color:#e2e8f0;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.stest-desc{font-size:10px;color:#475569;margin-top:4px}
+.stest-body{padding:16px 20px}
+.stest-pos-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.stest-pos-lbl{font-size:11px;color:#64748b;font-weight:600;white-space:nowrap}
+.stest-fields-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:5px;margin-bottom:14px}
+.stest-field-row{display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04)}
+.stest-field-lbl{flex:1;min-width:0}
+.stest-field-code{font-size:9px;color:#334155;font-family:'DM Mono',monospace;font-weight:700}
+.stest-field-name{font-size:10px;color:#64748b;display:block;margin-top:1px}
+.stest-num-input{width:58px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:12px;font-weight:700;padding:4px 8px;text-align:right;outline:none;font-family:'DM Sans',sans-serif}
+.stest-num-input:focus{border-color:#10b981}
+.stest-yds-input{width:130px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:10px;padding:4px 8px;outline:none;font-family:'DM Sans',sans-serif;placeholder-color:#334155}
+.stest-yds-input:focus{border-color:#10b981}
+.stest-yds-hint{font-size:9px;color:#334155;display:block;margin-top:1px}
+.stest-calc-row{margin-bottom:14px}
+.stest-calc-btn{background:#10b981;color:#fff;border:none;border-radius:8px;padding:8px 22px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s}
+.stest-calc-btn:hover{opacity:.82}
+.stest-total{font-size:22px;font-weight:800;font-family:'Bebas Neue',sans-serif;text-align:right;padding:10px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;letter-spacing:1px}
 
 /* ===== SETTINGS — TYPED SECTIONS ===== */
 .sc-body{padding:14px 16px 16px}
@@ -380,6 +402,32 @@ tr.tx-comm-row td{background:rgba(167,139,250,0.03)}
     </div>
     <div class="settings-grid" id="settings-grid">Loading...</div>
     <input type="file" id="settings-import-input" accept=".json" style="display:none" onchange="handleSettingsImport(event)">
+
+    <!-- ===== SCORING TESTER ===== -->
+    <div class="scoring-tester" id="scoring-tester">
+      <div class="stest-header">
+        <div class="stest-title">Test Your Scoring System</div>
+        <div class="stest-desc">Select a position and enter stat values — enter yard distances as comma-separated values (e.g. <em>25, 62</em>) for TDs and kicks.</div>
+      </div>
+      <div class="stest-body">
+        <div class="stest-pos-row">
+          <label class="stest-pos-lbl">Position:</label>
+          <select class="settings-select" id="stest-pos" onchange="renderScoringTesterFields()">
+            <option>Quarterback</option>
+            <option>Running Back</option>
+            <option>Wide Receiver</option>
+            <option>Tight End</option>
+            <option>Kicker</option>
+            <option>Defense/ST</option>
+          </select>
+        </div>
+        <div id="stest-fields"></div>
+        <div class="stest-calc-row">
+          <button class="stest-calc-btn" onclick="calculateScoringTest()">&#9654; Calculate Points</button>
+        </div>
+        <div id="stest-results"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1429,8 +1477,250 @@ function showToast(msg, isError=false) {
 initAuth(function(session) {
   renderUserBadge(session);
   applyRolePermissions(session);
-  init();
+  init().then(() => renderScoringTesterFields());
 });
+
+/* ===== SCORING TESTER ===== */
+const _STEST_FIELDS = {
+  'Quarterback': [
+    { code:'PaYd',    label:'Passing Yards',               hasYds:false },
+    { code:'PaTD',    label:'Passing TDs',                 hasYds:true },
+    { code:'PaInt',   label:'Interceptions Thrown',        hasYds:false },
+    { code:'PaIntTD', label:'Int Returned for TD',         hasYds:false },
+    { code:'Pa2P',    label:'Pass 2-Pt Conv',              hasYds:false },
+    { code:'RuYd',    label:'Rushing Yards',               hasYds:false },
+    { code:'RuTD',    label:'Rushing TDs',                 hasYds:true  },
+    { code:'RuAtt',   label:'Rushing Attempts',            hasYds:false },
+    { code:'Ru2P',    label:'Rush 2-Pt Conv',              hasYds:false },
+    { code:'FL',      label:'Fumbles Lost',                hasYds:false },
+    { code:'IKRTD',   label:'Kick Return TDs',             hasYds:false },
+    { code:'IPRTD',   label:'Punt Return TDs',             hasYds:false },
+    { code:'IFRTD',   label:'Fumble Rec TDs',              hasYds:false },
+  ],
+  'Running Back': [
+    { code:'RuYd',    label:'Rushing Yards',               hasYds:false },
+    { code:'RuTD',    label:'Rushing TDs',                 hasYds:true  },
+    { code:'RuAtt',   label:'Rushing Attempts',            hasYds:false },
+    { code:'Ru2P',    label:'Rush 2-Pt Conv',              hasYds:false },
+    { code:'Recpt',   label:'Receptions',                  hasYds:false },
+    { code:'ReYd',    label:'Receiving Yards',             hasYds:false },
+    { code:'ReTD',    label:'Receiving TDs',               hasYds:true  },
+    { code:'Re2P',    label:'Rec 2-Pt Conv',               hasYds:false },
+    { code:'FL',      label:'Fumbles Lost',                hasYds:false },
+    { code:'IKRTD',   label:'Kick Return TDs',             hasYds:false },
+    { code:'IPRTD',   label:'Punt Return TDs',             hasYds:false },
+    { code:'IFRTD',   label:'Fumble Rec TDs',              hasYds:false },
+  ],
+  'Wide Receiver': [
+    { code:'Recpt',   label:'Receptions',                  hasYds:false },
+    { code:'ReYd',    label:'Receiving Yards',             hasYds:false },
+    { code:'ReTD',    label:'Receiving TDs',               hasYds:true  },
+    { code:'Re2P',    label:'Rec 2-Pt Conv',               hasYds:false },
+    { code:'RuYd',    label:'Rushing Yards',               hasYds:false },
+    { code:'RuTD',    label:'Rushing TDs',                 hasYds:true  },
+    { code:'Ru2P',    label:'Rush 2-Pt Conv',              hasYds:false },
+    { code:'FL',      label:'Fumbles Lost',                hasYds:false },
+    { code:'IKRTD',   label:'Kick Return TDs',             hasYds:false },
+    { code:'IPRTD',   label:'Punt Return TDs',             hasYds:false },
+    { code:'IFRTD',   label:'Fumble Rec TDs',              hasYds:false },
+  ],
+  'Tight End': [
+    { code:'Recpt',   label:'Receptions',                  hasYds:false },
+    { code:'ReYd',    label:'Receiving Yards',             hasYds:false },
+    { code:'ReTD',    label:'Receiving TDs',               hasYds:true  },
+    { code:'Re2P',    label:'Rec 2-Pt Conv',               hasYds:false },
+    { code:'RuYd',    label:'Rushing Yards',               hasYds:false },
+    { code:'RuTD',    label:'Rushing TDs',                 hasYds:true  },
+    { code:'Ru2P',    label:'Rush 2-Pt Conv',              hasYds:false },
+    { code:'FL',      label:'Fumbles Lost',                hasYds:false },
+    { code:'IKRTD',   label:'Kick Return TDs',             hasYds:false },
+    { code:'IPRTD',   label:'Punt Return TDs',             hasYds:false },
+    { code:'IFRTD',   label:'Fumble Rec TDs',              hasYds:false },
+  ],
+  'Kicker': [
+    { code:'FG',      label:'FGs Made (enter yds each)',   hasYds:true  },
+    { code:'MFG',     label:'FGs Missed (enter yds each)', hasYds:true  },
+    { code:'XP',      label:'Extra Points Made',           hasYds:false },
+    { code:'MXP',     label:'Missed Extra Points',         hasYds:false },
+  ],
+  'Defense/ST': [
+    { code:'DSTPA',   label:'Points Allowed',              hasYds:false },
+    { code:'SACK',    label:'Sacks',                       hasYds:false },
+    { code:'Int',     label:'Interceptions',               hasYds:false },
+    { code:'FF',      label:'Forced Fumbles',              hasYds:false },
+    { code:'DFR',     label:'Fumbles Recovered',           hasYds:false },
+    { code:'DFTD',    label:'Defensive TDs',               hasYds:false },
+    { code:'STTD',    label:'Special Teams TDs',           hasYds:false },
+    { code:'STY',     label:'Safeties',                    hasYds:false },
+    { code:'ST2PT',   label:'2-Pt Conv Returns',           hasYds:false },
+    { code:'BFB',     label:'Blocked FGs',                 hasYds:false },
+    { code:'BP',      label:'Blocked Punts',               hasYds:false },
+    { code:'BXP',     label:'Blocked Extra Points',        hasYds:false },
+    { code:'TK',      label:'Tackles',                     hasYds:false },
+  ],
+};
+
+function _stestRender(id, html) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = '';
+  el.appendChild(document.createRange().createContextualFragment(html));
+}
+
+function renderScoringTesterFields() {
+  const pos = document.getElementById('stest-pos')?.value;
+  const fields = _STEST_FIELDS[pos] || [];
+  const H = escapeHTML;
+  let html = '<div class="stest-fields-grid">';
+  fields.forEach(f => {
+    html += '<div class="stest-field-row">';
+    html += '<div class="stest-field-lbl"><span class="stest-field-code">' + H(f.code) + '</span><span class="stest-field-name">' + H(f.label) + '</span></div>';
+    html += '<div>';
+    if (f.hasYds) {
+      html += '<input type="text" id="stest-yds-' + f.code + '" class="stest-yds-input" placeholder="e.g. 12, 65">';
+    } else {
+      html += '<input type="number" id="stest-' + f.code + '" class="stest-num-input" value="0" min="0">';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  _stestRender('stest-fields', html);
+  _stestRender('stest-results', '');
+}
+
+function calculateScoringTest() {
+  const pos = document.getElementById('stest-pos')?.value;
+  if (!pos) return;
+  const getNum = c => { const el = document.getElementById('stest-' + c); return el ? (parseFloat(el.value) || 0) : 0; };
+  const getYdsList = c => {
+    const el = document.getElementById('stest-yds-' + c);
+    if (!el || !el.value.trim()) return [];
+    return el.value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v) && v >= 0);
+  };
+  const lines = [];
+  let total = 0;
+  const addLine = (label, pts, detail) => { lines.push({label, pts, detail}); total = Math.round((total + pts) * 100) / 100; };
+
+  // Yard-milestone bonus helper (cumulative)
+  const yardBonus = (yds, tiers) => {
+    let b = 0; let desc = '';
+    tiers.forEach(([t, p]) => { if (yds >= t) { b += p; desc += ' +' + p + '@' + t; } });
+    return {b, desc};
+  };
+
+  if (pos !== 'Kicker' && pos !== 'Defense/ST') {
+    // Passing Yards
+    const paYd = getNum('PaYd');
+    if (paYd > 0) {
+      const base = Math.round(paYd * 0.04 * 100) / 100;
+      const {b, desc} = yardBonus(paYd, [[250,2],[300,3],[350,3],[400,4],[500,3]]);
+      addLine('Passing Yards', base + b, paYd + ' yds × 0.04 = ' + base + (desc ? ' bonus:' + desc : ''));
+    }
+    // Passing TDs
+    const paTDs = getYdsList('PaTD');
+    if (paTDs.length) {
+      const base = paTDs.length * 5;
+      const bonus = paTDs.filter(y => y >= 50).length * 3;
+      addLine('Passing TDs (' + paTDs.length + ')', base + bonus, paTDs.length + ' × 5' + (bonus ? ' + long bonus ' + bonus : ''));
+    }
+    // Passing negatives
+    const paInt = getNum('PaInt'); if (paInt) addLine('Interceptions Thrown', paInt * -2, paInt + ' × -2');
+    const paIntTD = getNum('PaIntTD'); if (paIntTD) addLine('Int Returned for TD', paIntTD * -6, paIntTD + ' × -6');
+    const pa2P = getNum('Pa2P'); if (pa2P) addLine('Pass 2-Pt Conv', pa2P * 2, pa2P + ' × 2');
+    // Rushing Yards
+    const ruYd = getNum('RuYd');
+    if (ruYd > 0) {
+      const base = Math.round(ruYd * 0.1 * 100) / 100;
+      const {b, desc} = yardBonus(ruYd, [[100,3],[150,3],[200,5],[250,5],[300,5]]);
+      addLine('Rushing Yards', base + b, ruYd + ' yds × 0.1 = ' + base + (desc ? ' bonus:' + desc : ''));
+    }
+    // Rushing TDs
+    const ruTDs = getYdsList('RuTD');
+    if (ruTDs.length) {
+      const base = ruTDs.length * 6;
+      const bonus = ruTDs.filter(y => y >= 50).length * 5;
+      addLine('Rushing TDs (' + ruTDs.length + ')', base + bonus, ruTDs.length + ' × 6' + (bonus ? ' + long bonus ' + bonus : ''));
+    }
+    // Rushing Attempts bonus
+    const ruAtt = getNum('RuAtt');
+    if (ruAtt >= 20) {
+      const b = ruAtt >= 30 ? 5 : ruAtt >= 25 ? 3 : 2;
+      addLine('Rushing Attempts Bonus', b, ruAtt + ' att → +' + b);
+    }
+    const ru2P = getNum('Ru2P'); if (ru2P) addLine('Rush 2-Pt Conv', ru2P * 2, ru2P + ' × 2');
+    // Receptions
+    const recpt = getNum('Recpt'); if (recpt) addLine('Receptions', recpt * 1, recpt + ' × 1');
+    // Receiving Yards
+    const reYd = getNum('ReYd');
+    if (reYd > 0) {
+      const base = Math.round(reYd * 0.1 * 100) / 100;
+      const {b, desc} = yardBonus(reYd, [[100,3],[125,3],[150,5],[200,5],[250,3]]);
+      addLine('Receiving Yards', base + b, reYd + ' yds × 0.1 = ' + base + (desc ? ' bonus:' + desc : ''));
+    }
+    // Receiving TDs
+    const reTDs = getYdsList('ReTD');
+    if (reTDs.length) {
+      const base = reTDs.length * 6;
+      const bonus = reTDs.filter(y => y >= 50).length * 3;
+      addLine('Receiving TDs (' + reTDs.length + ')', base + bonus, reTDs.length + ' × 6' + (bonus ? ' + long bonus ' + bonus : ''));
+    }
+    const re2P = getNum('Re2P'); if (re2P) addLine('Rec 2-Pt Conv', re2P * 2, re2P + ' × 2');
+    // Misc
+    const fl = getNum('FL'); if (fl) addLine('Fumbles Lost', fl * -2, fl + ' × -2');
+    const ikrtd = getNum('IKRTD'); if (ikrtd) addLine('Kick Return TDs', ikrtd * 6, ikrtd + ' × 6');
+    const iprtd = getNum('IPRTD'); if (iprtd) addLine('Punt Return TDs', iprtd * 6, iprtd + ' × 6');
+    const ifrtd = getNum('IFRTD'); if (ifrtd) addLine('Fumble Rec TDs', ifrtd * 6, ifrtd + ' × 6');
+
+  } else if (pos === 'Kicker') {
+    const fgYds = getYdsList('FG');
+    if (fgYds.length) {
+      const base = fgYds.length * 3;
+      const bonus = fgYds.filter(y => y >= 50).length * 2;
+      addLine('FGs Made (' + fgYds.length + ')', base + bonus, fgYds.join(', ') + ' yds — ' + fgYds.length + ' × 3' + (bonus ? ' + 50+yd bonus ' + bonus : ''));
+    }
+    const mfgYds = getYdsList('MFG');
+    if (mfgYds.length) {
+      const base = mfgYds.length * -3;
+      const bonus = mfgYds.filter(y => y >= 50).length * 3;
+      addLine('FGs Missed (' + mfgYds.length + ')', base + bonus, mfgYds.join(', ') + ' yds — ' + mfgYds.length + ' × -3' + (bonus ? ' + 50+yd miss bonus ' + bonus : ''));
+    }
+    const xp = getNum('XP'); if (xp) addLine('Extra Points Made', xp, xp + ' × 1');
+    const mxp = getNum('MXP'); if (mxp) addLine('Missed Extra Points', mxp * -2, mxp + ' × -2');
+
+  } else { // Defense/ST
+    const pa = getNum('DSTPA');
+    const dstPts = pa === 0 ? 10 : pa <= 3 ? 8 : pa <= 14 ? 6 : pa <= 24 ? 4 : pa <= 35 ? 0 : pa <= 41 ? -4 : -8;
+    addLine('Points Allowed (' + pa + ')', dstPts, pa + ' pts allowed → ' + dstPts + ' pts');
+    [['SACK','Sacks',2],['Int','Interceptions',2],['FF','Forced Fumbles',1],
+     ['DFR','Fumbles Recovered',1],['DFTD','Defensive TDs',6],['STTD','Special Teams TDs',6],
+     ['STY','Safeties',5],['ST2PT','2-Pt Conv Returns',2],
+     ['BFB','Blocked FGs',1],['BP','Blocked Punts',1],['BXP','Blocked XPs',1],['TK','Tackles',1]
+    ].forEach(([code,label,pts]) => {
+      const n = getNum(code); if (n) addLine(label, n * pts, n + ' × ' + pts);
+    });
+  }
+
+  const H = escapeHTML;
+  const sign = v => v > 0 ? '+' : '';
+  let html = '';
+  if (!lines.length) {
+    html = '<div style="font-size:11px;color:#334155;padding:6px 0">Enter some stats above and click Calculate.</div>';
+  } else {
+    html = '<table class="sc-table" style="width:100%;margin-bottom:4px"><thead><tr><th>Category</th><th style="text-align:right">Pts</th><th style="text-align:left">Detail</th></tr></thead><tbody>';
+    lines.forEach(l => {
+      const col = l.pts > 0 ? '#10b981' : l.pts < 0 ? '#ef4444' : '#475569';
+      const pts = Number.isInteger(l.pts) ? l.pts : l.pts.toFixed(2);
+      html += '<tr><td>' + H(l.label) + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:' + col + '">' + sign(l.pts) + pts + '</td>' +
+        '<td style="font-size:10px;color:#475569">' + H(l.detail) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    const totCol = total > 0 ? '#10b981' : total < 0 ? '#ef4444' : '#94a3b8';
+    const totFmt = Number.isInteger(total) ? total : total.toFixed(2);
+    html += '<div class="stest-total" style="color:' + totCol + '">' + sign(total) + totFmt + ' pts</div>';
+  }
+  _stestRender('stest-results', html);
+}
 </script>
 <script src="leftnav.js"></script>
 <script>initLeftNav('commissioner.html');</script>
