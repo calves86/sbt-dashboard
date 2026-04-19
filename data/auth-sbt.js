@@ -1,31 +1,22 @@
-/* ===== SBT League Auth Config =====
+/* ===== SBT League Auth Config (Supabase-backed) =====
  *
- * TO CHANGE A PIN:
- *   1. Open your browser console (F12) on any page
- *   2. Run this command (replace 'yournewpin' with the actual PIN):
- *        crypto.subtle.digest('SHA-256', new TextEncoder().encode('yournewpin'))
- *          .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
- *   3. Copy the hash output and paste it below as the pin_hash value
+ * As of commissioner-auth v2.0, auth is fully server-enforced via Supabase.
+ * PIN hashes are gone. Users sign in with a magic link (email + click).
+ * Access control lives in the `public.memberships` table in Postgres with
+ * row-level security policies.
  *
- * DEFAULT PIN for both users is: 1234  (change before sharing with co-commish)
- * ===================================== */
+ * To add a commissioner or co-commissioner:
+ *   1. They sign up via login.html (or you invite them from Supabase Auth)
+ *   2. In Supabase SQL Editor, run:
+ *        INSERT INTO public.memberships (user_id, league_id, role)
+ *        SELECT u.id, l.id, 'commissioner'::public.membership_role
+ *        FROM auth.users u CROSS JOIN public.leagues l
+ *        WHERE u.email = 'their@email.com' AND l.slug = 'sbt-2026';
+ *   3. Next time they visit commissioner.html they'll be granted access.
+ * ===================================================================== */
 
 window.COMM_AUTH = {
-  leagueKey:  'sbt_comm_v1',   // sessionStorage key — change to invalidate all sessions
-  leagueName: 'Sigma Beta Tau Fantasy Football',
-
-  users: [
-    {
-      id:       'sbt-commish',
-      name:     'Chris',                                             // ← update name
-      role:     'commissioner',
-      pin_hash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'  // PIN: 1234
-    },
-    {
-      id:       'sbt-co-commish',
-      name:     'Co-Commissioner',                                   // ← update name
-      role:     'co-commissioner',
-      pin_hash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'  // PIN: 1234
-    },
-  ]
+  leagueKey:  'sbt_comm_v2',   // localStorage scope (bumped from v1 to clear legacy)
+  leagueSlug: 'sbt-2026',      // matches public.leagues.slug in Supabase
+  leagueName: 'Sigma Beta Tau Fantasy Football'
 };
