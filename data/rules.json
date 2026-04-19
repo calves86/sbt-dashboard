@@ -1,440 +1,142 @@
 {
   "League Identity": [
-    {
-      "description": "League Name",
-      "setting": "Sigma Beta Tau Fantasy Football"
-    },
-    {
-      "description": "League URL",
-      "setting": "https://sigmabetatau.football.cbssports.com"
-    },
-    {
-      "description": "League E-mail Address",
-      "setting": "sigmabetatau@football.cbssports.com"
-    },
-    {
-      "description": "Teams",
-      "setting": "12"
-    },
-    {
-      "description": "Divisions",
-      "setting": "3"
-    },
-    {
-      "description": "League Entry Fee",
-      "setting": "$500"
-    }
+    { "description": "League Name", "setting": "Sigma Beta Tau Fantasy Football" },
+    { "description": "League URL", "setting": "https://sigmabetatau.football.cbssports.com" },
+    { "description": "League E-mail Address", "setting": "sigmabetatau@football.cbssports.com" },
+    { "description": "Teams", "setting": "12" },
+    { "description": "Divisions", "setting": "3" },
+    { "description": "League Entry Fee", "setting": "$500" }
   ],
-  "Roster Limits": [
-    {
-      "description": "Starters",
-      "setting": "9"
-    },
-    {
-      "description": "Bench",
-      "setting": "8"
-    },
-    {
-      "description": "Injured Players",
-      "setting": "0"
-    },
-    {
-      "description": "Practice Players",
-      "setting": "0"
-    },
-    {
-      "description": "Total Players",
-      "setting": "17"
-    },
-    {
-      "description": "QB",
-      "setting": "1"
-    },
-    {
-      "description": "RB",
-      "setting": "1"
-    },
-    {
-      "description": "WR",
-      "setting": "2"
-    },
-    {
-      "description": "TE",
-      "setting": "1"
-    },
-    {
-      "description": "RB-WR-TE",
-      "setting": "2"
-    },
-    {
-      "description": "K",
-      "setting": "1"
-    },
-    {
-      "description": "DST",
-      "setting": "1"
-    }
-  ],
+
+  "Roster Limits": {
+    "_type": "roster",
+    "categories": [
+      { "status": "Starters",         "min": 9, "max": 9  },
+      { "status": "Bench",            "min": 0, "max": 8  },
+      { "status": "Injured Players",  "min": 0, "max": 0  },
+      { "status": "Practice Players", "min": 0, "max": 0  },
+      { "status": "Total Players",    "min": 9, "max": 17 }
+    ],
+    "positions": [
+      { "position": "QB",       "active_min": 1, "active_max": 1, "roster_total": 5  },
+      { "position": "RB",       "active_min": 1, "active_max": 1, "roster_total": 8  },
+      { "position": "WR",       "active_min": 2, "active_max": 2, "roster_total": 8  },
+      { "position": "TE",       "active_min": 1, "active_max": 1, "roster_total": 4  },
+      { "position": "RB-WR-TE", "active_min": 2, "active_max": 2, "roster_total": 11 },
+      { "position": "K",        "active_min": 1, "active_max": 1, "roster_total": 3  },
+      { "position": "DST",      "active_min": 1, "active_max": 1, "roster_total": 4  }
+    ],
+    "notes": [
+      "Illegal rosters score zero points in standings."
+    ]
+  },
+
   "Transaction Settings": [
-    {
-      "description": "Lineup Policy",
-      "setting": "Managers may set lineups and change players' positions from a list of their eligible positions."
-    },
-    {
-      "description": "Lineup Deadline",
-      "setting": "Lineup deadline is five minutes before gametime for each player."
-    },
-    {
-      "description": "Add/Drop Policy",
-      "setting": "Add/Drops are handled by a waivers process."
-    },
-    {
-      "description": "Add/Drop Deadline",
-      "setting": "Transactions will lock five minutes before gametime for each player."
-    },
-    {
-      "description": "Waivers Run",
-      "setting": "The waiver process runs on Wednesday, Thursday, Friday and Saturday night."
-    },
-    {
-      "description": "FAB/Free Agent Options",
-      "setting": "Players only on FAB until first run has completed"
-    },
-    {
-      "description": "Free Agents Cost",
-      "setting": "Free Agents Transactions will have a cost of 0."
-    },
-    {
-      "description": "Waiver Reset",
-      "setting": "The waiver order resets after each weeks' games."
-    },
-    {
-      "description": "Waiver Period",
-      "setting": "Dropped players remain on waivers for at least 1 day(s)."
-    },
-    {
-      "description": "FAB Budget",
-      "setting": "Each team will have a starting budget of $1000."
-    },
-    {
-      "description": "Winning Offers",
-      "setting": "Do Not Save Winning Offers"
-    },
-    {
-      "description": "Zero Offers",
-      "setting": "Zero offers are not allowed."
-    },
-    {
-      "description": "Trade Policy",
-      "setting": "Trades must be approved by the commissioner."
-    },
-    {
-      "description": "Trade Deadline",
-      "setting": "No trades can be made after the trade deadline of 11:59 pm et 11/20/25."
-    },
-    {
-      "description": "Offseason Trades",
-      "setting": "Managers may not make trades during the offseason."
-    }
+    { "description": "Lineup Policy",       "setting": "Managers may set lineups and change players' positions from a list of their eligible positions." },
+    { "description": "Lineup Deadline",     "setting": "Lineup deadline is five minutes before gametime for each player." },
+    { "description": "Add/Drop Policy",     "setting": "Add/Drops are handled by a waivers process." },
+    { "description": "Add/Drop Deadline",   "setting": "Transactions will lock five minutes before gametime for each player." },
+    { "description": "Waivers Run",         "setting": "The waiver process runs on Wednesday, Thursday, Friday and Saturday night." },
+    { "description": "FAB/Free Agent Options", "setting": "Players only on FAB until first run has completed" },
+    { "description": "Free Agents Cost",    "setting": "Free Agents Transactions will have a cost of 0." },
+    { "description": "Waiver Reset",        "setting": "The waiver order resets after each weeks' games." },
+    { "description": "Waiver Period",       "setting": "Dropped players remain on waivers for at least 1 day(s)." },
+    { "description": "FAB Budget",          "setting": "Each team will have a starting budget of $1000." },
+    { "description": "Winning Offers",      "setting": "Do Not Save Winning Offers" },
+    { "description": "Zero Offers",         "setting": "Zero offers are not allowed." },
+    { "description": "Trade Policy",        "setting": "Trades must be approved by the commissioner." },
+    { "description": "Trade Deadline",      "setting": "No trades can be made after the trade deadline of 11:59 pm et 11/20/25." },
+    { "description": "Offseason Trades",    "setting": "Managers may not make trades during the offseason." }
   ],
+
   "Player Policies and Keepers": [
-    {
-      "description": "Player Pool",
-      "setting": "AFC and NFC Players."
-    },
-    {
-      "description": "Keeper Policy",
-      "setting": "Commissioner is responsible for setting all teams' Keepers"
-    }
+    { "description": "Player Pool",     "setting": "AFC and NFC Players." },
+    { "description": "Keeper Policy",   "setting": "Commissioner is responsible for setting all teams' Keepers" }
   ],
+
   "Fees Settings": [
-    {
-      "description": "League Entry Fee",
-      "setting": "500"
-    }
+    { "description": "League Entry Fee", "setting": "$500" }
   ],
+
   "Draft Settings": [
-    {
-      "description": "Draft Format",
-      "setting": "Live Draft"
-    },
-    {
-      "description": "Draft Order Type",
-      "setting": "Snake"
-    },
-    {
-      "description": "Draft Date/Time",
-      "setting": "9/3/25 08:30 pm ET"
-    },
-    {
-      "description": "Draft Rounds",
-      "setting": "16 Rounds, with 150 seconds between picks."
-    },
-    {
-      "description": "Draft Robot",
-      "setting": "enabled - picks are made automatically for teams that let the clock expire."
-    }
+    { "description": "Draft Format",     "setting": "Live Draft" },
+    { "description": "Draft Order Type", "setting": "Snake" },
+    { "description": "Draft Date/Time",  "setting": "9/3/25 08:30 pm ET" },
+    { "description": "Draft Rounds",     "setting": "16 Rounds, with 150 seconds between picks." },
+    { "description": "Draft Robot",      "setting": "Enabled — picks are made automatically for teams that let the clock expire." }
   ],
-  "Scoring System": [
-    {
-      "group": "Offensive",
-      "code": "FG",
-      "name": "Field Goals",
-      "points": "3 points Plus 2 points for a FG of 50+ Yds"
-    },
-    {
-      "group": "Offensive",
-      "code": "FL",
-      "name": "Fumble Lost, Including ST plays",
-      "points": "-2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "IFRTD",
-      "name": "Individual Fumble Recovery TD",
-      "points": "6 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "IKRTD",
-      "name": "Individual Kick Return TD",
-      "points": "6 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "IPRTD",
-      "name": "Individual Punt Return TD",
-      "points": "6 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "MFG",
-      "name": "Missed Field Goal",
-      "points": "-3 points Plus 3 points for a MFG of 50+ Yds"
-    },
-    {
-      "group": "Offensive",
-      "code": "MXP",
-      "name": "Missed Extra Point",
-      "points": "-2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "Pa2P",
-      "name": "Passing Two-point Conversion",
-      "points": "2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "PaInt",
-      "name": "Passing Interception",
-      "points": "-2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "PaIntTD",
-      "name": "Passing Interception for TD",
-      "points": "-6 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "PaTD",
-      "name": "Passing TD",
-      "points": "5 points Plus 3 points for a PaTD of 50 to 100 Yds"
-    },
-    {
-      "group": "Offensive",
-      "code": "PaYd",
-      "name": "Passing Yards",
-      "points": "0+ PaYds = .04 points for every 1 PaYd Plus a 2 point bonus @ 250 + PaYd Plus a 3 point bonus @ 300 + PaYd Plus a 3 point bonus @ 350 + PaYd Plus a 4 point bonus @ 400 + PaYd Plus a 3 point bonus @ 500 + PaYd"
-    },
-    {
-      "group": "Offensive",
-      "code": "Re2P",
-      "name": "Receiving Two-point Conversion",
-      "points": "2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "ReTD",
-      "name": "Receiving TD",
-      "points": "6 points Plus 3 points for a ReTD of 50+ Yds"
-    },
-    {
-      "group": "Offensive",
-      "code": "ReYd",
-      "name": "Receiving Yards",
-      "points": "0+ ReYds = .1 points for every 1 ReYd Plus a 3 point bonus @ 100+ ReYd Plus a 3 point bonus @ 125 + ReYd Plus a 5 point bonus @ 150 + ReYd Plus a 5 point bonus @ 200 + ReYd Plus a 3 point bonus @ 250 + ReYd"
-    },
-    {
-      "group": "Offensive",
-      "code": "Recpt",
-      "name": "Reception",
-      "points": "1+ Recpt = 1 point for every 1 Recpt"
-    },
-    {
-      "group": "Offensive",
-      "code": "Ru2P",
-      "name": "Rushing Two-point Conversion",
-      "points": "2 points"
-    },
-    {
-      "group": "Offensive",
-      "code": "RuAtt",
-      "name": "Rushing Attempt",
-      "points": "Plus a 2 point bonus @ 20+ RuAtt Plus a 3 point bonus @ 25+ RuAtt Plus a 5 point bonus @ 30+ RuAtt"
-    },
-    {
-      "group": "Offensive",
-      "code": "RuTD",
-      "name": "Rushing TD",
-      "points": "6 points Plus 5 points for a RuTD of 50+ Yds"
-    },
-    {
-      "group": "Offensive",
-      "code": "RuYd",
-      "name": "Rushing Yards",
-      "points": "0+ RuYds = .1 points for every 1 RuYd Plus a 3 point bonus @ 100 + RuYd Plus a 3  point bonus @ 150 + RuYd Plus a 5 point bonus @ 200 + RuYd Plus a 5 point bonus @ 250 + RuYd Plus a 5 point bonus @ 300 + RuYd"
-    },
-    {
-      "group": "Offensive",
-      "code": "XP",
-      "name": "Extra Points",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "BFB",
-      "name": "Blocked Field Goals (ID/ST/DST)",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "BP",
-      "name": "Blocked Punts (ID/ST/DST)",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "BXP",
-      "name": "Blocked Extra Points (ID/ST/DST)",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "DFR",
-      "name": "Defensive/ST Fumble Recovered (ID/DT/DST)",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "DFTD",
-      "name": "Defensive TD",
-      "points": "6 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "DSTPA",
-      "name": "Points Against Defense/ST",
-      "points": "0 - 0 DSTPAs = 10 points 1 - 3 DSTPAs = 8 points 4 - 14 DSTPAs = 6 points 15 - 24 DSTPAs = 4 points 25 - 35 DSTPAs = 0 points 36 - 41 DSTPAs = -4 points 42 - 100 DSTPAs = -8 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "FF",
-      "name": "Forced Fumble",
-      "points": "1 point"
-    },
-    {
-      "group": "Defensive",
-      "code": "Int",
-      "name": "Interceptions",
-      "points": "2 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "SACK",
-      "name": "Sack",
-      "points": "2 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "ST2PT",
-      "name": "Special Teams Conversion Return for Two-points (ID/ST/DST)",
-      "points": "2 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "STTD",
-      "name": "Special Teams TD",
-      "points": "6 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "STY",
-      "name": "Safety",
-      "points": "5 points"
-    },
-    {
-      "group": "Defensive",
-      "code": "TK",
-      "name": "Tackle (ID/DT/DST)",
-      "points": "1 point"
-    }
-  ],
+
+  "Scoring System": {
+    "_type": "scoring",
+    "offensive": [
+      { "code": "FG",      "name": "Field Goals",                        "points": "3 pts  |  +2 pts for 50+ Yds" },
+      { "code": "FL",      "name": "Fumble Lost (incl. ST plays)",        "points": "-2 pts" },
+      { "code": "IFRTD",   "name": "Individual Fumble Recovery TD",       "points": "6 pts" },
+      { "code": "IKRTD",   "name": "Individual Kick Return TD",           "points": "6 pts" },
+      { "code": "IPRTD",   "name": "Individual Punt Return TD",           "points": "6 pts" },
+      { "code": "MFG",     "name": "Missed Field Goal",                   "points": "-3 pts  |  +3 pts for 50+ Yds miss" },
+      { "code": "MXP",     "name": "Missed Extra Point",                  "points": "-2 pts" },
+      { "code": "Pa2P",    "name": "Passing Two-Point Conversion",        "points": "2 pts" },
+      { "code": "PaInt",   "name": "Passing Interception",                "points": "-2 pts" },
+      { "code": "PaIntTD", "name": "Passing Interception for TD",         "points": "-6 pts" },
+      { "code": "PaTD",    "name": "Passing TD",                          "points": "5 pts  |  +3 pts for 50–100 Yds" },
+      { "code": "PaYd",    "name": "Passing Yards",                       "points": "0.04 pts/yd  |  +2 @250  +3 @300  +3 @350  +4 @400  +3 @500" },
+      { "code": "Re2P",    "name": "Receiving Two-Point Conversion",      "points": "2 pts" },
+      { "code": "ReTD",    "name": "Receiving TD",                        "points": "6 pts  |  +3 pts for 50+ Yds" },
+      { "code": "ReYd",    "name": "Receiving Yards",                     "points": "0.1 pts/yd  |  +3 @100  +3 @125  +5 @150  +5 @200  +3 @250" },
+      { "code": "Recpt",   "name": "Reception",                           "points": "1 pt each" },
+      { "code": "Ru2P",    "name": "Rushing Two-Point Conversion",        "points": "2 pts" },
+      { "code": "RuAtt",   "name": "Rushing Attempts",                    "points": "+2 @20  +3 @25  +5 @30" },
+      { "code": "RuTD",    "name": "Rushing TD",                          "points": "6 pts  |  +5 pts for 50+ Yds" },
+      { "code": "RuYd",    "name": "Rushing Yards",                       "points": "0.1 pts/yd  |  +3 @100  +3 @150  +5 @200  +5 @250  +5 @300" },
+      { "code": "XP",      "name": "Extra Point",                         "points": "1 pt" }
+    ],
+    "defensive": [
+      { "code": "BFB",    "name": "Blocked Field Goal (ID/ST/DST)",        "points": "1 pt" },
+      { "code": "BP",     "name": "Blocked Punt (ID/ST/DST)",              "points": "1 pt" },
+      { "code": "BXP",    "name": "Blocked Extra Point (ID/ST/DST)",       "points": "1 pt" },
+      { "code": "DFR",    "name": "Defensive/ST Fumble Recovered",         "points": "1 pt" },
+      { "code": "DFTD",   "name": "Defensive TD",                          "points": "6 pts" },
+      { "code": "DSTPA",  "name": "Points Against (Defense/ST)",           "points": "0 pts: 10  |  1–3: 8  |  4–14: 6  |  15–24: 4  |  25–35: 0  |  36–41: -4  |  42+: -8" },
+      { "code": "FF",     "name": "Forced Fumble",                         "points": "1 pt" },
+      { "code": "Int",    "name": "Interception",                          "points": "2 pts" },
+      { "code": "SACK",   "name": "Sack",                                  "points": "2 pts" },
+      { "code": "ST2PT",  "name": "Special Teams 2-Pt Conversion Return",  "points": "2 pts" },
+      { "code": "STTD",   "name": "Special Teams TD",                      "points": "6 pts" },
+      { "code": "STY",    "name": "Safety",                                "points": "5 pts" },
+      { "code": "TK",     "name": "Tackle (Individual — ID/DT)",           "points": "1 pt" }
+    ],
+    "dst_special": [
+      { "code": "TK", "name": "Tackle (DST unit)", "points": "0 pts" }
+    ]
+  },
+
   "Scoring Policies": [
-    {
-      "description": "Scoring System",
-      "setting": "Head-to-Head, Points"
-    },
-    {
-      "description": "Scoring per Period",
-      "setting": "Scoring based on total stats each period."
-    },
-    {
-      "description": "Matchup Tiebreaker",
-      "setting": "Ties go to the team with more points from Reserves."
-    }
+    { "description": "Scoring System",      "setting": "Head-to-Head, Points" },
+    { "description": "Scoring per Period",  "setting": "Scoring based on total stats each period." },
+    { "description": "Matchup Tiebreaker", "setting": "Ties go to the team with more points from Reserves." }
   ],
+
   "Schedule & Playoffs": [
-    {
-      "description": "Matchups Per Period",
-      "setting": "1"
-    },
-    {
-      "description": "Regular Season Weeks",
-      "setting": "Weeks 1 - 14"
-    },
-    {
-      "description": "Playoffs Start",
-      "setting": "Week 15"
-    },
-    {
-      "description": "Playoffs Last",
-      "setting": "3 Weeks (Weeks 15 - 17)"
-    },
-    {
-      "description": "Playoff Teams",
-      "setting": "6"
-    },
-    {
-      "description": "Automatic Playoffs",
-      "setting": "No"
-    },
-    {
-      "description": "Archive Standings",
-      "setting": "Yes"
-    },
-    {
-      "description": "Standings Tiebreaker",
-      "setting": "Ties in the standings are resolved in this order: Winning Percentage, Head to Head Record, Total Points, Division Record, Points Against (Schedule Difficulty)."
-    },
-    {
-      "description": "Division Winner Tiebreaker",
-      "setting": "Ties for division winner are resolved using standings tiebreakers"
-    },
-    {
-      "description": "Playoffs Matchup Tiebreaker",
-      "setting": "Playoff ties go to the team with more points from Reserves."
-    }
-  ]
+    { "description": "Matchups Per Period",       "setting": "1" },
+    { "description": "Regular Season Weeks",      "setting": "Weeks 1–14" },
+    { "description": "Playoffs Start",            "setting": "Week 15" },
+    { "description": "Playoffs Last",             "setting": "3 Weeks (Weeks 15–17)" },
+    { "description": "Playoff Teams",             "setting": "8" },
+    { "description": "Automatic Playoffs",        "setting": "No" },
+    { "description": "Archive Standings",         "setting": "Yes" },
+    { "description": "Standings Tiebreaker",      "setting": "Winning Percentage → Head to Head Record → Total Points → Division Record → Points Against (Schedule Difficulty)." },
+    { "description": "Division Winner Tiebreaker","setting": "Ties for division winner are resolved using standings tiebreakers." },
+    { "description": "Playoffs Matchup Tiebreaker","setting": "Playoff ties go to the team with more points from Reserves." }
+  ],
+
+  "Commish Message": {
+    "_type": "text",
+    "content": "Welcome to Sigma Beta Tau Fantasy Football! The league's commissioner can use this space to post messages to league members."
+  },
+
+  "Constitution": {
+    "_type": "text",
+    "content": "DRAFT\n• Draft order determined by Playoff and Loser Bowl results\n• Divisions randomly determined each year at draft\n• Keepers: From 4th Round on, every player drafted the previous year is eligible\n• Rule changes voted on at draft each year\n\nSTACKED BONUS\n• 3-point stacked bonus: QB throwing TD to same-team receiver, TE, or RB\n\nFEES & PAYOUTS\n• Entry Fee: $500/team\n• 1st Place: 70%   |   2nd Place: 20%   |   3rd Place: 10%\n• Division Winners: $100 each\n• Most Points (season): $100\n• Best Record: $100\n\nROSTER\n• IR slot: Removed\n\nPLAYOFFS\n• 8-Team Playoff — Weeks 15–17\n• Top 3 per division seeded 1–3; remaining spots filled by best record\n• Reseeded each round (highest seed vs. lowest seed)\n\nLOSER BOWL\n• 4 non-playoff teams compete to determine draft picks 1–6\n\n2026 RULE\n• Team with least total points (including playoffs) pays for trophy engraving & shipping"
+  }
 }
