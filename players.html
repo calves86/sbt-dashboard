@@ -226,6 +226,10 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 
+<script src="data/auth-sbt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script>
 /* ===== CONFIG ===== */
 const ACCENT = '#10b981';
@@ -241,15 +245,63 @@ let sortCol = 'season_pts';
 let sortDir = 'desc';
 
 /* ===== INIT ===== */
+const CURRENT_SEASON = 2025;
+
+function applyCommishToFreeAgents(faList, dbRosters, dbCommish) {
+  if (!Array.isArray(faList)) faList = [];
+  // Build a lowercase set of currently rostered player names (current season only).
+  const rostered = new Set();
+  if (Array.isArray(dbRosters)) {
+    dbRosters.filter(t => t.year === CURRENT_SEASON).forEach(t => {
+      (t.players || []).forEach(p => { if (p.name) rostered.add(p.name.toLowerCase()); });
+    });
+  }
+  // Remove anyone who's now rostered from the scraped FA list.
+  let out = faList.filter(p => !rostered.has((p.name||'').toLowerCase()));
+  // Add any commissioner-dropped players who aren't currently rostered and aren't already in the list.
+  const already = new Set(out.map(p => (p.name||'').toLowerCase()));
+  if (Array.isArray(dbCommish)) {
+    for (const row of dbCommish) {
+      const pl = row.payload || {};
+      if (pl.kind !== 'drop' && pl.kind !== 'reverse') continue;
+      for (const d of (pl.drops || [])) {
+        const key = (d.name||'').toLowerCase();
+        if (!key || rostered.has(key) || already.has(key)) continue;
+        out.push({
+          id:          'commish-' + key,
+          name:        d.name,
+          position:    d.pos || d.position || '',
+          nfl_team:    d.nfl_team || '',
+          photo_url:   '',
+          injury_status: '',
+          season_pts:  0,
+          avg_pts:     0,
+          weeks_played: 0,
+          weekly:      {},
+          _commishDrop: true,
+        });
+        already.add(key);
+      }
+    }
+  }
+  return out;
+}
+
 async function init() {
   try {
-    const [r, rn] = await Promise.all([
+    const slug = window.COMM_AUTH?.leagueSlug;
+    const [r, rn, dbRosters, dbCommish] = await Promise.all([
       fetch('data/free_agents_2025.json'),
-      fetch('data/player_news_2025.json').catch(()=>null)
+      fetch('data/player_news_2025.json').catch(()=>null),
+      (window.loadLeagueRosters && slug)        ? window.loadLeagueRosters(slug).catch(()=>null)        : Promise.resolve(null),
+      (window.loadLeagueCommishActions && slug) ? window.loadLeagueCommishActions(slug).catch(()=>null) : Promise.resolve(null),
     ]);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const json = await r.json();
     DATA = json.players || [];
+
+    // Reconcile with live roster/commissioner state from Supabase.
+    DATA = applyCommishToFreeAgents(DATA, dbRosters, dbCommish);
     if (rn && rn.ok) {
       const nd = await rn.json();
       Object.values(nd.teams||nd||{}).forEach(players=>{
