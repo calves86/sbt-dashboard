@@ -469,6 +469,7 @@ tr.tx-comm-row td{background:rgba(167,139,250,0.03)}
 <script src="commissioner-auth.js"></script>
 <script>
 const ACCENT = '#10b981';
+const CURRENT_SEASON = 2025;
 const POS_COLOR = {QB:'#f472b6',RB:'#22d3ee',WR:'#34d399',TE:'#fb923c',K:'#facc15',DST:'#a78bfa'};
 
 let DATA = { teams:[], rosters:[], transactions:[], adjustments:[], rules:{} };
@@ -691,7 +692,7 @@ async function resetRosters() {
 /* Release a player */
 function releasePlayer(teamName, playerName) {
   if (!confirm(`Release ${playerName} from ${teamName}?`)) return;
-  const team = DATA.rosters.find(t => t.team_name === teamName);
+  const team = DATA.rosters.find(t => t.team_name === teamName && t.year === CURRENT_SEASON);
   if (!team) return;
   const player = team.players.find(p => p.name === playerName);
   if (!player) return;
@@ -736,7 +737,7 @@ function openAddPlayerModal(teamName) {
 
 function _buildFreeAgentPool() {
   const rostered = new Set();
-  DATA.rosters.forEach(t => t.players.forEach(p => rostered.add(p.name.toLowerCase())));
+  DATA.rosters.filter(t => t.year === CURRENT_SEASON).forEach(t => t.players.forEach(p => rostered.add(p.name.toLowerCase())));
   const seen = new Set(); const pool = [];
   DATA.transactions.forEach(t => {
     [...(t.adds||[]), ...(t.drops||[])].forEach(p => {
@@ -778,7 +779,7 @@ function _addManualPlayer() {
 function addPlayerToTeam(playerName, position, nflTeam) {
   const teamName = _addTarget;
   if (!teamName) return;
-  const team = DATA.rosters.find(t => t.team_name === teamName);
+  const team = DATA.rosters.find(t => t.team_name === teamName && t.year === CURRENT_SEASON);
   if (!team) return;
   if (team.players.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
     showToast(`${playerName} is already on ${teamName}.`, true); return;
@@ -808,7 +809,7 @@ function reverseTransaction(txId) {
   if (drops) msg += `\n\nWill RE-ADD to roster:\n${drops}`;
   if (!confirm(msg)) return;
 
-  const team = DATA.rosters.find(t => t.team_name === tx.team);
+  const team = DATA.rosters.find(t => t.team_name === tx.team && t.year === CURRENT_SEASON);
   if (team) {
     (tx.adds||[]).forEach(p => { team.players = team.players.filter(pl => pl.name.toLowerCase() !== p.name.toLowerCase()); });
     (tx.drops||[]).forEach(p => {
@@ -836,7 +837,7 @@ function renderRosters(filter='') {
   const q = filter.toLowerCase();
   let html = '';
 
-  DATA.rosters.forEach(team => {
+  DATA.rosters.filter(t => t.year === CURRENT_SEASON).forEach(team => {
     const starters = team.players.filter(p => p.status === 'A');
     const reserves = team.players.filter(p => p.status !== 'A');
     if (q) {
