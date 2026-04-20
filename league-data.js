@@ -144,8 +144,37 @@ async function saveLeagueRosters(leagueId, rostersArray) {
   }
 }
 
+async function loadLeagueAdjustments(leagueSlug) {
+  if (!window.sb) return null;
+  try {
+    const { data: league, error: leagueErr } = await sb
+      .from('leagues').select('id').eq('slug', leagueSlug).single();
+    if (leagueErr || !league) return null;
+
+    const { data, error } = await sb
+      .from('adjustments')
+      .select('week, team_id, points, reason')
+      .eq('league_id', league.id)
+      .order('week', { ascending: true });
+    if (error) { console.error('[league-data] loadLeagueAdjustments error', error); return null; }
+
+    // Re-shape to match adjustments_2025.json: [{week, team_id, adjustments: [{points, reason}]}]
+    const grouped = new Map();
+    for (const row of (data || [])) {
+      const k = row.week + '|' + row.team_id;
+      if (!grouped.has(k)) grouped.set(k, { week: row.week, team_id: row.team_id, adjustments: [] });
+      grouped.get(k).adjustments.push({ points: Number(row.points), reason: row.reason || '' });
+    }
+    return Array.from(grouped.values());
+  } catch (e) {
+    console.error('[league-data] loadLeagueAdjustments threw:', e);
+    return null;
+  }
+}
+
 // Expose on window for legacy scripts
 window.loadLeagueRules = loadLeagueRules;
 window.saveLeagueRules = saveLeagueRules;
 window.loadLeagueRosters = loadLeagueRosters;
 window.saveLeagueRosters = saveLeagueRosters;
+window.loadLeagueAdjustments = loadLeagueAdjustments;

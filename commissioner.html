@@ -492,13 +492,14 @@ function switchTab(id) {
 /* ===== LOAD DATA ===== */
 async function init() {
   const slug = window.COMM_AUTH?.leagueSlug;
-  const [teamData, rostersFile, transactions, adjustments, rulesFromDb, rostersFromDb] = await Promise.all([
+  const [teamData, rostersFile, transactions, adjustmentsFile, rulesFromDb, rostersFromDb, adjustmentsFromDb] = await Promise.all([
     fetch('data/team_data_2025.json').then(r=>r.json()).catch(()=>({})),
     fetch('data/rosters.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/transactions.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
-    window.loadLeagueRules   ? window.loadLeagueRules(slug).catch(()=>null)   : Promise.resolve(null),
-    window.loadLeagueRosters ? window.loadLeagueRosters(slug).catch(()=>null) : Promise.resolve(null),
+    window.loadLeagueRules       ? window.loadLeagueRules(slug).catch(()=>null)       : Promise.resolve(null),
+    window.loadLeagueRosters     ? window.loadLeagueRosters(slug).catch(()=>null)     : Promise.resolve(null),
+    window.loadLeagueAdjustments ? window.loadLeagueAdjustments(slug).catch(()=>null) : Promise.resolve(null),
   ]);
 
   // Rules: Supabase is source of truth. Fall back to rules.json only if DB load failed.
@@ -513,6 +514,13 @@ async function init() {
   if (!publishedRosters) {
     console.warn('[init] Supabase rosters load failed — falling back to data/rosters.json');
     publishedRosters = rostersFile;
+  }
+
+  // Adjustments: Supabase is source of truth. Fall back to JSON only if DB load failed.
+  let adjustments = adjustmentsFromDb;
+  if (!adjustments) {
+    if (adjustmentsFromDb === null) console.warn('[init] Supabase adjustments load failed — falling back to data/adjustments_2025.json');
+    adjustments = adjustmentsFile;
   }
 
   DATA.teams       = teamData.teams || [];
