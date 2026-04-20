@@ -371,7 +371,12 @@ function renderFeed() {
     byWeek[w].push(t);
   });
 
-  const weeks = Object.keys(byWeek).map(Number).sort((a,b)=>b-a);
+  const weeks = Object.keys(byWeek).sort((a,b)=>{
+    const an=Number(a), bn=Number(b);
+    if(!isNaN(an)&&!isNaN(bn)) return bn-an;
+    if(isNaN(an)&&isNaN(bn)) return a.localeCompare(b);
+    return isNaN(an) ? -1 : 1;
+  });
 
   document.getElementById('feed').innerHTML = weeks.map(wk => {
     const txs = byWeek[wk];
