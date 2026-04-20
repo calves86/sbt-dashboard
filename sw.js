@@ -1,5 +1,5 @@
 /* ===== SBT Fantasy Football — Service Worker ===== */
-const CACHE = 'sbt-v36';
+const CACHE = 'sbt-v37';
 
 const STATIC_ASSETS = [
   './leftnav.js',
@@ -36,6 +36,12 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   const url = new URL(e.request.url);
+
+  // Don't touch cross-origin requests (Supabase API, CDN, fonts, etc.) —
+  // let the browser handle them natively. Service worker caching is only
+  // appropriate for our own static assets.
+  if (url.origin !== self.location.origin) return;
+
   const isHtml = url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/');
   const isData = url.pathname.includes('/data/');
 
