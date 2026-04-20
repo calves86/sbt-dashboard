@@ -172,9 +172,54 @@ async function loadLeagueAdjustments(leagueSlug) {
   }
 }
 
+async function loadLeagueCommishActions(leagueSlug) {
+  if (!window.sb) return null;
+  try {
+    const { data: league, error: leagueErr } = await sb
+      .from('leagues').select('id').eq('slug', leagueSlug).single();
+    if (leagueErr || !league) return null;
+
+    const { data, error } = await sb
+      .from('transactions')
+      .select('id, payload, status, created_at')
+      .eq('league_id', league.id)
+      .eq('type', 'commish_adjustment')
+      .order('created_at', { ascending: true });
+    if (error) { console.error('[league-data] loadLeagueCommishActions error', error); return null; }
+    return data || [];
+  } catch (e) {
+    console.error('[league-data] loadLeagueCommishActions threw:', e);
+    return null;
+  }
+}
+
+async function saveLeagueCommishAction(leagueId, payload) {
+  if (!window.sb) return { ok: false, error: 'Supabase client not initialized' };
+  if (!leagueId)  return { ok: false, error: 'No leagueId provided' };
+  try {
+    const { data, error } = await sb
+      .from('transactions')
+      .insert({
+        league_id: leagueId,
+        type: 'commish_adjustment',
+        status: 'processed',
+        payload: payload || {},
+      })
+      .select('id')
+      .single();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, id: data.id };
+  } catch (e) {
+    console.error('[league-data] saveLeagueCommishAction threw:', e);
+    return { ok: false, error: String(e) };
+  }
+}
+
 // Expose on window for legacy scripts
 window.loadLeagueRules = loadLeagueRules;
 window.saveLeagueRules = saveLeagueRules;
 window.loadLeagueRosters = loadLeagueRosters;
 window.saveLeagueRosters = saveLeagueRosters;
 window.loadLeagueAdjustments = loadLeagueAdjustments;
+window.loadLeagueCommishActions = loadLeagueCommishActions;
+window.saveLeagueCommishAction = saveLeagueCommishAction;

@@ -534,7 +534,35 @@ async function init() {
     document.getElementById('roster-modified-badge')?.classList.add('show');
   }
 
-  // Merge season transactions with saved commissioner actions
+  // Commissioner actions: Supabase is source of truth. Fall back to localStorage if DB load fails.
+  if (window.loadLeagueCommishActions && slug) {
+    try {
+      const dbRows = await window.loadLeagueCommishActions(slug);
+      if (dbRows && dbRows.length > 0) {
+        const commActions = dbRows.map(_commActionToTx);
+        try { localStorage.setItem(COMM_TX_LS_KEY, JSON.stringify(commActions)); } catch {}
+        const reversedFps = [];
+        for (const r of dbRows) {
+          if (r.payload && r.payload.kind === 'reverse' && r.payload.reverses_fp) {
+            reversedFps.push(r.payload.reverses_fp);
+          }
+        }
+        try { localStorage.setItem(REVERSED_TX_KEY, JSON.stringify(reversedFps)); } catch {}
+      } else if (dbRows && dbRows.length === 0) {
+        // DB empty — migrate any existing localStorage commish actions to DB.
+        const existing = _loadCommActions();
+        const session = (typeof getSession === 'function') ? getSession() : null;
+        if (existing.length > 0 && session && session.leagueId && window.saveLeagueCommishAction) {
+          console.log('[init] Migrating', existing.length, 'commish action(s) from localStorage to DB');
+          for (const tx of existing) {
+            await window.saveLeagueCommishAction(session.leagueId, _txToCommishPayload(tx));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[init] Supabase commish actions load failed — using localStorage cache', e);
+    }
+  }
   const commActions = _loadCommActions();
   DATA.transactions = [...transactions.filter(t => t.season === 2025), ...commActions];
   // Assign stable _id for reverse lookups
@@ -645,10 +673,45 @@ function _saveRosters() {
 function _loadCommActions() {
   try { const s = localStorage.getItem(COMM_TX_LS_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
 }
+function _commActionToTx(row) {
+  const p = row.payload || {};
+  const kindToType = { drop:'commissioner_drop', add:'commissioner_add', reverse:'commissioner_reversal' };
+  return {
+    season: 2025,
+    week: p.week || 'Commish',
+    timestamp: p.timestamp_str || '',
+    type: kindToType[p.kind] || 'commissioner_drop',
+    team: p.team_name || '',
+    adds: p.adds || [],
+    drops: p.drops || [],
+    _comm: true,
+    _dbid: row.id,
+  };
+}
+function _txToCommishPayload(tx) {
+  const typeToKind = { commissioner_drop:'drop', commissioner_add:'add', commissioner_reversal:'reverse' };
+  return {
+    kind: typeToKind[tx.type] || 'drop',
+    team_name: tx.team,
+    adds: tx.adds || [],
+    drops: tx.drops || [],
+    timestamp_str: tx.timestamp || '',
+    week: tx.week || 'Commish',
+    reverses_fp: tx._reverses_fp || null,
+  };
+}
 function _saveCommAction(tx) {
   const list = _loadCommActions();
   list.push(tx);
   localStorage.setItem(COMM_TX_LS_KEY, JSON.stringify(list));
+  // Fire-and-forget DB write — UI already updated optimistically.
+  try {
+    const session = (typeof getSession === 'function') ? getSession() : null;
+    if (session && session.leagueId && window.saveLeagueCommishAction) {
+      window.saveLeagueCommishAction(session.leagueId, _txToCommishPayload(tx))
+        .then(r => { if (!r.ok) console.error('[commish] DB save failed:', r.error); });
+    }
+  } catch (e) { console.error('[commish] DB save threw:', e); }
 }
 function _getReversedSet() {
   try { return new Set(JSON.parse(localStorage.getItem(REVERSED_TX_KEY) || '[]')); } catch { return new Set(); }
@@ -833,7 +896,7 @@ function reverseTransaction(txId) {
 
   const ts = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'}) + ' (Commish)';
   const revTx = { season:2025, week:tx.week, timestamp:ts, type:'commissioner_reversal', team:tx.team, _comm:true,
-    adds:tx.drops||[], drops:tx.adds||[], _id:DATA.transactions.length };
+    adds:tx.drops||[], drops:tx.adds||[], _id:DATA.transactions.length, _reverses_fp:_txFP(tx) };
   DATA.transactions.push(revTx); _saveCommAction(revTx);
   renderTransactions(); renderRosters();
   showToast(`Transaction reversed for ${tx.team}.`);
