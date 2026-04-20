@@ -461,6 +461,7 @@ tr.tx-comm-row td{background:rgba(167,139,250,0.03)}
 <script src="data/auth-sbt.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script src="commissioner-auth.js"></script>
 <script>
 const ACCENT = '#10b981';
@@ -485,13 +486,20 @@ function switchTab(id) {
 
 /* ===== LOAD DATA ===== */
 async function init() {
-  const [teamData, rosters, transactions, adjustments, rules] = await Promise.all([
+  const [teamData, rosters, transactions, adjustments, rulesFromDb] = await Promise.all([
     fetch('data/team_data_2025.json').then(r=>r.json()).catch(()=>({})),
     fetch('data/rosters.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/transactions.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
-    fetch('data/rules.json').then(r=>r.json()).catch(()=>({})),
+    window.loadLeagueRules ? window.loadLeagueRules(window.COMM_AUTH?.leagueSlug).catch(()=>null) : Promise.resolve(null),
   ]);
+
+  // Rules: Supabase is source of truth. Fall back to rules.json only if DB load failed.
+  let rules = rulesFromDb;
+  if (!rules) {
+    console.warn('[init] Supabase rules load failed — falling back to data/rules.json');
+    try { rules = await fetch('data/rules.json').then(r=>r.json()); } catch { rules = {}; }
+  }
 
   DATA.teams       = teamData.teams || [];
   DATA.adjustments = adjustments;
@@ -1640,11 +1648,34 @@ function _saveToLS(rules) {
   try { localStorage.setItem(SETTINGS_LS_KEY, JSON.stringify(rules)); } catch {}
 }
 
-function saveSettings() {
-  _saveToLS(_getWorkingSettings());
+async function saveSettings() {
+  const rules = _getWorkingSettings();
+  // Keep localStorage as a draft cache
+  _saveToLS(rules);
+  // Publish to Supabase
+  const session = (typeof getSession === 'function') ? getSession() : null;
+  if (!session || !session.leagueId) {
+    showToast('Not authenticated — cannot save to database.', true);
+    return;
+  }
+  if (!window.saveLeagueRules) {
+    showToast('Data layer not loaded — check console.', true);
+    return;
+  }
+  const btn = document.querySelector('.settings-toolbar-btn.primary');
+  const originalLabel = btn ? btn.textContent : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  const result = await window.saveLeagueRules(session.leagueId, rules);
+  if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+  if (!result.ok) {
+    showToast('Save failed: ' + result.error, true);
+    return;
+  }
+  // Success: clear the draft (DB is now source of truth) and reset modified badge
+  try { localStorage.removeItem(SETTINGS_LS_KEY); } catch {}
   _settingsModified = false;
   document.getElementById('settings-modified-badge')?.classList.remove('show');
-  showToast('Settings saved to this browser.');
+  showToast('Settings published to database.');
 }
 
 function exportSettings() {
@@ -1682,17 +1713,24 @@ function handleSettingsImport(e) {
   e.target.value = '';
 }
 
-function resetSettings() {
-  if (!confirm('Reset settings to the original rules.json? Your local edits will be lost.')) return;
+async function resetSettings() {
+  if (!confirm('Discard local edits and reload from the database?')) return;
   localStorage.removeItem(SETTINGS_LS_KEY);
-  // Reload from original file
-  fetch('data/rules.json').then(r=>r.json()).then(rules => {
-    DATA.rules = rules;
-    _settingsModified = false;
-    document.getElementById('settings-modified-badge')?.classList.remove('show');
-    renderSettings();
-    showToast('Settings reset to original.');
-  });
+  // Refetch from Supabase (current published version)
+  const slug = window.COMM_AUTH?.leagueSlug;
+  let rules = null;
+  if (slug && window.loadLeagueRules) {
+    rules = await window.loadLeagueRules(slug);
+  }
+  if (!rules) {
+    // Last-resort fallback to static file
+    try { rules = await fetch('data/rules.json').then(r=>r.json()); } catch { rules = {}; }
+  }
+  DATA.rules = rules;
+  _settingsModified = false;
+  document.getElementById('settings-modified-badge')?.classList.remove('show');
+  renderSettings();
+  showToast('Local edits discarded. Loaded current published settings.');
 }
 
 /* Toast notification */
