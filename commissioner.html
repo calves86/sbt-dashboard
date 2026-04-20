@@ -854,7 +854,7 @@ function renderRosters(filter='') {
           <div class="team-owner">${team.manager}</div>
         </div>
         <div class="team-record">${record}</div>
-        <button class="rpr-add-btn" onclick="event.stopPropagation();openAddPlayerModal(${JSON.stringify(tn)})">&#43; Add Player</button>
+        <button class="rpr-add-btn" onclick="event.stopPropagation();openAddPlayerModal(${escapeHTML(JSON.stringify(tn))})">&#43; Add Player</button>
       </div>
       <div class="team-roster-body">
         <div class="roster-section-lbl">Starters (${starters.length})</div>
@@ -881,7 +881,7 @@ function rosterPlayerRow(p, teamName, q='') {
     <div class="rpr-pos" style="background:${pc}18;color:${pc}">${p.position}</div>
     <div class="rpr-team">${p.nfl_team||''}</div>
     ${injStatus}${inj}
-    <button class="rpr-release" title="Release player" onclick="releasePlayer(${JSON.stringify(teamName)},${JSON.stringify(p.name)})">&#10005;</button>
+    <button class="rpr-release" title="Release player" onclick="releasePlayer(${escapeHTML(JSON.stringify(teamName))},${escapeHTML(JSON.stringify(p.name))})">&#10005;</button>
   </div>`;
 }
 
