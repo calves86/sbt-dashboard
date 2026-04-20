@@ -141,6 +141,10 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 
+<script src="data/auth-sbt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script>
 /* ===== CONFIG ===== */
 const FRANCHISE_LOGOS = {
@@ -169,11 +173,35 @@ let filterTeam = 'all';
 let filterWeek = 'all';
 
 /* ===== INIT ===== */
+const SEASON = 2025;
+
+function dbCommishRowToTx(row){
+  const p=row.payload||{};
+  const kindToType={drop:'commissioner_drop',add:'commissioner_add',reverse:'commissioner_reversal'};
+  return {
+    season: SEASON,
+    week: p.week||'Commish',
+    timestamp: p.timestamp_str||'',
+    type: kindToType[p.kind]||'commissioner_drop',
+    team: p.team_name||'',
+    adds: p.adds||[],
+    drops: p.drops||[],
+    _comm: true,
+  };
+}
+
 async function init() {
   try {
-    const r = await fetch('data/activity_2025.json');
+    const slug = window.COMM_AUTH?.leagueSlug;
+    const [r, dbCommish] = await Promise.all([
+      fetch('data/activity_2025.json'),
+      (window.loadLeagueCommishActions && slug) ? window.loadLeagueCommishActions(slug).catch(()=>null) : Promise.resolve(null),
+    ]);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     DATA = await r.json();
+    if (Array.isArray(dbCommish) && dbCommish.length && Array.isArray(DATA.transactions)) {
+      DATA.transactions = [...DATA.transactions, ...dbCommish.map(dbCommishRowToTx)];
+    }
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     buildSidebar();

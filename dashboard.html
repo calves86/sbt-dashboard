@@ -255,6 +255,10 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 
+<script src="data/auth-sbt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script>
 const SEASON = 2025;
 const PLAYOFF_SPOTS = 6;
@@ -289,20 +293,38 @@ let stTab='regular';
 const DIVS={};
 let PHOTO_MAP={};
 
+function dbCommishRowToTx(row){
+  const p=row.payload||{};
+  const kindToType={drop:'commissioner_drop',add:'commissioner_add',reverse:'commissioner_reversal'};
+  return {
+    season: SEASON,
+    week: p.week||'Commish',
+    timestamp: p.timestamp_str||'',
+    type: kindToType[p.kind]||'commissioner_drop',
+    team: p.team_name||'',
+    adds: p.adds||[],
+    drops: p.drops||[],
+    _comm: true,
+  };
+}
+
 async function loadAll(){
   try{
-    const [standings,matchups,transactions,divisions,newsRaw,weeklyScores,playoffGamesRaw]=await Promise.all([
+    const slug=window.COMM_AUTH?.leagueSlug;
+    const [standings,matchups,transactions,divisions,newsRaw,weeklyScores,playoffGamesRaw,dbCommish]=await Promise.all([
       fetch('data/standings.json').then(r=>r.json()),
       fetch('data/matchups.json').then(r=>r.json()),
       fetch('data/transactions.json').then(r=>r.json()),
       fetch('data/divisions.json').then(r=>r.json()).catch(()=>[]),
       fetch('data/player_news_2025.json').then(r=>r.json()).catch(()=>({})),
       fetch('data/weekly_scores_2025.json').then(r=>r.json()).catch(()=>[]),
-      fetch('data/playoff_games.json').then(r=>r.json()).catch(()=>[])
+      fetch('data/playoff_games.json').then(r=>r.json()).catch(()=>[]),
+      (window.loadLeagueCommishActions&&slug)?window.loadLeagueCommishActions(slug).catch(()=>null):Promise.resolve(null)
     ]);
     D.standings=standings.filter(s=>s.season===SEASON).sort((a,b)=>a.rank-b.rank);
     D.matchups=matchups.filter(m=>m.season===SEASON);
-    D.tx=transactions.filter(t=>t.season===SEASON);
+    const commTxs=Array.isArray(dbCommish)?dbCommish.map(dbCommishRowToTx):[];
+    D.tx=[...transactions.filter(t=>t.season===SEASON), ...commTxs];
     D.divs=divisions.filter(d=>d.season===SEASON);
     D.divs.forEach(d=>{DIVS[d.team_name]=d.division;});
     D.news=newsRaw.teams||newsRaw||{};
