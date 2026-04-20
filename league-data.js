@@ -99,6 +99,53 @@ async function saveLeagueRules(leagueId, rulesObject) {
   }
 }
 
+async function loadLeagueRosters(leagueSlug) {
+  if (!window.sb) {
+    console.error('[league-data] Supabase client not initialized');
+    return null;
+  }
+  try {
+    const { data: league, error: leagueErr } = await sb
+      .from('leagues').select('id').eq('slug', leagueSlug).single();
+    if (leagueErr || !league) return null;
+
+    const { data, error } = await sb
+      .from('league_rosters')
+      .select('rosters, version')
+      .eq('league_id', league.id)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) {
+      console.error('[league-data] loadLeagueRosters error', error);
+      return null;
+    }
+    return data ? data.rosters : null;
+  } catch (e) {
+    console.error('[league-data] loadLeagueRosters threw:', e);
+    return null;
+  }
+}
+
+async function saveLeagueRosters(leagueId, rostersArray) {
+  if (!window.sb) return { ok: false, error: 'Supabase client not initialized' };
+  if (!leagueId)  return { ok: false, error: 'No leagueId provided' };
+  if (!Array.isArray(rostersArray)) return { ok: false, error: 'rosters must be an array' };
+  try {
+    const { error: rpcErr } = await sb.rpc('publish_league_rosters', {
+      p_league_id: leagueId,
+      p_rosters: rostersArray,
+      p_notes: 'Saved via commissioner UI',
+    });
+    if (rpcErr) return { ok: false, error: 'Failed to publish rosters: ' + rpcErr.message };
+    return { ok: true };
+  } catch (e) {
+    console.error('[league-data] saveLeagueRosters threw:', e);
+    return { ok: false, error: String(e) };
+  }
+}
+
 // Expose on window for legacy scripts
 window.loadLeagueRules = loadLeagueRules;
 window.saveLeagueRules = saveLeagueRules;
+window.loadLeagueRosters = loadLeagueRosters;
+window.saveLeagueRosters = saveLeagueRosters;

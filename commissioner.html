@@ -264,6 +264,9 @@ details[open]>.sc-additional-hdr::before{transform:rotate(90deg)}
 .roster-tab-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .roster-action-btn{padding:6px 14px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#64748b;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
 .roster-action-btn:hover{color:#e2e8f0;border-color:rgba(255,255,255,0.15)}
+.roster-action-btn.primary{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.35);color:#10b981}
+.roster-action-btn.primary:hover{background:rgba(16,185,129,0.2);color:#10b981}
+.roster-action-btn.primary:disabled{opacity:.5;cursor:not-allowed}
 .roster-action-btn.danger:hover{color:#ef4444;border-color:rgba(239,68,68,0.3)}
 .roster-modified-badge{font-size:10px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:3px 10px;border-radius:20px;font-weight:700;display:none;margin-left:auto}
 .roster-modified-badge.show{display:inline-block}
@@ -379,8 +382,9 @@ tr.tx-comm-row td{background:rgba(167,139,250,0.03)}
         <span style="color:#334155;font-size:13px">&#128269;</span>
         <input type="text" id="roster-search" placeholder="Search player or team..." oninput="filterRosters()">
       </div>
-      <button class="roster-action-btn" onclick="exportRosterChanges()">&#8659; Export Rosters JSON</button>
-      <button class="roster-action-btn danger" onclick="resetRosters()">&#8635; Reset</button>
+      <button class="roster-action-btn primary" id="roster-save-btn" onclick="saveRostersToDb()">&#10003; Save Changes</button>
+      <button class="roster-action-btn" onclick="exportRosterChanges()">&#8659; Export JSON</button>
+      <button class="roster-action-btn danger" onclick="resetRosters()">&#8635; Undo Changes</button>
       <span class="roster-modified-badge" id="roster-modified-badge">&#9679; Unsaved changes</span>
     </div>
     <div id="roster-list">Loading...</div>
@@ -486,12 +490,14 @@ function switchTab(id) {
 
 /* ===== LOAD DATA ===== */
 async function init() {
-  const [teamData, rosters, transactions, adjustments, rulesFromDb] = await Promise.all([
+  const slug = window.COMM_AUTH?.leagueSlug;
+  const [teamData, rostersFile, transactions, adjustments, rulesFromDb, rostersFromDb] = await Promise.all([
     fetch('data/team_data_2025.json').then(r=>r.json()).catch(()=>({})),
     fetch('data/rosters.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/transactions.json').then(r=>r.json()).catch(()=>[]),
     fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
-    window.loadLeagueRules ? window.loadLeagueRules(window.COMM_AUTH?.leagueSlug).catch(()=>null) : Promise.resolve(null),
+    window.loadLeagueRules   ? window.loadLeagueRules(slug).catch(()=>null)   : Promise.resolve(null),
+    window.loadLeagueRosters ? window.loadLeagueRosters(slug).catch(()=>null) : Promise.resolve(null),
   ]);
 
   // Rules: Supabase is source of truth. Fall back to rules.json only if DB load failed.
@@ -501,13 +507,20 @@ async function init() {
     try { rules = await fetch('data/rules.json').then(r=>r.json()); } catch { rules = {}; }
   }
 
+  // Rosters: Supabase is source of truth. Fall back to rosters.json only if DB load failed.
+  let publishedRosters = rostersFromDb;
+  if (!publishedRosters) {
+    console.warn('[init] Supabase rosters load failed — falling back to data/rosters.json');
+    publishedRosters = rostersFile;
+  }
+
   DATA.teams       = teamData.teams || [];
   DATA.adjustments = adjustments;
   DATA.rules       = rules;
 
-  // Use locally-saved rosters if commissioner made changes
+  // Use locally-saved rosters if commissioner made unsaved changes
   const savedRosters = _loadSavedRosters();
-  DATA.rosters = savedRosters !== null ? savedRosters : rosters;
+  DATA.rosters = savedRosters !== null ? savedRosters : publishedRosters;
   if (savedRosters !== null) {
     document.getElementById('roster-modified-badge')?.classList.add('show');
   }
@@ -637,21 +650,42 @@ function exportRosterChanges() {
   const json = JSON.stringify(DATA.rosters, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'rosters.json'; a.click();
-  showToast('Downloaded rosters.json — commit it to data/ to make it permanent.');
+  showToast('Downloaded rosters.json.');
 }
-function resetRosters() {
-  if (!confirm('Reset rosters to the original rosters.json? All local changes will be lost.')) return;
+
+async function saveRostersToDb() {
+  const session = (typeof getSession === 'function') ? getSession() : null;
+  if (!session || !session.leagueId) { showToast('Not authenticated — cannot save to database.', true); return; }
+  if (!window.saveLeagueRosters)     { showToast('Data layer not loaded — check console.', true); return; }
+  const btn = document.getElementById('roster-save-btn');
+  const originalLabel = btn ? btn.textContent : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  const result = await window.saveLeagueRosters(session.leagueId, DATA.rosters);
+  if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+  if (!result.ok) { showToast('Save failed: ' + result.error, true); return; }
+  try { localStorage.removeItem(ROSTERS_LS_KEY); } catch {}
+  document.getElementById('roster-modified-badge')?.classList.remove('show');
+  showToast('Rosters published to database.');
+}
+
+async function resetRosters() {
+  if (!confirm('Discard unsaved roster changes and reload the currently-published version?')) return;
   localStorage.removeItem(ROSTERS_LS_KEY);
   localStorage.removeItem(COMM_TX_LS_KEY);
   localStorage.removeItem(REVERSED_TX_KEY);
-  fetch('data/rosters.json').then(r=>r.json()).then(rosters => {
-    DATA.rosters = rosters;
-    // Strip commissioner actions from in-memory transactions
-    DATA.transactions = DATA.transactions.filter(t => !t._comm);
-    document.getElementById('roster-modified-badge')?.classList.remove('show');
-    renderRosters(); renderTransactions();
-    showToast('Rosters reset to original.');
-  });
+  const slug = window.COMM_AUTH?.leagueSlug;
+  let rosters = null;
+  if (window.loadLeagueRosters && slug) {
+    rosters = await window.loadLeagueRosters(slug);
+  }
+  if (!rosters) {
+    try { rosters = await fetch('data/rosters.json').then(r=>r.json()); } catch { rosters = []; }
+  }
+  DATA.rosters = rosters;
+  DATA.transactions = DATA.transactions.filter(t => !t._comm);
+  document.getElementById('roster-modified-badge')?.classList.remove('show');
+  renderRosters(); renderTransactions();
+  showToast('Unsaved changes discarded.');
 }
 
 /* Release a player */
