@@ -378,6 +378,10 @@ a{color:#10b981;text-decoration:none}
   </div>
 </div>
 
+<script src="data/auth-sbt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script>
 /* ===== CONFIG ===== */
 const FRANCHISE_LOGOS = {
@@ -467,14 +471,54 @@ let dragSrc = null;    // {sec:'starters'|'bench', idx:Number}
 let touchSel = null;   // {sec, idx} for mobile tap-select
 
 /* ===== INIT ===== */
+const CURRENT_SEASON = 2025;
+
+function reconcileTeamRostersWithDb(data, dbRosters) {
+  if (!data || !Array.isArray(data.teams) || !Array.isArray(dbRosters)) return data;
+  // Build a global name→full player stats lookup so commissioner adds can inherit stats if known.
+  const lookup = {};
+  for (const t of data.teams) {
+    for (const p of [...(t.starters||[]), ...(t.bench||[])]) {
+      if (p && p.name) lookup[p.name.toLowerCase()] = p;
+    }
+  }
+  for (const dbTeam of dbRosters.filter(t => t.year === CURRENT_SEASON)) {
+    const target = data.teams.find(t => t.team_name === dbTeam.team_name);
+    if (!target) continue;
+    const newStarters = [];
+    const newBench = [];
+    for (const dbP of (dbTeam.players || [])) {
+      const full = lookup[(dbP.name||'').toLowerCase()];
+      const merged = full
+        ? { ...full, slot: dbP.slot, position: dbP.position || full.position, nfl_team: dbP.nfl_team || full.nfl_team }
+        : {
+            name: dbP.name, position: dbP.position || '', nfl_team: dbP.nfl_team || '',
+            slot: dbP.slot, photo_url: '',
+            season_pts: 0, avg_pts: 0, weeks_played: 0,
+            weekly: {}, career: [],
+            injury_status: '', injury_notes: '',
+            _commishAdded: true,
+          };
+      if (dbP.status === 'A') newStarters.push(merged);
+      else newBench.push(merged);
+    }
+    target.starters = newStarters;
+    target.bench    = newBench;
+  }
+  return data;
+}
+
 async function init() {
   try {
-    const [r, rn] = await Promise.all([
+    const slug = window.COMM_AUTH?.leagueSlug;
+    const [r, rn, dbRosters] = await Promise.all([
       fetch('data/team_data_2025.json'),
       fetch('data/player_news_2025.json'),
+      (window.loadLeagueRosters && slug) ? window.loadLeagueRosters(slug).catch(()=>null) : Promise.resolve(null),
     ]);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     DATA = await r.json();
+    DATA = reconcileTeamRostersWithDb(DATA, dbRosters);
     if (rn.ok) { const nd = await rn.json(); NEWS_DATA = nd.teams || {}; }
     // Read ?team= param
     const params = new URLSearchParams(location.search);
