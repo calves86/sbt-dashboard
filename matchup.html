@@ -304,6 +304,10 @@ a{color:#10b981;text-decoration:none}
 </div><!-- /#main -->
 </div><!-- /#shell -->
 
+<script src="data/auth-sbt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="league-data.js"></script>
 <script>
 const SEASON = 2025;
 const NFL_LOGO = t => `https://a.espncdn.com/i/teamlogos/nfl/500/${(t||'').toLowerCase()}.png`;
@@ -349,14 +353,17 @@ let RECORD_MAP = {}; // team_name -> {wins,losses}
 
 async function loadAll(){
   try{
-    const [mu,ws,stats,adj,news,standings] = await Promise.all([
+    const slug = window.COMM_AUTH?.leagueSlug;
+    const [mu,ws,stats,adj,news,standings,dbAdj] = await Promise.all([
       fetch('data/matchups.json').then(r=>r.json()),
       fetch('data/weekly_scores_2025.json').then(r=>r.json()),
       fetch('data/player_stats_2025.json').then(r=>r.json()).catch(()=>({})),
       fetch('data/adjustments_2025.json').then(r=>r.json()).catch(()=>[]),
       fetch('data/player_news_2025.json').then(r=>r.json()).catch(()=>({})),
-      fetch('data/standings.json').then(r=>r.json()).catch(()=>[])
+      fetch('data/standings.json').then(r=>r.json()).catch(()=>[]),
+      (window.loadLeagueAdjustments && slug) ? window.loadLeagueAdjustments(slug).catch(()=>null) : Promise.resolve(null)
     ]);
+    const allAdj = [...(adj||[]), ...(Array.isArray(dbAdj)?dbAdj:[])];
 
     D.matchups = mu.filter(m=>m.season===SEASON);
     D.weekly   = ws;
@@ -373,12 +380,12 @@ async function loadAll(){
     const idToName = {};
     ws.forEach(e=>{ if(e.team_id) idToName[e.team_id]=e.team_name; });
 
-    // Build adjustment map
-    adj.forEach(a=>{
+    // Build adjustment map (merge JSON + DB; DB augments rather than overwrites)
+    allAdj.forEach(a=>{
       const tn = idToName[a.team_id];
       if(!tn||!a.adjustments||!a.adjustments.length) return;
       if(!ADJ_MAP[a.week]) ADJ_MAP[a.week]={};
-      ADJ_MAP[a.week][tn]=a.adjustments;
+      ADJ_MAP[a.week][tn]=[...(ADJ_MAP[a.week][tn]||[]), ...a.adjustments];
     });
 
     // Build photo + news maps from player_news
